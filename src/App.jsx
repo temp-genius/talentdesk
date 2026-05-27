@@ -2,13 +2,16 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 
-import HomePage from './pages/public/HomePage'
-import Login from './pages/public/Login'
-import RecruiterSignup from './pages/recruiter/RecruiterSignup'
-import RecruiterDashboard from './pages/recruiter/RecruiterDashboard'
-import HiringManagerSignup from './pages/hiring-manager/HiringManagerSignup'
+import HomePage               from './pages/public/HomePage'
+import Login                  from './pages/public/Login'
+import RecruiterSignup        from './pages/recruiter/RecruiterSignup'
+import RecruiterDashboard     from './pages/recruiter/RecruiterDashboard'
+import RecruiterProfileSetup  from './pages/recruiter/RecruiterProfileSetup'
+import RecruiterPublicProfile from './pages/recruiter/RecruiterPublicProfile'
+import HiringManagerSignup    from './pages/hiring-manager/HiringManagerSignup'
 import HiringManagerDashboard from './pages/hiring-manager/HiringManagerDashboard'
-import AdminDashboard from './pages/admin/AdminDashboard'
+import BrowseRecruiters       from './pages/hiring-manager/BrowseRecruiters'
+import AdminDashboard         from './pages/admin/AdminDashboard'
 
 const DASHBOARD_BY_TYPE = {
   recruiter:      '/recruiter/dashboard',
@@ -16,7 +19,6 @@ const DASHBOARD_BY_TYPE = {
   admin:          '/admin/dashboard',
 }
 
-// Redirects already-authenticated users away from public-only pages
 function PublicRoute({ children }) {
   const { user, userType, loading } = useAuth()
   if (loading) {
@@ -39,28 +41,23 @@ export default function App() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/login"                element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/recruiter/signup"     element={<PublicRoute><RecruiterSignup /></PublicRoute>} />
+          <Route path="/hiring-manager/signup" element={<PublicRoute><HiringManagerSignup /></PublicRoute>} />
 
-          <Route
-            path="/login"
-            element={<PublicRoute><Login /></PublicRoute>}
-          />
-          <Route
-            path="/recruiter/signup"
-            element={<PublicRoute><RecruiterSignup /></PublicRoute>}
-          />
-          <Route
-            path="/hiring-manager/signup"
-            element={<PublicRoute><HiringManagerSignup /></PublicRoute>}
-          />
+          {/* Public recruiter profile — viewable by anyone */}
+          <Route path="/recruiter/profile/:id" element={<RecruiterPublicProfile />} />
 
           {/* Recruiter — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['recruiter']} />}>
             <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+            <Route path="/recruiter/pending"   element={<RecruiterProfileSetup />} />
           </Route>
 
           {/* Hiring manager — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['hiring_manager']} />}>
             <Route path="/hiring-manager/dashboard" element={<HiringManagerDashboard />} />
+            <Route path="/browse-recruiters"        element={<BrowseRecruiters />} />
           </Route>
 
           {/* Admin — protected */}
