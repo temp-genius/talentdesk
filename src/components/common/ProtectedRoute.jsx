@@ -12,7 +12,7 @@ export default function ProtectedRoute({ allowedUserTypes }) {
     )
   }
 
-  if (!user) return <Navigate to="/" replace />
+  if (!user) return <Navigate to="/login" replace />
 
   if (allowedUserTypes && !allowedUserTypes.includes(userType)) {
     return <Navigate to="/" replace />

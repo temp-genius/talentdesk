@@ -29,4 +29,9 @@
   .card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
   }
+
+  .input {
+    @apply block w-full rounded-md border-gray-300 shadow-sm
+           focus:border-primary-500 focus:ring-primary-500 text-sm;
+  }
 }
