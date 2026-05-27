@@ -131,13 +131,15 @@ function FilterCheckbox({ label, checked, onChange }) {
 const EMPTY_FILTERS = { countries: [], sectors: [], fees: [], availability: [] }
 
 export default function BrowseRecruiters() {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const [recruiters, setRecruiters]   = useState([])
   const [loading, setLoading]         = useState(true)
   const [sort, setSort]               = useState('relevance')
   const [filters, setFilters]         = useState(EMPTY_FILTERS)
 
   useEffect(() => {
+    if (!user) { setLoading(false); return }
+    console.log('Auth user at query time:', user)
     supabase
       .from('recruiter_profiles')
       .select(`
@@ -145,17 +147,18 @@ export default function BrowseRecruiters() {
         years_experience, availability_status, preferred_fee_percentage,
         total_placements, linkedin_url, linkedin_network_size_tier,
         response_time_average, last_active_at, created_at,
-        recruiter_sectors(sector_name),
-        recruiter_locations(country, region),
-        recruiter_tools(tool_name, verified),
-        recruiter_scores(overall_average, total_hm_reviews, total_candidate_reviews)
+        recruiter_sectors!left(sector_name),
+        recruiter_locations!left(country, region),
+        recruiter_tools!left(tool_name, verified),
+        recruiter_scores!left(overall_average, total_hm_reviews, total_candidate_reviews)
       `)
       .eq('status', 'approved')
       .then(({ data, error }) => {
+        console.log('Supabase recruiter_profiles result:', data, error)
         if (!error && data) setRecruiters(data)
         setLoading(false)
       })
-  }, [])
+  }, [user])
 
   function toggle(key, value) {
     setFilters(prev => ({
