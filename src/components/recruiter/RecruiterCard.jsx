@@ -29,7 +29,8 @@ function AvailabilityBadge({ status }) {
   )
 }
 
-export default function RecruiterCard({ recruiter }) {
+export default function RecruiterCard({ recruiter, jobId }) {
+  const jobParam = jobId ? `?job=${jobId}` : ''
   const scores   = recruiter.recruiter_scores?.[0] ?? null
   const sectors  = recruiter.recruiter_sectors?.map(s => s.sector_name) ?? []
   const rating   = scores?.overall_average ?? null
@@ -120,13 +121,13 @@ export default function RecruiterCard({ recruiter }) {
       {/* Actions */}
       <div className="flex gap-2 mt-1">
         <Link
-          to={`/recruiter/profile/${recruiter.id}`}
+          to={`/recruiter/profile/${recruiter.id}${jobParam}`}
           className="btn-secondary flex-1 text-center text-xs py-1.5"
         >
           View Profile
         </Link>
         <Link
-          to={`/recruiter/profile/${recruiter.id}#contact`}
+          to={`/recruiter/profile/${recruiter.id}${jobParam}#contact`}
           className="btn-primary flex-1 text-center text-xs py-1.5"
         >
           Message

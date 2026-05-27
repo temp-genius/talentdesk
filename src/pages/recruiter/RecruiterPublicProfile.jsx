@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 
@@ -82,14 +82,122 @@ function ReviewCard({ review }) {
   )
 }
 
+function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const urlJobId = searchParams.get('job')
+
+  const [jobs,       setJobs]      = useState([])
+  const [loadingJobs, setLoadingJobs] = useState(true)
+  const [selectedJob, setSelectedJob] = useState(urlJobId ?? '')
+  const [body,       setBody]      = useState('Hello, I would like to discuss a role with you.')
+  const [sending,    setSending]   = useState(false)
+  const [error,      setError]     = useState('')
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('jobs')
+      .select('id, title, status')
+      .eq('status', 'draft')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        const list = data ?? []
+        setJobs(list)
+        if (!urlJobId && list.length === 1) setSelectedJob(list[0].id)
+        setLoadingJobs(false)
+      })
+  }, [user, urlJobId])
+
+  async function handleSend(e) {
+    e.preventDefault()
+    if (!selectedJob || !body.trim()) return
+    setSending(true)
+    setError('')
+    const { error: err } = await supabase.from('messages').insert({
+      job_id:           selectedJob,
+      sender_user_id:   user.id,
+      recipient_user_id: recruiterUserId,
+      message_body:     body.trim(),
+    })
+    if (err) { setError(err.message); setSending(false); return }
+    console.log('Email notification queued:', { to: recruiterUserId, from: user.id, jobId: selectedJob })
+    navigate('/messages')
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Message {recruiterName}</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Your message will be linked to a role posting</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 mt-0.5">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">{error}</div>
+        )}
+
+        <form onSubmit={handleSend} className="space-y-4">
+          {loadingJobs ? (
+            <div className="h-9 bg-gray-100 rounded animate-pulse" />
+          ) : jobs.length === 0 ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-700 mb-2">You need to post a role before starting a conversation.</p>
+              <Link to="/post-job" className="btn-primary text-xs px-3 py-1.5">Post a Role →</Link>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+              <select className="input" value={selectedJob} onChange={e => setSelectedJob(e.target.value)} required>
+                <option value="">Select a role…</option>
+                {jobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
+              </select>
+            </div>
+          )}
+
+          {jobs.length > 0 && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea
+                  className="input resize-none" rows={4}
+                  value={body} onChange={e => setBody(e.target.value)} required
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn-primary w-full disabled:opacity-50"
+                disabled={sending || !selectedJob || !body.trim()}
+              >
+                {sending ? 'Sending…' : 'Send Message'}
+              </button>
+            </>
+          )}
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function RecruiterPublicProfile() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const urlJobId = searchParams.get('job')
   const { user, userType } = useAuth()
 
   const [profile,  setProfile]  = useState(null)
   const [reviews,  setReviews]  = useState([])
   const [loading,  setLoading]  = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [showMsg,  setShowMsg]  = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -99,7 +207,7 @@ export default function RecruiterPublicProfile() {
       const { data: p, error } = await supabase
         .from('recruiter_profiles')
         .select(`
-          id, first_name, last_name, bio, profile_photo_url,
+          id, user_id, first_name, last_name, bio, profile_photo_url,
           years_experience, availability_status, preferred_fee_percentage,
           total_placements, average_days_to_shortlist, linkedin_url,
           linkedin_network_size_tier, response_time_average, created_at,
@@ -177,6 +285,14 @@ export default function RecruiterPublicProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {showMsg && profile?.user_id && (
+        <SendMessageModal
+          recruiterUserId={profile.user_id}
+          recruiterName={profile.first_name}
+          onClose={() => setShowMsg(false)}
+        />
+      )}
+
       {/* Nav */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -337,7 +453,15 @@ export default function RecruiterPublicProfile() {
                 <>
                   <h3 className="text-sm font-semibold text-gray-900 mb-1">Contact {profile.first_name}</h3>
                   <p className="text-xs text-gray-500 mb-4">Send a message to discuss a role or ask a question.</p>
-                  <button className="btn-primary w-full">Send Message</button>
+                  <button className="btn-primary w-full" onClick={() => setShowMsg(true)}>Send Message</button>
+                  {urlJobId && (
+                    <Link
+                      to={`/start-job?recruiter_id=${profile.id}&job_id=${urlJobId}`}
+                      className="btn-secondary w-full block text-center mt-2 text-sm"
+                    >
+                      Start Job Agreement
+                    </Link>
+                  )}
                 </>
               ) : user ? (
                 <p className="text-sm text-gray-500 text-center">

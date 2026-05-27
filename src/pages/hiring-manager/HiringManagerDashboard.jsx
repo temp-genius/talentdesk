@@ -29,7 +29,12 @@ export default function HiringManagerDashboard() {
           <span className="text-lg font-bold text-slate-900 tracking-tight">
             Talent<span className="text-primary-600">Desk</span>
           </span>
-          <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
+          <div className="flex items-center gap-4">
+            <Link to="/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Messages</Link>
+            <Link to="/browse-recruiters" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Browse</Link>
+            <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
+            <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
+          </div>
         </div>
       </header>
 
@@ -107,9 +112,9 @@ export default function HiringManagerDashboard() {
                   <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
                     My Active Jobs
                   </h3>
-                  <button className="btn-primary text-xs px-3 py-1.5" disabled>
+                  <Link to="/post-job" className="btn-primary text-xs px-3 py-1.5">
                     Post a Role
-                  </button>
+                  </Link>
                 </div>
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">

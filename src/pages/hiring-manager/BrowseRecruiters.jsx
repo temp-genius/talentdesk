@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import RecruiterCard from '../../components/recruiter/RecruiterCard'
@@ -132,10 +132,19 @@ const EMPTY_FILTERS = { countries: [], sectors: [], fees: [], availability: [] }
 
 export default function BrowseRecruiters() {
   const { user, logout } = useAuth()
+  const [searchParams]                = useSearchParams()
+  const jobId                         = searchParams.get('job')
+  const [jobTitle, setJobTitle]       = useState(null)
   const [recruiters, setRecruiters]   = useState([])
   const [loading, setLoading]         = useState(true)
   const [sort, setSort]               = useState('relevance')
   const [filters, setFilters]         = useState(EMPTY_FILTERS)
+
+  useEffect(() => {
+    if (!user || !jobId) return
+    supabase.from('jobs').select('title').eq('id', jobId).single()
+      .then(({ data }) => { if (data) setJobTitle(data.title) })
+  }, [user, jobId])
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
@@ -242,6 +251,25 @@ export default function BrowseRecruiters() {
           <p className="text-gray-500 mt-1 text-sm">Find the right specialist for your next hire</p>
         </div>
 
+        {/* Job context banner */}
+        {jobId && (
+          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-sm text-green-800">
+                {jobTitle
+                  ? <>Browsing recruiters for: <strong>{jobTitle}</strong></>
+                  : 'Role posted — select a recruiter to start a conversation'}
+              </p>
+            </div>
+            <Link to="/post-job" className="text-xs text-green-700 hover:underline flex-shrink-0 ml-4">
+              Post another role
+            </Link>
+          </div>
+        )}
+
         <div className="flex gap-8 items-start">
           {/* ── Filter sidebar ── */}
           <aside className="w-52 flex-shrink-0 bg-white rounded-xl border border-gray-200 p-5 sticky top-24">
@@ -331,7 +359,7 @@ export default function BrowseRecruiters() {
               <EmptyState hasFilters={hasActiveFilters} onClear={clearFilters} />
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {sorted.map(r => <RecruiterCard key={r.id} recruiter={r} />)}
+                {sorted.map(r => <RecruiterCard key={r.id} recruiter={r} jobId={jobId} />)}
               </div>
             )}
           </div>

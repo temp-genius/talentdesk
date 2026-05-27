@@ -8,9 +8,13 @@ import RecruiterSignup        from './pages/recruiter/RecruiterSignup'
 import RecruiterDashboard     from './pages/recruiter/RecruiterDashboard'
 import RecruiterProfileSetup  from './pages/recruiter/RecruiterProfileSetup'
 import RecruiterPublicProfile from './pages/recruiter/RecruiterPublicProfile'
+import RecruiterMessages      from './pages/recruiter/RecruiterMessages'
 import HiringManagerSignup    from './pages/hiring-manager/HiringManagerSignup'
 import HiringManagerDashboard from './pages/hiring-manager/HiringManagerDashboard'
 import BrowseRecruiters       from './pages/hiring-manager/BrowseRecruiters'
+import PostJob                from './pages/hiring-manager/PostJob'
+import Messages               from './pages/hiring-manager/Messages'
+import StartJob               from './pages/hiring-manager/StartJob'
 import AdminDashboard         from './pages/admin/AdminDashboard'
 
 const DASHBOARD_BY_TYPE = {
@@ -41,28 +45,32 @@ export default function App() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/login"                element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/recruiter/signup"     element={<PublicRoute><RecruiterSignup /></PublicRoute>} />
-          <Route path="/hiring-manager/signup" element={<PublicRoute><HiringManagerSignup /></PublicRoute>} />
+          <Route path="/login"                  element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/recruiter/signup"        element={<PublicRoute><RecruiterSignup /></PublicRoute>} />
+          <Route path="/hiring-manager/signup"   element={<PublicRoute><HiringManagerSignup /></PublicRoute>} />
 
           {/* Public recruiter profile — viewable by anyone */}
-          <Route path="/recruiter/profile/:id" element={<RecruiterPublicProfile />} />
+          <Route path="/recruiter/profile/:id"   element={<RecruiterPublicProfile />} />
 
           {/* Recruiter — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['recruiter']} />}>
-            <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
-            <Route path="/recruiter/pending"   element={<RecruiterProfileSetup />} />
+            <Route path="/recruiter/dashboard"   element={<RecruiterDashboard />} />
+            <Route path="/recruiter/pending"     element={<RecruiterProfileSetup />} />
+            <Route path="/recruiter/messages"    element={<RecruiterMessages />} />
           </Route>
 
           {/* Hiring manager — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['hiring_manager']} />}>
             <Route path="/hiring-manager/dashboard" element={<HiringManagerDashboard />} />
-            <Route path="/browse-recruiters"        element={<BrowseRecruiters />} />
+            <Route path="/browse-recruiters"         element={<BrowseRecruiters />} />
+            <Route path="/post-job"                  element={<PostJob />} />
+            <Route path="/messages"                  element={<Messages />} />
+            <Route path="/start-job"                 element={<StartJob />} />
           </Route>
 
           {/* Admin — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['admin']} />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard"       element={<AdminDashboard />} />
           </Route>
 
           {/* Fallback */}

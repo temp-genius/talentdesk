@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 
@@ -46,7 +47,12 @@ export default function RecruiterDashboard() {
           <span className="text-lg font-bold text-slate-900 tracking-tight">
             Talent<span className="text-primary-600">Desk</span>
           </span>
-          <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
+          <div className="flex items-center gap-4">
+            <Link to="/recruiter/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+              Messages
+            </Link>
+            <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
+          </div>
         </div>
       </header>
 
