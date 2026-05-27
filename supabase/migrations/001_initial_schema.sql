@@ -104,26 +104,6 @@ CREATE TYPE vetting_status_enum AS ENUM (
 );
 
 -- =================================================================
--- HELPER FUNCTION
--- Runs as the function owner (SECURITY DEFINER) so it can read
--- the users table even when RLS is active on it.
--- =================================================================
-
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid()
-      AND user_type = 'admin'
-  );
-$$;
-
--- =================================================================
 -- TABLES
 -- =================================================================
 
@@ -669,6 +649,28 @@ CREATE INDEX idx_va_status     ON public.vetting_applications(application_status
 CREATE INDEX idx_aal_admin_id   ON public.admin_actions_log(admin_user_id);
 CREATE INDEX idx_aal_entity     ON public.admin_actions_log(related_entity_type, related_entity_id);
 CREATE INDEX idx_aal_created_at ON public.admin_actions_log(created_at DESC);
+
+-- =================================================================
+-- HELPER FUNCTION
+-- Defined after public.users exists (LANGUAGE sql is validated at
+-- parse time, so the table must exist before this runs).
+-- Runs as the function owner (SECURITY DEFINER) so it can read
+-- the users table even when RLS is active on it.
+-- =================================================================
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.users
+    WHERE id = auth.uid()
+      AND user_type = 'admin'
+  );
+$$;
 
 -- =================================================================
 -- ROW LEVEL SECURITY
