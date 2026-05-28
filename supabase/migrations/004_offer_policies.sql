@@ -81,13 +81,13 @@ BEGIN
   END IF;
 
   UPDATE public.offers
-     SET acceptance_status       = p_status::offer_acceptance_status_enum,
+     SET acceptance_status       = p_status,
          accepted_at             = CASE WHEN p_status = 'accepted' THEN now() ELSE NULL END,
          accept_click_ip_address = p_ip
    WHERE id = v_offer_id;
 
   UPDATE public.candidate_profiles
-     SET interview_status = (CASE WHEN p_status = 'accepted' THEN 'accepted' ELSE 'declined' END)::candidate_interview_status_enum
+     SET interview_status = CASE WHEN p_status = 'accepted' THEN 'accepted' ELSE 'declined' END
    WHERE id = v_candidate_id;
 
   RETURN jsonb_build_object('success', true, 'status', p_status);
@@ -95,3 +95,6 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.respond_to_offer(uuid, text, text) TO anon, authenticated;
+
+GRANT SELECT, INSERT, UPDATE ON public.offers TO authenticated;
+GRANT SELECT ON public.offers TO anon;
