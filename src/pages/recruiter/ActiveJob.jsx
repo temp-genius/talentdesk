@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { sendOfferEmail, sendShortlistSubmittedNotification } from '../../lib/emailService'
 
 const MS_STATUS_STYLES = {
   pending:       'bg-gray-100 text-gray-600',
@@ -85,6 +86,7 @@ export default function RecruiterActiveJob() {
           id, milestone_number, milestone_name, amount, currency,
           status, triggered_at, review_window_expires_at, released_at
         ),
+        recruiter_profiles(first_name, last_name),
         candidate_profiles(
           id, candidate_first_name, candidate_last_name,
           candidate_email, current_job_title, recruiter_notes,
@@ -150,6 +152,18 @@ export default function RecruiterActiveJob() {
       .eq('id', m1.id)
     setSubmit(false)
     if (err) { alert(err.message); return }
+
+    // Notify hiring manager — fire-and-forget
+    const rp = data?.recruiter_profiles
+    const recruiterName = [rp?.first_name, rp?.last_name].filter(Boolean).join(' ')
+    supabase.rpc('get_hm_email_for_assignment', { p_assignment_id: assignmentId })
+      .then(({ data: hmEmail }) => {
+        if (hmEmail) {
+          sendShortlistSubmittedNotification(hmEmail, recruiterName, job?.title ?? '', candidates.length)
+        }
+      })
+      .catch(console.error)
+
     load()
   }
 
@@ -173,7 +187,7 @@ export default function RecruiterActiveJob() {
       return
     }
     setOfferSubmitting(true)
-    const { error: insertErr } = await supabase.from('offers').insert({
+    const { data: newOffer, error: insertErr } = await supabase.from('offers').insert({
       job_recruiter_assignment_id: assignmentId,
       candidate_profile_id:        offerModal.id,
       agreed_salary:               parseFloat(offerSalary),
@@ -183,7 +197,7 @@ export default function RecruiterActiveJob() {
       offer_logged_at:             new Date().toISOString(),
       offer_email_delay_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       acceptance_status:           'pending',
-    })
+    }).select('acceptance_token').single()
     if (insertErr) { setOfferFormErr(insertErr.message); setOfferSubmitting(false); return }
     const { error: updateErr } = await supabase
       .from('candidate_profiles')
@@ -191,6 +205,18 @@ export default function RecruiterActiveJob() {
       .eq('id', offerModal.id)
     setOfferSubmitting(false)
     if (updateErr) { setOfferFormErr(updateErr.message); return }
+
+    // Send offer acceptance email — fire-and-forget
+    if (newOffer?.acceptance_token) {
+      sendOfferEmail(offerEmail, {
+        jobTitle:         job?.title ?? '',
+        agreedSalary:     parseFloat(offerSalary),
+        currency:         job?.currency ?? 'EUR',
+        startDate:        offerStartDate || null,
+        acceptanceToken:  newOffer.acceptance_token,
+      })
+    }
+
     setOfferSuccessMsg(`Offer logged for ${offerModal.candidate_first_name}.`)
     setOfferModal(null)
     load()

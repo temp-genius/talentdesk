@@ -4,6 +4,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { stripePromise } from '../../lib/stripe'
+import { sendJobStartedNotification } from '../../lib/emailService'
 
 const TERMS = [
   'This is a retained engagement — fees are paid at each milestone stage, not outcome-only.',
@@ -151,7 +152,7 @@ function StartJobInner() {
       const jobResult = await supabase.from('jobs').select('*').eq('id', jobId).single()
       const recruiterResult = await supabase
         .from('recruiter_profiles')
-        .select('id, user_id, first_name, last_name, bio, preferred_fee_percentage, total_placements, availability_status')
+        .select('id, user_id, first_name, last_name, bio, preferred_fee_percentage, total_placements, availability_status, users(email)')
         .eq('id', recruiterId)
         .single()
       const companyResult = await supabase
@@ -281,6 +282,17 @@ function StartJobInner() {
     if (msErr) { setActionErr(msErr.message); return false }
 
     await supabase.from('jobs').update({ status: 'active', agreed_shortlist_size: shortlist }).eq('id', jobId)
+
+    // Notify recruiter of new assignment — fire-and-forget
+    const recruiterEmail = recruiter.users?.email
+    if (recruiterEmail) {
+      sendJobStartedNotification(
+        recruiterEmail,
+        job.title,
+        companyProfile?.company_name ?? null,
+        shortlist,
+      )
+    }
 
     return true
   }

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { sendShortlistApprovedNotification } from '../../lib/emailService'
 
 const OFFER_STATUS_STYLES = {
   pending:      'bg-yellow-100 text-yellow-800',
@@ -64,7 +65,7 @@ export default function HMActiveJob() {
         ),
         recruiter_profiles(
           id, first_name, last_name, bio, years_experience,
-          linkedin_url, preferred_fee_percentage
+          linkedin_url, preferred_fee_percentage, users(email)
         ),
         milestones(
           id, milestone_number, milestone_name, amount, currency,
@@ -98,6 +99,13 @@ export default function HMActiveJob() {
       .update({ status: 'approved' })
       .eq('id', m1.id)
     if (err) { alert(err.message); return }
+
+    // Notify recruiter — fire-and-forget
+    const recruiterEmail = data?.recruiter_profiles?.users?.email
+    if (recruiterEmail) {
+      sendShortlistApprovedNotification(recruiterEmail, data?.jobs?.title ?? '')
+    }
+
     load()
   }
 
