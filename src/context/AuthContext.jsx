@@ -21,6 +21,14 @@ export function AuthProvider({ children }) {
       return
     }
 
+    // Diagnostic: show every field available on the auth user metadata objects
+    console.log('FULL AUTH USER METADATA', {
+      user_metadata: authUser.user_metadata,
+      app_metadata:  authUser.app_metadata,
+      id:            authUser.id,
+      email:         authUser.email,
+    })
+
     try {
       const { data } = await withTimeout(
         supabase.from('users').select('*').eq('id', authUser.id).single(),
@@ -36,8 +44,15 @@ export function AuthProvider({ children }) {
       console.log('[AuthContext] DB query timed out or failed, using JWT fallback:', e.message)
     }
 
-    const fallbackType = authUser.user_metadata?.user_type ?? null
-    console.log('[AuthContext] user_type from JWT metadata:', fallbackType)
+    // Try user_metadata first (maps to raw_user_meta_data in auth.users),
+    // then app_metadata as a secondary fallback
+    const fallbackType =
+      authUser.user_metadata?.user_type ??
+      authUser.app_metadata?.user_type ??
+      null
+    console.log('[AuthContext] user_type from JWT metadata:', fallbackType,
+      '| user_metadata.user_type:', authUser.user_metadata?.user_type,
+      '| app_metadata.user_type:',  authUser.app_metadata?.user_type)
     setDbUser(null)
     setUserType(fallbackType)
   }
@@ -169,7 +184,19 @@ export function AuthProvider({ children }) {
     if (error) throw error
 
     if (data.user) {
-      let resolvedUserType = data.user.user_metadata?.user_type ?? null
+      console.log('FULL AUTH USER METADATA (login)', {
+        user_metadata: data.user.user_metadata,
+        app_metadata:  data.user.app_metadata,
+        id:            data.user.id,
+        email:         data.user.email,
+      })
+
+      // Seed resolvedUserType from JWT before attempting DB — ensures it is
+      // always defined even if the DB query times out
+      let resolvedUserType =
+        data.user.user_metadata?.user_type ??
+        data.user.app_metadata?.user_type ??
+        null
 
       try {
         const { data: row } = await withTimeout(
@@ -184,7 +211,9 @@ export function AuthProvider({ children }) {
         }
       } catch (e) {
         console.log('[AuthContext] login — DB query timed out or failed, using JWT fallback:', e.message)
-        console.log('[AuthContext] login — user_type from JWT metadata:', resolvedUserType)
+        console.log('[AuthContext] login — resolvedUserType from JWT:', resolvedUserType,
+          '| user_metadata.user_type:', data.user.user_metadata?.user_type,
+          '| app_metadata.user_type:',  data.user.app_metadata?.user_type)
         setUserType(resolvedUserType)
       }
 
