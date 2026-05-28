@@ -451,6 +451,16 @@ export default function HMActiveJob() {
         </div>
 
       </div>
+
+      {/* Cancel role */}
+      <div className="max-w-4xl mx-auto px-6 pb-10 text-center">
+        <Link
+          to={`/job/${assignmentId}/cancel`}
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+        >
+          Cancel Role
+        </Link>
+      </div>
     </div>
   )
 }

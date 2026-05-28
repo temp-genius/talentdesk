@@ -352,6 +352,78 @@ export function sendShortlistApprovedNotification(recruiterEmail, jobTitle) {
   })
 }
 
+// ─── Job cancelled by HM (recruiter notification) ────────────────────────────
+
+export function sendJobCancelledByHMNotification(recruiterEmail, jobTitle, reason) {
+  const html = wrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          Job assignment cancelled
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          The hiring company has cancelled the following assignment.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="background-color:#fef2f2;border-radius:8px;
+                      border:1px solid #fecaca;margin-bottom:24px;">
+          <tr><td style="padding:20px 24px;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;
+                      text-transform:uppercase;letter-spacing:1px;">Role</p>
+            <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">${jobTitle}</p>
+            <p style="margin:0 0 4px;font-size:13px;color:#6b7280;">Reason</p>
+            <p style="margin:0;font-size:14px;font-weight:600;color:#374151;">${reason}</p>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:14px;color:#6b7280;">
+          Any unreleased milestone escrow will be refunded to the hiring company. Please log in to TalentDesk to view your assignment history.
+        </p>
+      </td>
+    </tr>`)
+
+  return sendEmail({
+    to:      recruiterEmail,
+    subject: `Assignment cancelled — ${jobTitle}`,
+    html,
+  })
+}
+
+// ─── Job withdrawn by recruiter (HM notification) ─────────────────────────────
+
+export function sendJobWithdrawnByRecruiterNotification(hmEmail, jobTitle, recruiterName, reason) {
+  const html = wrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          Recruiter has withdrawn from assignment
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          <strong>${recruiterName}</strong> has withdrawn from the following assignment.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="background-color:#fef2f2;border-radius:8px;
+                      border:1px solid #fecaca;margin-bottom:24px;">
+          <tr><td style="padding:20px 24px;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;
+                      text-transform:uppercase;letter-spacing:1px;">Role</p>
+            <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">${jobTitle}</p>
+            <p style="margin:0 0 4px;font-size:13px;color:#6b7280;">Reason given</p>
+            <p style="margin:0;font-size:14px;font-weight:600;color:#374151;">${reason}</p>
+          </td></tr>
+        </table>
+        <p style="margin:0;font-size:14px;color:#6b7280;">
+          Unreleased milestone escrow will be refunded. Log in to TalentDesk to review your options for this role.
+        </p>
+      </td>
+    </tr>`)
+
+  return sendEmail({
+    to:      hmEmail,
+    subject: `Recruiter withdrew from assignment — ${jobTitle}`,
+    html,
+  })
+}
+
 // ─── Shortlist submitted (hiring manager notification) ────────────────────────
 
 export function sendShortlistSubmittedNotification(hmEmail, recruiterName, jobTitle, candidateCount) {

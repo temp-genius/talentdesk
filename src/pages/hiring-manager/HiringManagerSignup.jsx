@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { validateHiringManagerEmail } from '../../utils/emailValidation'
+import { supabase } from '../../lib/supabase'
+import { BLOCKED_EMAIL_DOMAINS } from '../../utils/emailValidation'
 
 const INDUSTRIES = [
   'Technology', 'Finance & Banking', 'Legal', 'Consulting', 'Healthcare',
@@ -58,6 +59,13 @@ export default function HiringManagerSignup() {
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [additionalBlockedDomains, setAdditionalBlockedDomains] = useState([])
+
+  useEffect(() => {
+    supabase.from('blocked_email_domains').select('domain').then(({ data }) => {
+      if (data?.length) setAdditionalBlockedDomains(data.map(r => r.domain))
+    })
+  }, [])
 
   const [form, setForm] = useState({
     firstName: '',
@@ -80,7 +88,9 @@ export default function HiringManagerSignup() {
     if (!form.lastName.trim()) return 'Last name is required'
     if (!form.email.trim()) return 'Email address is required'
     if (!/\S+@\S+\.\S+/.test(form.email)) return 'Please enter a valid email address'
-    if (!validateHiringManagerEmail(form.email)) {
+    const domain = form.email.split('@')[1]?.toLowerCase()
+    const allBlocked = [...BLOCKED_EMAIL_DOMAINS, ...additionalBlockedDomains]
+    if (!domain || allBlocked.includes(domain)) {
       return 'Please use your company email address — personal email providers are not accepted. If you use Gmail for business (Google Workspace), please contact support.'
     }
     if (form.password.length < 8) return 'Password must be at least 8 characters'

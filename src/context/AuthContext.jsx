@@ -130,50 +130,58 @@ export function AuthProvider({ children }) {
     if (userError) throw userError
 
     if (type === 'recruiter') {
-      const { data: rpData, error: rpError } = await supabase
-        .from('recruiter_profiles')
-        .insert({
-          user_id:                    userId,
-          first_name:                 firstName ?? null,
-          last_name:                  lastName ?? null,
-          status:                     'pending',
-          years_experience:           rest.years_experience ?? null,
-          linkedin_url:               rest.linkedin_url ?? null,
-          linkedin_network_size_tier: rest.linkedin_network_size_tier || null,
-          preferred_fee_percentage:   rest.preferred_fee_percentage ?? null,
-          availability_status:        rest.availability_status ?? 'available',
-          bio:                        rest.bio ?? null,
-        })
-        .select('id')
-        .single()
-      if (rpError) throw rpError
-
-      const profileId = rpData.id
-
-      if (sectors?.length > 0) {
-        const { error: secErr } = await supabase.from('recruiter_sectors').insert(
-          sectors.map(sector_name => ({ recruiter_profile_id: profileId, sector_name }))
-        )
-        if (secErr) throw secErr
-      }
-
-      if (markets?.length > 0) {
-        const { error: locErr } = await supabase.from('recruiter_locations').insert(
-          markets.map(country => ({ recruiter_profile_id: profileId, country }))
-        )
-        if (locErr) throw locErr
+      try {
+        const { data: rpData, error: rpError } = await supabase
+          .from('recruiter_profiles')
+          .insert({
+            user_id:                    userId,
+            first_name:                 firstName ?? null,
+            last_name:                  lastName ?? null,
+            status:                     'pending',
+            years_experience:           rest.years_experience ?? null,
+            linkedin_url:               rest.linkedin_url ?? null,
+            linkedin_network_size_tier: rest.linkedin_network_size_tier || null,
+            preferred_fee_percentage:   rest.preferred_fee_percentage ?? null,
+            availability_status:        rest.availability_status ?? 'available',
+            bio:                        rest.bio ?? null,
+          })
+          .select('id')
+          .single()
+        if (rpError) {
+          console.error('[AuthContext] recruiter_profiles insert failed:', rpError)
+        } else {
+          const profileId = rpData.id
+          if (sectors?.length > 0) {
+            const { error: secErr } = await supabase.from('recruiter_sectors').insert(
+              sectors.map(sector_name => ({ recruiter_profile_id: profileId, sector_name }))
+            )
+            if (secErr) console.error('[AuthContext] recruiter_sectors insert failed:', secErr)
+          }
+          if (markets?.length > 0) {
+            const { error: locErr } = await supabase.from('recruiter_locations').insert(
+              markets.map(country => ({ recruiter_profile_id: profileId, country }))
+            )
+            if (locErr) console.error('[AuthContext] recruiter_locations insert failed:', locErr)
+          }
+        }
+      } catch (e) {
+        console.error('[AuthContext] recruiter profile creation error:', e)
       }
     } else if (type === 'hiring_manager') {
-      const { error: hcpError } = await supabase.from('hiring_company_profiles').insert({
-        user_id:      userId,
-        company_name: rest.companyName ?? '',
-        company_domain: rest.companyDomain ?? null,
-        website:      rest.website ?? null,
-        industry:     rest.industry ?? null,
-        company_size: rest.companySize ?? null,
-        country:      rest.country ?? null,
-      })
-      if (hcpError) throw hcpError
+      try {
+        const { error: hcpError } = await supabase.from('hiring_company_profiles').insert({
+          user_id:        userId,
+          company_name:   rest.companyName ?? '',
+          company_domain: rest.companyDomain ?? null,
+          website:        rest.website ?? null,
+          industry:       rest.industry ?? null,
+          company_size:   rest.companySize ?? null,
+          country:        rest.country ?? null,
+        })
+        if (hcpError) console.error('[AuthContext] hiring_company_profiles insert failed:', hcpError)
+      } catch (e) {
+        console.error('[AuthContext] hiring company profile creation error:', e)
+      }
     }
 
     return authData
@@ -224,10 +232,8 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    setDbUser(null)
-    setUserType(null)
+    await supabase.auth.signOut()
+    window.location.href = '/'
   }
 
   const value = { user, userType, dbUser, loading, signup, login, logout }

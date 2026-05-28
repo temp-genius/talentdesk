@@ -19,8 +19,10 @@ import ActiveJobList          from './pages/hiring-manager/ActiveJobList'
 import HMActiveJob            from './pages/hiring-manager/ActiveJob'
 import OfferFlow              from './pages/hiring-manager/OfferFlow'
 import HMLeaveReview          from './pages/hiring-manager/LeaveReview'
+import CancelJob              from './pages/hiring-manager/CancelJob'
 import RecruiterActiveJob     from './pages/recruiter/ActiveJob'
 import RecruiterLeaveReview   from './pages/recruiter/LeaveReview'
+import WithdrawJob            from './pages/recruiter/WithdrawJob'
 import OfferAcceptance        from './pages/public/OfferAcceptance'
 import AdminDashboard         from './pages/admin/AdminDashboard'
 
@@ -80,12 +82,14 @@ export default function App() {
             <Route path="/job/:assignmentId"              element={<HMActiveJob />} />
             <Route path="/job/:assignmentId/offer"        element={<OfferFlow />} />
             <Route path="/job/:assignmentId/review"       element={<HMLeaveReview />} />
+            <Route path="/job/:assignmentId/cancel"       element={<CancelJob />} />
           </Route>
 
           {/* Recruiter — active job + review */}
           <Route element={<ProtectedRoute allowedUserTypes={['recruiter']} />}>
-            <Route path="/recruiter/job/:assignmentId"    element={<RecruiterActiveJob />} />
-            <Route path="/recruiter/review/:assignmentId" element={<RecruiterLeaveReview />} />
+            <Route path="/recruiter/job/:assignmentId"          element={<RecruiterActiveJob />} />
+            <Route path="/recruiter/review/:assignmentId"       element={<RecruiterLeaveReview />} />
+            <Route path="/recruiter/job/:assignmentId/withdraw" element={<WithdrawJob />} />
           </Route>
 
           {/* Admin — protected */}

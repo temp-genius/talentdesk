@@ -575,6 +575,16 @@ export default function RecruiterActiveJob() {
 
       </div>
 
+      {/* Withdraw from role */}
+      <div className="max-w-4xl mx-auto px-6 pb-10 text-center">
+        <Link
+          to={`/recruiter/job/${assignmentId}/withdraw`}
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+        >
+          Withdraw from Role
+        </Link>
+      </div>
+
       {/* Log Offer Modal */}
       {offerModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
