@@ -75,7 +75,7 @@ export default function RecruiterLeaveReview() {
       reviewer_user_id:            user.id,
       reviewer_type:               'recruiter',
       overall_score:               rating,
-      comment:                     comment.trim() || null,
+      written_comment:             comment.trim() || null,
     })
     setSubmitting(false)
     if (insertErr) { setFormErr(insertErr.message); return }

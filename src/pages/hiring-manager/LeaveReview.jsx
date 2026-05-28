@@ -92,7 +92,7 @@ export default function HMLeaveReview() {
       communication_rating:        communication,
       market_knowledge_rating:     marketKnowledge,
       overall_score:               Math.round(overall * 10) / 10,
-      comment:                     comment.trim() || null,
+      written_comment:             comment.trim() || null,
     })
     setSubmitting(false)
     if (insertErr) { setFormErr(insertErr.message); return }
