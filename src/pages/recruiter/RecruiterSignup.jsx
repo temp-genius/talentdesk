@@ -95,6 +95,13 @@ export default function RecruiterSignup() {
     }
     if (step === 3) {
       if (!form.linkedinLicence) return 'Please indicate whether you have a LinkedIn Recruiter licence'
+      if (!form.linkedinUrl.trim()) {
+        return 'LinkedIn profile URL is required — we use this to verify your credentials before approving your application.'
+      }
+      const url = form.linkedinUrl.trim().toLowerCase()
+      if (!url.includes('linkedin.com')) {
+        return 'Please enter a valid LinkedIn URL (e.g. https://www.linkedin.com/in/yourname).'
+      }
       if (!form.linkedinNetworkSizeTier) return 'Please select your LinkedIn network size'
       if (!form.preferredFeePercentage) return 'Please select your preferred fee percentage'
     }
@@ -329,16 +336,18 @@ export default function RecruiterSignup() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    LinkedIn profile URL{' '}
-                    <span className="text-gray-400 font-normal">(optional)</span>
+                    LinkedIn profile URL *
                   </label>
                   <input
                     type="url"
                     className="input"
                     value={form.linkedinUrl}
                     onChange={e => set('linkedinUrl', e.target.value)}
-                    placeholder="https://linkedin.com/in/yourname"
+                    placeholder="https://www.linkedin.com/in/yourname"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Required — we use this to verify your credentials before approving your application.
+                  </p>
                 </div>
 
                 <div>

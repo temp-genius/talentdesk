@@ -40,6 +40,9 @@ export default function OfferAcceptance() {
       setError(err?.message ?? data?.error ?? 'Something went wrong. Please try again.')
       return
     }
+    if (status === 'accepted' && offer?.id) {
+      supabase.rpc('complete_placement', { p_offer_id: offer.id }).catch(console.error)
+    }
     setResult(status)
   }
 

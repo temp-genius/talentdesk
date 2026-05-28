@@ -112,9 +112,13 @@ export default function RecruiterActiveJob() {
   const candidates = [...(data?.candidate_profiles ?? [])].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
   const m1              = milestones.find(m => m.milestone_number === 1)
   const m2              = milestones.find(m => m.milestone_number === 2)
+  const m3              = milestones.find(m => m.milestone_number === 3)
   const offers          = data?.offers ?? []
   const shortlistTarget = job?.agreed_shortlist_size ?? 5
   const showOfferSection = m2?.status === 'released' || candidates.some(c => c.interview_status === 'completed')
+  const jobComplete     = m3?.status === 'released'
+  const totalFee        = milestones.reduce((sum, m) => sum + (m.amount ?? 0), 0)
+  const recruiterEarned = Math.round(totalFee * 0.85)
 
   function offerForCandidate(candidateId) {
     return offers.find(o => o.candidate_profile_id === candidateId)
@@ -258,6 +262,37 @@ export default function RecruiterActiveJob() {
       </header>
 
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+
+        {/* Job Complete banner */}
+        {jobComplete && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-base font-bold text-green-900">Placement Complete</h2>
+            </div>
+            <p className="text-sm text-green-800 mb-1">
+              Congratulations on completing <strong>{job?.title}</strong>!
+            </p>
+            {recruiterEarned > 0 && (
+              <p className="text-sm text-green-800 mb-3">
+                Total earned after 15% platform fee:{' '}
+                <strong className="text-green-900 text-base">
+                  {fmtCurrency(recruiterEarned, job?.currency ?? 'EUR')}
+                </strong>
+              </p>
+            )}
+            <Link
+              to={`/recruiter/review/${assignmentId}`}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 hover:text-green-900 underline underline-offset-2"
+            >
+              Leave a review for this engagement →
+            </Link>
+          </div>
+        )}
 
         {/* Job summary */}
         <div className="card">

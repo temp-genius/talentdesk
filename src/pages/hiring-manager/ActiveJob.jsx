@@ -141,10 +141,14 @@ export default function HMActiveJob() {
   const offers     = data?.offers ?? []
   const m1  = milestones.find(m => m.milestone_number === 1)
   const m2  = milestones.find(m => m.milestone_number === 2)
+  const m3  = milestones.find(m => m.milestone_number === 3)
+  const jobComplete = m3?.status === 'released'
 
   const showOfferSection =
     m2?.status === 'released' ||
     candidates.some(c => c.interview_status === 'completed')
+
+  const acceptedOffer = offers.find(o => o.acceptance_status === 'accepted')
 
   function offerForCandidate(candidateId) {
     return offers.find(o => o.candidate_profile_id === candidateId)
@@ -164,6 +168,39 @@ export default function HMActiveJob() {
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+
+        {/* Job Complete banner */}
+        {jobComplete && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h2 className="text-base font-bold text-green-900">Placement Complete</h2>
+                </div>
+                <p className="text-sm text-green-800 mb-3">
+                  <strong>{job?.title}</strong> has been successfully filled
+                  {recruiter ? ` by ${recruiter.first_name} ${recruiter.last_name}` : ''}.
+                  {acceptedOffer && (
+                    <span> Agreed salary: <strong>
+                      {new Intl.NumberFormat('en-IE', { style: 'currency', currency: acceptedOffer.currency ?? 'EUR', maximumFractionDigits: 0 }).format(acceptedOffer.agreed_salary)}
+                    </strong>.</span>
+                  )}
+                </p>
+                <Link
+                  to={`/job/${assignmentId}/review`}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700 hover:text-green-900 underline underline-offset-2"
+                >
+                  Leave a review for {recruiter?.first_name ?? 'your recruiter'} →
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Section 1: Job + Recruiter Summary */}
         <div className="grid lg:grid-cols-2 gap-6">
