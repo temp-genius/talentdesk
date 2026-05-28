@@ -30,20 +30,45 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      await loadDbUser(session?.user ?? null)
-      setLoading(false)
-    })
+    let mounted = true
+
+    async function initAuth() {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (!mounted) return
+        if (error) console.error('[AuthContext] getSession error:', error)
+        setUser(session?.user ?? null)
+        try {
+          await loadDbUser(session?.user ?? null)
+        } catch (e) {
+          console.error('[AuthContext] loadDbUser error during init:', e)
+        }
+      } catch (e) {
+        console.error('[AuthContext] initAuth error:', e)
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    initAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!mounted) return
         setUser(session?.user ?? null)
-        await loadDbUser(session?.user ?? null)
-        setLoading(false)
+        try {
+          await loadDbUser(session?.user ?? null)
+        } catch (e) {
+          console.error('[AuthContext] loadDbUser error in listener:', e)
+        }
+        if (mounted) setLoading(false)
       }
     )
-    return () => subscription.unsubscribe()
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   async function signup({

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -12,16 +12,14 @@ const TERMS = [
 
 function fmtCurrency(amount, currency = 'EUR') {
   return new Intl.NumberFormat('en-IE', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
+    style: 'currency', currency, maximumFractionDigits: 0,
   }).format(amount)
 }
 
 export default function StartJob() {
-  const [searchParams]  = useSearchParams()
-  const recruiterId     = searchParams.get('recruiter_id')
-  const jobId           = searchParams.get('job_id')
+  const [searchParams] = useSearchParams()
+  const recruiterId    = searchParams.get('recruiter_id')
+  const jobId          = searchParams.get('job_id')
   const { user, loading: authLoading } = useAuth()
 
   const [job,            setJob]            = useState(null)
@@ -30,109 +28,189 @@ export default function StartJob() {
   const [loading,        setLoading]        = useState(true)
   const [error,          setError]          = useState('')
   const [submitted,      setSubmitted]      = useState(false)
+  const [authTimedOut,   setAuthTimedOut]   = useState(false)
 
   const [shortlist,  setShortlist]  = useState(5)
   const [agreed,     setAgreed]     = useState([false, false, false, false])
   const [submitting, setSubmitting] = useState(false)
   const [actionErr,  setActionErr]  = useState('')
 
+  // Unmount guard — prevents setState calls after the component is gone
+  const mounted = useRef(true)
+  useEffect(() => {
+    mounted.current = true
+    return () => { mounted.current = false }
+  }, [])
+
+  // Log every state change
   console.log('START JOB RENDER', {
-    authLoading,
-    loading,
-    error,
-    userId: user?.id ?? 'null',
-    recruiterId,
-    jobId,
+    authLoading, authTimedOut, loading, error: error || '(none)',
+    userId: user?.id ?? 'null', recruiterId, jobId,
+    job: job?.id ?? 'null', recruiter: recruiter?.id ?? 'null',
   })
 
+  // Safety net 1: if authLoading is still true after 3 seconds, proceed anyway
   useEffect(() => {
-    if (authLoading) return
-    if (!user) return
+    if (!authLoading) return
+    console.log('[StartJob] auth timeout timer started (3s)')
+    const t = setTimeout(() => {
+      if (mounted.current && authLoading) {
+        console.warn('[StartJob] AUTH TIMED OUT after 3s — proceeding without waiting')
+        setAuthTimedOut(true)
+      }
+    }, 3000)
+    return () => clearTimeout(t)
+  }, [authLoading])
 
+  // Safety net 2: if loading is still true after 5 seconds, force it off
+  useEffect(() => {
+    if (!loading) return
+    console.log('[StartJob] loading timeout timer started (5s)')
+    const t = setTimeout(() => {
+      if (mounted.current && loading) {
+        console.warn('[StartJob] LOADING TIMED OUT after 5s — forcing loading=false')
+        setLoading(false)
+        if (!job && !error) {
+          setError('Request timed out. Please check your connection and try again.')
+        }
+      }
+    }, 5000)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading])
+
+  // Main data fetch
+  useEffect(() => {
+    // Wait for auth unless the timer already gave up
+    if (authLoading && !authTimedOut) {
+      console.log('[StartJob] useEffect: waiting for auth (authLoading=true, not timed out yet)')
+      return
+    }
+    if (!user) {
+      console.log('[StartJob] useEffect: no user — skipping fetch')
+      return
+    }
     if (!recruiterId || !jobId) {
-      setError('Missing role or recruiter information')
-      setLoading(false)
+      console.log('[StartJob] useEffect: missing params', { recruiterId, jobId })
+      if (mounted.current) {
+        setError('Missing role or recruiter information in the URL.')
+        setLoading(false)
+      }
       return
     }
 
+    console.log('[StartJob] useEffect: starting fetch', { jobId, recruiterId, userId: user.id })
+
     async function fetchAll() {
-      setLoading(true)
-      setError('')
+      if (mounted.current) setLoading(true)
 
       const jobResult = await supabase
         .from('jobs')
         .select('*')
         .eq('id', jobId)
         .single()
+      console.log('[StartJob] jobs result:', { data: jobResult.data, error: jobResult.error })
 
       const recruiterResult = await supabase
         .from('recruiter_profiles')
-        .select('id, first_name, last_name, bio, preferred_fee_percentage, total_placements, availability_status')
+        .select('id, user_id, first_name, last_name, bio, preferred_fee_percentage, total_placements, availability_status')
         .eq('id', recruiterId)
         .single()
+      console.log('[StartJob] recruiter_profiles result:', { data: recruiterResult.data, error: recruiterResult.error })
 
       const companyResult = await supabase
         .from('hiring_company_profiles')
         .select('id, company_name')
         .eq('user_id', user.id)
         .single()
+      console.log('[StartJob] hiring_company_profiles result:', { data: companyResult.data, error: companyResult.error })
 
-      console.log('QUERY RESULTS', {
-        job:     jobResult,
-        recruiter: recruiterResult,
-        company: companyResult,
-      })
+      if (!mounted.current) {
+        console.log('[StartJob] fetchAll: component unmounted, skipping setState')
+        return
+      }
 
       if (jobResult.error) {
-        setError(`Job error: ${jobResult.error.message}`)
+        console.error('[StartJob] job fetch error:', jobResult.error)
+        setError(`Could not load job: ${jobResult.error.message}`)
         setLoading(false)
         return
       }
       if (recruiterResult.error) {
-        setError(`Recruiter error: ${recruiterResult.error.message}`)
+        console.error('[StartJob] recruiter fetch error:', recruiterResult.error)
+        setError(`Could not load recruiter: ${recruiterResult.error.message}`)
         setLoading(false)
         return
       }
       if (companyResult.error) {
-        setError(`Company profile error: ${companyResult.error.message}`)
-        setLoading(false)
-        return
+        console.warn('[StartJob] company profile fetch error (non-fatal):', companyResult.error)
+        // Non-fatal — company profile missing shouldn't block the page
       }
+
+      console.log('[StartJob] QUERY RESULTS', {
+        job: jobResult.data,
+        recruiter: recruiterResult.data,
+        company: companyResult.data,
+      })
 
       setJob(jobResult.data)
       setRecruiter(recruiterResult.data)
-      setCompanyProfile(companyResult.data)
+      setCompanyProfile(companyResult.data ?? null)
       setLoading(false)
     }
 
-    fetchAll()
-  }, [user, authLoading, recruiterId, jobId])
+    fetchAll().catch(err => {
+      console.error('[StartJob] unexpected fetch error:', err)
+      if (mounted.current) {
+        setError(`Unexpected error: ${err.message}`)
+        setLoading(false)
+      }
+    })
+  }, [user, authLoading, authTimedOut, recruiterId, jobId])
 
-  // ── Render guards ──
+  // ── Render guards — always render something ──
 
-  if (authLoading) {
+  if (authLoading && !authTimedOut) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Checking authentication…</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-2">
+        <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-primary-600" />
+        <p className="text-sm text-gray-400">Checking authentication…</p>
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-sm">Loading role details…</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-2">
+        <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-primary-600" />
+        <p className="text-sm text-gray-400">Loading role details…</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-md">
-          <p className="text-red-600 font-medium mb-2">Error</p>
-          <p className="text-gray-600 text-sm mb-6">{error}</p>
-          <Link to="/hiring-manager/dashboard" className="btn-secondary text-sm">← Back to Dashboard</Link>
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white border-b border-gray-200">
+          <div className="max-w-3xl mx-auto px-6 py-4">
+            <Link to="/hiring-manager/dashboard" className="text-lg font-bold text-slate-900 tracking-tight">
+              Talent<span className="text-primary-600">Desk</span>
+            </Link>
+          </div>
+        </header>
+        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
+          <p className="text-red-600 font-semibold mb-2">Error loading page</p>
+          <p className="text-gray-600 text-sm mb-4">{error}</p>
+          <p className="text-xs text-gray-400 font-mono mb-6">
+            recruiter_id: {recruiterId ?? '(missing)'}<br />
+            job_id: {jobId ?? '(missing)'}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={() => window.location.reload()} className="btn-primary text-sm">
+              Retry
+            </button>
+            <Link to="/hiring-manager/dashboard" className="btn-secondary text-sm">Dashboard</Link>
+          </div>
         </div>
       </div>
     )
@@ -141,8 +219,11 @@ export default function StartJob() {
   if (!job || !recruiter) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-md">
-          <p className="text-gray-700 font-medium mb-2">Role or recruiter not found</p>
+        <div className="text-center max-w-sm">
+          <p className="text-gray-700 font-semibold mb-2">Role or recruiter not found</p>
+          <p className="text-gray-500 text-sm mb-4">
+            The data could not be retrieved. Check the URL parameters below are correct.
+          </p>
           <p className="text-xs text-gray-400 font-mono mb-6">
             recruiter_id: {recruiterId ?? '(missing)'}<br />
             job_id: {jobId ?? '(missing)'}
@@ -179,7 +260,7 @@ export default function StartJob() {
     )
   }
 
-  // ── Calculations ──
+  // ── Calculations (job + recruiter guaranteed non-null here) ──
   const fee      = recruiter.preferred_fee_percentage ?? 0
   const maxSal   = job.salary_max ?? job.salary_min ?? 0
   const totalFee = maxSal * (fee / 100)
@@ -198,46 +279,42 @@ export default function StartJob() {
     setSubmitting(true)
     setActionErr('')
 
-    // 1. Insert assignment
     const { data: assignment, error: jraErr } = await supabase
       .from('job_recruiter_assignments')
       .insert({ job_id: jobId, recruiter_id: recruiterId, status: 'assigned' })
       .select('id')
       .single()
+    console.log('[StartJob] INSERT assignment:', { assignment, jraErr })
 
-    console.log('INSERT assignment:', { assignment, jraErr })
     if (jraErr || !assignment) {
-      setActionErr(jraErr?.message ?? 'Failed to create assignment')
+      setActionErr(jraErr?.message ?? 'Failed to create assignment.')
       setSubmitting(false)
       return
     }
 
-    // 2. Insert milestones
     const { error: msErr } = await supabase
       .from('milestones')
       .insert(milestones.map(m => ({
         job_recruiter_assignment_id: assignment.id,
-        milestone_number:            m.number,
-        milestone_name:              m.name,
-        amount:                      m.amount,
+        milestone_number: m.number,
+        milestone_name:   m.name,
+        amount:           m.amount,
         currency,
         status: 'pending',
       })))
+    console.log('[StartJob] INSERT milestones error:', msErr)
 
-    console.log('INSERT milestones error:', msErr)
     if (msErr) {
-      setActionErr(msErr.message ?? 'Failed to create milestones')
+      setActionErr(msErr.message ?? 'Failed to create milestones.')
       setSubmitting(false)
       return
     }
 
-    // 3. Update job status
     const { error: updateErr } = await supabase
       .from('jobs')
       .update({ status: 'active', agreed_shortlist_size: shortlist })
       .eq('id', jobId)
-
-    console.log('UPDATE job error:', updateErr)
+    console.log('[StartJob] UPDATE job error:', updateErr)
 
     setSubmitted(true)
     setSubmitting(false)
@@ -248,8 +325,7 @@ export default function StartJob() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/hiring-manager/dashboard"
-            className="text-lg font-bold text-slate-900 tracking-tight">
+          <Link to="/hiring-manager/dashboard" className="text-lg font-bold text-slate-900 tracking-tight">
             Talent<span className="text-primary-600">Desk</span>
           </Link>
           <Link to="/browse-recruiters" className="btn-secondary text-sm">← Back</Link>
@@ -332,9 +408,7 @@ export default function StartJob() {
 
         {/* Fee breakdown */}
         <div className="card">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-            Fee Breakdown
-          </h2>
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Fee Breakdown</h2>
           {totalFee > 0 ? (
             <>
               <p className="text-xs text-gray-500 mb-4">
@@ -351,9 +425,7 @@ export default function StartJob() {
                       </p>
                       <p className="text-xs text-gray-400">{m.pct}% of total fee</p>
                     </div>
-                    <p className="text-sm font-bold text-gray-900">
-                      {fmtCurrency(m.amount, currency)}
-                    </p>
+                    <p className="text-sm font-bold text-gray-900">{fmtCurrency(m.amount, currency)}</p>
                   </div>
                 ))}
               </div>
@@ -365,7 +437,7 @@ export default function StartJob() {
           )}
         </div>
 
-        {/* Shortlist size */}
+        {/* Shortlist */}
         <div className="card">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
             Agreed Shortlist Size
@@ -391,9 +463,7 @@ export default function StartJob() {
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
             Terms &amp; Conditions
           </h2>
-          <p className="text-xs text-gray-500 mb-4">
-            Please confirm all four points before proceeding:
-          </p>
+          <p className="text-xs text-gray-500 mb-4">Please confirm all four points before proceeding:</p>
           <div className="space-y-3">
             {TERMS.map((term, i) => (
               <label key={i} className="flex items-start gap-3 cursor-pointer">
