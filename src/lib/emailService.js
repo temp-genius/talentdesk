@@ -8,15 +8,28 @@ function fmt(amount, currency = 'EUR') {
 
 // All emails are fire-and-forget from the client — errors are logged, never rethrown.
 async function sendEmail({ to, subject, html, replyTo }) {
+  console.log('[email] SENDING EMAIL', {
+    to,
+    subject,
+    htmlPreview: html?.slice(0, 200) + (html?.length > 200 ? '…' : ''),
+  })
   try {
     const { data, error } = await supabase.functions.invoke('send-email', {
       body: { to, subject, html, replyTo },
     })
+    console.log('[email] EMAIL RESULT', { data, error })
     if (error || data?.error) {
-      console.error('[email] send failed:', error?.message ?? data?.error)
+      console.error('[email] EMAIL ERROR', {
+        error,
+        dataError: data?.error,
+        message: error?.message ?? data?.error,
+      })
     }
   } catch (err) {
-    console.error('[email] unexpected error:', err)
+    console.error('[email] EMAIL ERROR (exception)', {
+      message: err?.message,
+      err,
+    })
   }
 }
 
@@ -75,6 +88,7 @@ export function sendOfferEmail(candidateEmail, {
   startDate,
   acceptanceToken,
 }) {
+  console.log('[email] OFFER EMAIL TRIGGERED', { candidateEmail, acceptanceToken })
   const origin     = window.location.origin
   const acceptUrl  = `${origin}/offer/${acceptanceToken}`
   const declineUrl = `${origin}/offer/${acceptanceToken}?action=decline`
