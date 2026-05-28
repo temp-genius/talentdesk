@@ -31,6 +31,12 @@ const INTERVIEW_BADGE_STYLES = {
   declined:   'bg-red-100 text-red-800',
 }
 
+const OFFER_STATUS_STYLES = {
+  pending:  'bg-yellow-100 text-yellow-800',
+  accepted: 'bg-green-100 text-green-800',
+  declined: 'bg-red-100 text-red-800',
+}
+
 function fmtCurrency(amount, currency = 'EUR') {
   return new Intl.NumberFormat('en-IE', {
     style: 'currency', currency, maximumFractionDigits: 0,
@@ -56,6 +62,15 @@ export default function RecruiterActiveJob() {
   const [submitting, setSubmit] = useState(false)
   const [formErr, setFormErr]   = useState('')
 
+  // Offer modal state
+  const [offerModal,      setOfferModal]      = useState(null)
+  const [offerSalary,     setOfferSalary]     = useState('')
+  const [offerStartDate,  setOfferStartDate]  = useState('')
+  const [offerEmail,      setOfferEmail]      = useState('')
+  const [offerSubmitting, setOfferSubmitting] = useState(false)
+  const [offerFormErr,    setOfferFormErr]    = useState('')
+  const [offerSuccessMsg, setOfferSuccessMsg] = useState('')
+
   const load = useCallback(async () => {
     const { data: row, error: err } = await supabase
       .from('job_recruiter_assignments')
@@ -74,6 +89,10 @@ export default function RecruiterActiveJob() {
           id, candidate_first_name, candidate_last_name,
           candidate_email, current_job_title, recruiter_notes,
           interview_status, logged_at, created_at
+        ),
+        offers(
+          id, candidate_profile_id, agreed_salary, currency,
+          start_date, acceptance_status, offer_logged_at
         )
       `)
       .eq('id', assignmentId)
@@ -89,8 +108,15 @@ export default function RecruiterActiveJob() {
   const job        = data?.jobs
   const milestones = [...(data?.milestones ?? [])].sort((a, b) => a.milestone_number - b.milestone_number)
   const candidates = [...(data?.candidate_profiles ?? [])].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-  const m1         = milestones.find(m => m.milestone_number === 1)
+  const m1              = milestones.find(m => m.milestone_number === 1)
+  const m2              = milestones.find(m => m.milestone_number === 2)
+  const offers          = data?.offers ?? []
   const shortlistTarget = job?.agreed_shortlist_size ?? 5
+  const showOfferSection = m2?.status === 'released' || candidates.some(c => c.interview_status === 'completed')
+
+  function offerForCandidate(candidateId) {
+    return offers.find(o => o.candidate_profile_id === candidateId)
+  }
 
   async function logCandidate(e) {
     e.preventDefault()
@@ -124,6 +150,49 @@ export default function RecruiterActiveJob() {
       .eq('id', m1.id)
     setSubmit(false)
     if (err) { alert(err.message); return }
+    load()
+  }
+
+  function openOfferModal(candidate) {
+    setOfferModal(candidate)
+    setOfferSalary('')
+    setOfferStartDate('')
+    setOfferEmail(candidate.candidate_email ?? '')
+    setOfferFormErr('')
+  }
+
+  async function submitOffer(e) {
+    e.preventDefault()
+    setOfferFormErr('')
+    if (!offerSalary || parseFloat(offerSalary) <= 0) {
+      setOfferFormErr('Please enter the agreed salary.')
+      return
+    }
+    if (!offerEmail) {
+      setOfferFormErr('Please enter the candidate email address.')
+      return
+    }
+    setOfferSubmitting(true)
+    const { error: insertErr } = await supabase.from('offers').insert({
+      job_recruiter_assignment_id: assignmentId,
+      candidate_profile_id:        offerModal.id,
+      agreed_salary:               parseFloat(offerSalary),
+      currency:                    job?.currency ?? 'EUR',
+      start_date:                  offerStartDate || null,
+      candidate_email:             offerEmail,
+      offer_logged_at:             new Date().toISOString(),
+      offer_email_delay_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      acceptance_status:           'pending',
+    })
+    if (insertErr) { setOfferFormErr(insertErr.message); setOfferSubmitting(false); return }
+    const { error: updateErr } = await supabase
+      .from('candidate_profiles')
+      .update({ interview_status: 'offer_made' })
+      .eq('id', offerModal.id)
+    setOfferSubmitting(false)
+    if (updateErr) { setOfferFormErr(updateErr.message); return }
+    setOfferSuccessMsg(`Offer logged for ${offerModal.candidate_first_name}.`)
+    setOfferModal(null)
     load()
   }
 
@@ -382,7 +451,133 @@ export default function RecruiterActiveJob() {
           </div>
         )}
 
+        {/* Offer Stage */}
+        {showOfferSection && (
+          <div className="card">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Offer Stage</h2>
+            {offerSuccessMsg && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800 font-medium mb-4">
+                {offerSuccessMsg}
+              </div>
+            )}
+            <div className="space-y-3">
+              {candidates
+                .filter(c => c.interview_status === 'completed' || c.interview_status === 'offer_made' ||
+                             c.interview_status === 'accepted'  || c.interview_status === 'declined' ||
+                             offerForCandidate(c.id))
+                .map(c => {
+                  const offer = offerForCandidate(c.id)
+                  return (
+                    <div key={c.id} className="flex items-start justify-between gap-4 p-3 rounded-lg bg-gray-50">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {c.candidate_first_name} {c.candidate_last_name}
+                        </p>
+                        {offer && (
+                          <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                            <p>Salary: <span className="font-medium text-gray-900">{fmtCurrency(offer.agreed_salary, offer.currency)}</span></p>
+                            {offer.start_date && (
+                              <p>Start: <span className="font-medium text-gray-900">{new Date(offer.start_date).toLocaleDateString()}</span></p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 ml-2">
+                        {!offer && c.interview_status === 'completed' && (
+                          <button onClick={() => openOfferModal(c)} className="btn-primary text-sm">
+                            Log Offer
+                          </button>
+                        )}
+                        {offer && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${OFFER_STATUS_STYLES[offer.acceptance_status] ?? 'bg-gray-100 text-gray-600'}`}>
+                            {offer.acceptance_status === 'pending'
+                              ? 'Pending acceptance'
+                              : offer.acceptance_status.charAt(0).toUpperCase() + offer.acceptance_status.slice(1)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              {candidates.filter(c =>
+                c.interview_status === 'completed' || c.interview_status === 'offer_made' ||
+                c.interview_status === 'accepted'  || c.interview_status === 'declined' ||
+                offerForCandidate(c.id)
+              ).length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-4">
+                  Candidates appear here once their interview is marked as completed.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
+
+      {/* Log Offer Modal */}
+      {offerModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="px-6 py-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Log Offer</h2>
+              <p className="text-sm text-gray-500 mt-0.5">
+                {offerModal.candidate_first_name} {offerModal.candidate_last_name}
+              </p>
+            </div>
+            <form onSubmit={submitOffer} className="px-6 py-5 space-y-4">
+              <p className="text-sm text-gray-600 bg-blue-50 border border-blue-100 rounded-lg p-3">
+                You relay this offer to the candidate on behalf of the hiring company. Log it here once the candidate verbally accepts — they will then receive a formal offer email.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Agreed salary ({job?.currency ?? 'EUR'}) *
+                </label>
+                <input
+                  type="number"
+                  className="input"
+                  value={offerSalary}
+                  onChange={e => setOfferSalary(e.target.value)}
+                  placeholder="75000"
+                  min="0"
+                  step="1000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={offerStartDate}
+                  onChange={e => setOfferStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Candidate email *</label>
+                <input
+                  type="email"
+                  className="input"
+                  value={offerEmail}
+                  onChange={e => setOfferEmail(e.target.value)}
+                  placeholder="candidate@example.com"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  The candidate will receive a formal offer email at this address.
+                </p>
+              </div>
+              {offerFormErr && <p className="text-sm text-red-600">{offerFormErr}</p>}
+              <div className="flex gap-3 pt-1">
+                <button type="submit" disabled={offerSubmitting} className="btn-primary flex-1">
+                  {offerSubmitting ? 'Logging…' : 'Log Offer'}
+                </button>
+                <button type="button" onClick={() => setOfferModal(null)} className="btn-secondary flex-1">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

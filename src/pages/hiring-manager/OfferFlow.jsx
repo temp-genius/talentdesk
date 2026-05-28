@@ -14,27 +14,13 @@ const OFFER_STATUS_STYLES = {
   accepted:  'bg-green-100 text-green-800',
   declined:  'bg-red-100 text-red-800',
   withdrawn: 'bg-gray-100 text-gray-600',
-  hm_confirmed: 'bg-blue-100 text-blue-800',
 }
 
-const INTERVIEW_STATUS_BADGE = {
-  none:       'bg-gray-100 text-gray-600',
-  selected:   'bg-blue-100 text-blue-800',
-  scheduled:  'bg-yellow-100 text-yellow-800',
-  completed:  'bg-purple-100 text-purple-800',
-  offer_made: 'bg-orange-100 text-orange-800',
-  accepted:   'bg-green-100 text-green-800',
-  declined:   'bg-red-100 text-red-800',
-}
-
-const INTERVIEW_LABELS = {
-  none:       'Logged',
-  selected:   'Selected',
-  scheduled:  'Interview Scheduled',
-  completed:  'Interviewed',
-  offer_made: 'Offer Made',
-  accepted:   'Offer Accepted',
-  declined:   'Declined',
+const OFFER_STATUS_LABELS = {
+  pending:  'Pending acceptance',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  withdrawn: 'Withdrawn',
 }
 
 export default function OfferFlow() {
@@ -44,27 +30,15 @@ export default function OfferFlow() {
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState('')
 
-  // Modal state
-  const [modal,          setModal]          = useState(null)  // candidate object or null
-  const [salary,         setSalary]         = useState('')
-  const [startDate,      setStartDate]      = useState('')
-  const [candidateEmail, setCandidateEmail] = useState('')
-  const [recruiterEmail, setRecruiterEmail] = useState('')
-  const [confirmed,      setConfirmed]      = useState(false)
-  const [submitting,     setSubmitting]     = useState(false)
-  const [formErr,        setFormErr]        = useState('')
-  const [successMsg,     setSuccessMsg]     = useState('')
-
   const load = useCallback(async () => {
     const { data: row, error: err } = await supabase
       .from('job_recruiter_assignments')
       .select(`
         id,
         jobs(id, title, currency),
-        recruiter_profiles(users(email)),
         candidate_profiles(
           id, candidate_first_name, candidate_last_name,
-          candidate_email, current_job_title, interview_status, created_at
+          current_job_title, interview_status, created_at
         ),
         offers(
           id, candidate_profile_id, agreed_salary, currency,
@@ -76,66 +50,10 @@ export default function OfferFlow() {
 
     if (err) { setError(err.message); setLoading(false); return }
     setData(row)
-    setRecruiterEmail(row?.recruiter_profiles?.users?.email ?? '')
     setLoading(false)
   }, [assignmentId])
 
   useEffect(() => { if (user) load() }, [user, load])
-
-  function openModal(candidate) {
-    setModal(candidate)
-    setSalary('')
-    setStartDate('')
-    setCandidateEmail(candidate.candidate_email ?? '')
-    setConfirmed(false)
-    setFormErr('')
-    setSuccessMsg('')
-  }
-
-  async function submitOffer(e) {
-    e.preventDefault()
-    setFormErr('')
-    if (!salary || parseFloat(salary) <= 0) {
-      setFormErr('Please enter the agreed salary.')
-      return
-    }
-    if (!candidateEmail) {
-      setFormErr('Please enter the candidate email address.')
-      return
-    }
-    if (!confirmed) {
-      setFormErr('Please confirm the candidate has verbally accepted.')
-      return
-    }
-
-    setSubmitting(true)
-
-    const { error: insertErr } = await supabase.from('offers').insert({
-      job_recruiter_assignment_id: assignmentId,
-      candidate_profile_id:        modal.id,
-      agreed_salary:               parseFloat(salary),
-      currency:                    data.jobs?.currency ?? 'EUR',
-      start_date:                  startDate || null,
-      candidate_email:             candidateEmail,
-      offer_logged_at:             new Date().toISOString(),
-      offer_email_delay_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      acceptance_status:           'pending',
-    })
-
-    if (insertErr) { setFormErr(insertErr.message); setSubmitting(false); return }
-
-    const { error: updateErr } = await supabase
-      .from('candidate_profiles')
-      .update({ interview_status: 'offer_made' })
-      .eq('id', modal.id)
-
-    setSubmitting(false)
-    if (updateErr) { setFormErr(updateErr.message); return }
-
-    setSuccessMsg(`Offer logged for ${modal.candidate_first_name}. The candidate will receive a confirmation email within 24 hours.`)
-    setModal(null)
-    load()
-  }
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -163,28 +81,20 @@ export default function OfferFlow() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link to={`/job/${assignmentId}`} className="text-sm text-gray-500 hover:text-gray-900 flex-shrink-0">
-              ← Job Overview
-            </Link>
-            <span className="text-gray-300">/</span>
-            <span className="text-sm font-medium text-gray-900 truncate">Offer Stage</span>
-          </div>
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-3 min-w-0">
+          <Link to={`/job/${assignmentId}`} className="text-sm text-gray-500 hover:text-gray-900 flex-shrink-0">
+            ← Job Overview
+          </Link>
+          <span className="text-gray-300">/</span>
+          <span className="text-sm font-medium text-gray-900 truncate">Offer Status</span>
         </div>
       </header>
 
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Manage Offers</h1>
+          <h1 className="text-xl font-bold text-gray-900">Offer Status</h1>
           <p className="text-sm text-gray-500 mt-1">{job?.title}</p>
         </div>
-
-        {successMsg && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800 font-medium">
-            {successMsg}
-          </div>
-        )}
 
         {candidates.length === 0 ? (
           <div className="card text-center py-10">
@@ -204,33 +114,31 @@ export default function OfferFlow() {
                       {c.current_job_title && (
                         <p className="text-sm text-gray-500 mt-0.5">{c.current_job_title}</p>
                       )}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${INTERVIEW_STATUS_BADGE[c.interview_status]}`}>
-                          {INTERVIEW_LABELS[c.interview_status]}
-                        </span>
-                        {offer && (
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${OFFER_STATUS_STYLES[offer.acceptance_status] ?? 'bg-gray-100 text-gray-600'}`}>
-                            Offer: {offer.acceptance_status}
-                          </span>
-                        )}
-                      </div>
                       {offer && (
                         <div className="text-xs text-gray-500 mt-2 space-y-0.5">
-                          <p>Agreed salary: <span className="font-medium">{fmtCurrency(offer.agreed_salary, offer.currency)}</span></p>
+                          <p>Agreed salary: <span className="font-medium text-gray-900">{fmtCurrency(offer.agreed_salary, offer.currency)}</span></p>
                           {offer.start_date && (
-                            <p>Start date: <span className="font-medium">{new Date(offer.start_date).toLocaleDateString()}</span></p>
+                            <p>Start date: <span className="font-medium text-gray-900">
+                              {new Date(offer.start_date).toLocaleDateString('en-IE', {
+                                day: 'numeric', month: 'long', year: 'numeric',
+                              })}
+                            </span></p>
+                          )}
+                          {offer.offer_logged_at && (
+                            <p>Logged: <span className="font-medium text-gray-900">
+                              {new Date(offer.offer_logged_at).toLocaleDateString()}
+                            </span></p>
                           )}
                         </div>
                       )}
                     </div>
                     <div className="flex-shrink-0">
-                      {c.interview_status === 'completed' && !offer && (
-                        <button onClick={() => openModal(c)} className="btn-primary text-sm">
-                          Make Offer
-                        </button>
-                      )}
-                      {c.interview_status === 'offer_made' && offer && (
-                        <span className="text-xs text-gray-400">Awaiting response</span>
+                      {!offer ? (
+                        <span className="text-xs text-gray-400">No offer yet</span>
+                      ) : (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${OFFER_STATUS_STYLES[offer.acceptance_status] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {OFFER_STATUS_LABELS[offer.acceptance_status] ?? offer.acceptance_status}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -240,92 +148,6 @@ export default function OfferFlow() {
           </div>
         )}
       </div>
-
-      {/* Make Offer Modal */}
-      {modal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-            <div className="px-6 py-5 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Make Offer</h2>
-              <p className="text-sm text-gray-500 mt-0.5">
-                {modal.candidate_first_name} {modal.candidate_last_name}
-              </p>
-            </div>
-            <form onSubmit={submitOffer} className="px-6 py-5 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Agreed salary ({job?.currency ?? 'EUR'}) *
-                </label>
-                <input
-                  type="number"
-                  className="input"
-                  value={salary}
-                  onChange={e => setSalary(e.target.value)}
-                  placeholder="75000"
-                  min="0"
-                  step="1000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
-                <input
-                  type="date"
-                  className="input"
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Candidate email *
-                </label>
-                <input
-                  type="email"
-                  className="input"
-                  value={candidateEmail}
-                  onChange={e => setCandidateEmail(e.target.value)}
-                  placeholder="candidate@example.com"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  The candidate will receive an offer confirmation email at this address.
-                </p>
-              </div>
-              {recruiterEmail && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter email</label>
-                  <input
-                    type="email"
-                    className="input bg-gray-50 text-gray-500 cursor-default"
-                    value={recruiterEmail}
-                    readOnly
-                  />
-                </div>
-              )}
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
-                  checked={confirmed}
-                  onChange={e => setConfirmed(e.target.checked)}
-                />
-                <span className="text-sm text-gray-700 leading-relaxed">
-                  I confirm the candidate has verbally accepted this offer.
-                </span>
-              </label>
-              {formErr && <p className="text-sm text-red-600">{formErr}</p>}
-              <div className="flex gap-3 pt-1">
-                <button type="submit" disabled={submitting} className="btn-primary flex-1">
-                  {submitting ? 'Logging offer…' : 'Log Offer'}
-                </button>
-                <button type="button" onClick={() => setModal(null)} className="btn-secondary flex-1">
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

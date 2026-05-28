@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 
@@ -47,7 +47,6 @@ function fmtCurrency(amount, currency = 'EUR') {
 
 export default function HMActiveJob() {
   const { assignmentId } = useParams()
-  const navigate         = useNavigate()
   const { user } = useAuth()
   const [data, setData]       = useState(null)
   const [loading, setLoading] = useState(true)
@@ -334,18 +333,10 @@ export default function HMActiveJob() {
           )}
         </div>
 
-        {/* Section 4: Offer Stage */}
+        {/* Section 4: Offer Status (read-only) */}
         {showOfferSection && (
           <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Offer Stage</h2>
-              <button
-                onClick={() => navigate(`/job/${assignmentId}/offer`)}
-                className="btn-primary text-xs px-3 py-1.5"
-              >
-                Manage Offers
-              </button>
-            </div>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Offer Status</h2>
             {candidates.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">No candidates yet.</p>
             ) : (
@@ -353,17 +344,41 @@ export default function HMActiveJob() {
                 {candidates.map(c => {
                   const offer = offerForCandidate(c.id)
                   return (
-                    <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50">
-                      <span className="text-sm font-medium text-gray-900">
-                        {c.candidate_first_name} {c.candidate_last_name}
-                      </span>
-                      {offer ? (
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${OFFER_STATUS_STYLES[offer.acceptance_status] ?? 'bg-gray-100 text-gray-600'}`}>
-                          Offer {offer.acceptance_status}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">No offer</span>
-                      )}
+                    <div key={c.id} className="flex items-start justify-between gap-4 px-3 py-2.5 rounded-lg bg-gray-50">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {c.candidate_first_name} {c.candidate_last_name}
+                        </p>
+                        {offer && (
+                          <div className="text-xs text-gray-500 mt-0.5 space-y-0.5">
+                            <p>Salary: <span className="font-medium text-gray-900">{fmtCurrency(offer.agreed_salary, offer.currency)}</span></p>
+                            {offer.start_date && (
+                              <p>Start: <span className="font-medium text-gray-900">{new Date(offer.start_date).toLocaleDateString()}</span></p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        {!offer ? (
+                          <span className="text-xs text-gray-400">No offer yet</span>
+                        ) : offer.acceptance_status === 'pending' ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-800">
+                            Pending acceptance
+                          </span>
+                        ) : offer.acceptance_status === 'accepted' ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-800">
+                            Accepted
+                          </span>
+                        ) : offer.acceptance_status === 'declined' ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-800">
+                            Declined
+                          </span>
+                        ) : (
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${OFFER_STATUS_STYLES[offer.acceptance_status] ?? 'bg-gray-100 text-gray-600'}`}>
+                            {offer.acceptance_status}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )
                 })}
