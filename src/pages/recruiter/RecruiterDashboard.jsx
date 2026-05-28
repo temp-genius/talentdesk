@@ -17,16 +17,33 @@ const STATUS_LABELS = {
   suspended:'Suspended',
 }
 
+const MS_STATUS_LABELS = {
+  pending:       'Shortlist Pending',
+  review_window: 'In Review',
+  approved:      'Shortlist Approved',
+  released:      'M1 Released',
+}
+
+function currentMilestoneLabel(milestones) {
+  if (!milestones || milestones.length === 0) return null
+  const sorted = [...milestones].sort((a, b) => a.milestone_number - b.milestone_number)
+  const active = sorted.find(m => m.status !== 'released')
+  return active ? MS_STATUS_LABELS[active.status] ?? active.status : 'Complete'
+}
+
 export default function RecruiterDashboard() {
   const { user, logout } = useAuth()
-  const [profile, setProfile] = useState(null)
+  const [profile,        setProfile]       = useState(null)
   const [loadingProfile, setLoadingProfile] = useState(true)
+  const [assignments,    setAssignments]   = useState([])
+  const [loadingJobs,    setLoadingJobs]   = useState(false)
 
+  // Load recruiter profile (with id and total_placements)
   useEffect(() => {
     if (!user) return
     supabase
       .from('recruiter_profiles')
-      .select('first_name, last_name, status, availability_status')
+      .select('id, first_name, last_name, status, availability_status, total_placements')
       .eq('user_id', user.id)
       .single()
       .then(({ data }) => {
@@ -34,6 +51,27 @@ export default function RecruiterDashboard() {
         setLoadingProfile(false)
       })
   }, [user])
+
+  // Load active assignments once profile id is available
+  useEffect(() => {
+    if (!profile?.id) return
+    setLoadingJobs(true)
+    supabase
+      .from('job_recruiter_assignments')
+      .select(`
+        id, status, assigned_at,
+        jobs(id, title, sector, location_country, location_type, seniority_level),
+        milestones(milestone_number, status)
+      `)
+      .eq('recruiter_id', profile.id)
+      .eq('status', 'assigned')
+      .order('assigned_at', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        setAssignments(data ?? [])
+        setLoadingJobs(false)
+      })
+  }, [profile])
 
   const displayName = profile?.first_name
     ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}`
@@ -70,30 +108,33 @@ export default function RecruiterDashboard() {
               <p className="text-gray-500 mt-1">{user?.email}</p>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-6">
-              {/* Application status card */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {/* Application status */}
               <div className="card">
                 <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
                   Application Status
                 </h2>
                 {profile ? (
-                  <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${STATUS_STYLES[profile.status] ?? 'bg-gray-100 text-gray-700'}`}>
-                      {STATUS_LABELS[profile.status] ?? profile.status}
-                    </span>
-                  </div>
+                  <>
+                    <div className="flex items-center gap-3">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                        ${STATUS_STYLES[profile.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                        {STATUS_LABELS[profile.status] ?? profile.status}
+                      </span>
+                    </div>
+                    {profile.status === 'pending' && (
+                      <p className="text-sm text-gray-500 mt-3">
+                        Your application is being reviewed. We'll notify you once assessed, usually within 2–3 business days.
+                      </p>
+                    )}
+                    {profile.status === 'approved' && (
+                      <p className="text-sm text-gray-500 mt-3">
+                        Your profile is live. You can now be matched with exclusive roles.
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-gray-500">Profile not found</p>
-                )}
-                {profile?.status === 'pending' && (
-                  <p className="text-sm text-gray-500 mt-3">
-                    Your application is being reviewed. We'll notify you once it's been assessed, usually within 2–3 business days.
-                  </p>
-                )}
-                {profile?.status === 'approved' && (
-                  <p className="text-sm text-gray-500 mt-3">
-                    Your profile is live. You can now be matched with exclusive roles.
-                  </p>
                 )}
               </div>
 
@@ -115,7 +156,80 @@ export default function RecruiterDashboard() {
                   )}
                 </dl>
               </div>
+
+              {/* Stats card */}
+              <div className="card">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  Stats
+                </h2>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Total placements</dt>
+                    <dd className="text-gray-900 font-medium">{profile?.total_placements ?? 0}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Active assignments</dt>
+                    <dd className="text-gray-900 font-medium">{assignments.length}</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
+
+            {/* Active assignments */}
+            {profile?.status === 'approved' && (
+              <div className="card">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                  Active Assignments
+                </h2>
+
+                {loadingJobs ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600" />
+                  </div>
+                ) : assignments.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-600">No active assignments</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Assignments appear here once a hiring manager starts a job with you
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {assignments.map(a => (
+                      <Link
+                        key={a.id}
+                        to={`/recruiter/job/${a.id}`}
+                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50
+                                   hover:bg-gray-100 transition-colors no-underline"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{a.jobs?.title}</p>
+                          <div className="flex flex-wrap gap-2 text-xs text-gray-500 mt-0.5">
+                            {a.jobs?.sector && <span>{a.jobs.sector}</span>}
+                            {a.jobs?.location_country && <span>{a.jobs.location_country}</span>}
+                            {a.jobs?.location_type && <span className="capitalize">{a.jobs.location_type}</span>}
+                            {a.milestones?.length > 0 && (
+                              <span className="text-primary-600 font-medium">
+                                · {currentMilestoneLabel(a.milestones)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>

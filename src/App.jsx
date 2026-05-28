@@ -15,6 +15,9 @@ import BrowseRecruiters       from './pages/hiring-manager/BrowseRecruiters'
 import PostJob                from './pages/hiring-manager/PostJob'
 import Messages               from './pages/hiring-manager/Messages'
 import StartJob               from './pages/hiring-manager/StartJob'
+import ActiveJobList          from './pages/hiring-manager/ActiveJobList'
+import HMActiveJob            from './pages/hiring-manager/ActiveJob'
+import RecruiterActiveJob     from './pages/recruiter/ActiveJob'
 import AdminDashboard         from './pages/admin/AdminDashboard'
 
 const DASHBOARD_BY_TYPE = {
@@ -66,6 +69,13 @@ export default function App() {
             <Route path="/post-job"                  element={<PostJob />} />
             <Route path="/messages"                  element={<Messages />} />
             <Route path="/start-job"                 element={<StartJob />} />
+            <Route path="/jobs"                      element={<ActiveJobList />} />
+            <Route path="/job/:assignmentId"         element={<HMActiveJob />} />
+          </Route>
+
+          {/* Recruiter — active job */}
+          <Route element={<ProtectedRoute allowedUserTypes={['recruiter']} />}>
+            <Route path="/recruiter/job/:assignmentId" element={<RecruiterActiveJob />} />
           </Route>
 
           {/* Admin — protected */}

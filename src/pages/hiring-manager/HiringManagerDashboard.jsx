@@ -3,23 +3,62 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 
+const MS_STATUS_LABELS = {
+  pending:       'Shortlist Pending',
+  review_window: 'Shortlist In Review',
+  approved:      'Shortlist Approved',
+  released:      'M1 Released',
+}
+
+function activeLabel(milestones) {
+  if (!milestones || milestones.length === 0) return null
+  const sorted = [...milestones].sort((a, b) => a.milestone_number - b.milestone_number)
+  const active = sorted.find(m => m.status !== 'released')
+  return active ? MS_STATUS_LABELS[active.status] ?? active.status : 'Complete'
+}
+
 export default function HiringManagerDashboard() {
   const { user, logout } = useAuth()
-  const [profile, setProfile]       = useState(null)
-  const [loadingProfile, setLoading] = useState(true)
+  const [profile,       setProfile]      = useState(null)
+  const [loadingProfile, setLoadingPro]  = useState(true)
+  const [activeJobs,    setActiveJobs]   = useState([])
+  const [loadingJobs,   setLoadingJobs]  = useState(false)
 
+  // Load company profile (with id)
   useEffect(() => {
     if (!user) return
     supabase
       .from('hiring_company_profiles')
-      .select('company_name, industry, country, trust_tier')
+      .select('id, company_name, industry, country, trust_tier')
       .eq('user_id', user.id)
       .single()
       .then(({ data }) => {
         setProfile(data)
-        setLoading(false)
+        setLoadingPro(false)
       })
   }, [user])
+
+  // Load active assignments once profile id is available
+  useEffect(() => {
+    if (!profile?.id) return
+    setLoadingJobs(true)
+    supabase
+      .from('job_recruiter_assignments')
+      .select(`
+        id, status,
+        jobs!inner(id, title, hiring_company_id),
+        recruiter_profiles(first_name, last_name),
+        milestones(milestone_number, status)
+      `)
+      .eq('jobs.hiring_company_id', profile.id)
+      .eq('status', 'assigned')
+      .order('assigned_at', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        setActiveJobs(data ?? [])
+        setLoadingJobs(false)
+      })
+  }, [profile])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,6 +69,7 @@ export default function HiringManagerDashboard() {
             Talent<span className="text-primary-600">Desk</span>
           </span>
           <div className="flex items-center gap-4">
+            <Link to="/jobs"     className="text-sm text-gray-500 hover:text-gray-900 transition-colors">My Jobs</Link>
             <Link to="/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Messages</Link>
             <Link to="/browse-recruiters" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Browse</Link>
             <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
@@ -53,7 +93,7 @@ export default function HiringManagerDashboard() {
               <p className="text-gray-500 mt-1 text-sm">{user?.email}</p>
             </div>
 
-            {/* Browse CTA banner */}
+            {/* Browse CTA */}
             <div className="bg-gradient-to-r from-primary-600 to-blue-700 rounded-xl p-6 mb-8 flex items-center justify-between">
               <div>
                 <h2 className="text-white font-bold text-lg">Find your next specialist recruiter</h2>
@@ -112,20 +152,54 @@ export default function HiringManagerDashboard() {
                   <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
                     My Active Jobs
                   </h3>
-                  <Link to="/post-job" className="btn-primary text-xs px-3 py-1.5">
-                    Post a Role
-                  </Link>
-                </div>
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                  <div className="flex items-center gap-2">
+                    <Link to="/jobs" className="text-xs text-primary-600 hover:underline">View all</Link>
+                    <Link to="/post-job" className="btn-primary text-xs px-3 py-1.5">Post a Role</Link>
                   </div>
-                  <p className="text-sm font-medium text-gray-600">No active jobs yet</p>
-                  <p className="text-xs text-gray-400 mt-1">Post your first role to start receiving CV submissions</p>
                 </div>
+
+                {loadingJobs ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600" />
+                  </div>
+                ) : activeJobs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-600">No active jobs yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Post your first role to start receiving CV submissions</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {activeJobs.map(a => (
+                      <Link
+                        key={a.id}
+                        to={`/job/${a.id}`}
+                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50
+                                   hover:bg-gray-100 transition-colors no-underline"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{a.jobs?.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {a.recruiter_profiles
+                              ? `${a.recruiter_profiles.first_name ?? ''} ${a.recruiter_profiles.last_name ?? ''}`.trim()
+                              : 'Recruiter'}
+                            {a.milestones?.length > 0 && (
+                              <> · {activeLabel(a.milestones)}</>
+                            )}
+                          </p>
+                        </div>
+                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Recent Activity */}
