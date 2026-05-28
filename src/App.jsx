@@ -17,7 +17,9 @@ import Messages               from './pages/hiring-manager/Messages'
 import StartJob               from './pages/hiring-manager/StartJob'
 import ActiveJobList          from './pages/hiring-manager/ActiveJobList'
 import HMActiveJob            from './pages/hiring-manager/ActiveJob'
+import OfferFlow              from './pages/hiring-manager/OfferFlow'
 import RecruiterActiveJob     from './pages/recruiter/ActiveJob'
+import OfferAcceptance        from './pages/public/OfferAcceptance'
 import AdminDashboard         from './pages/admin/AdminDashboard'
 
 const DASHBOARD_BY_TYPE = {
@@ -55,6 +57,9 @@ export default function App() {
           {/* Public recruiter profile — viewable by anyone */}
           <Route path="/recruiter/profile/:id"   element={<RecruiterPublicProfile />} />
 
+          {/* Public offer acceptance — no auth required */}
+          <Route path="/offer/:token"            element={<OfferAcceptance />} />
+
           {/* Recruiter — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['recruiter']} />}>
             <Route path="/recruiter/dashboard"   element={<RecruiterDashboard />} />
@@ -69,8 +74,9 @@ export default function App() {
             <Route path="/post-job"                  element={<PostJob />} />
             <Route path="/messages"                  element={<Messages />} />
             <Route path="/start-job"                 element={<StartJob />} />
-            <Route path="/jobs"                      element={<ActiveJobList />} />
-            <Route path="/job/:assignmentId"         element={<HMActiveJob />} />
+            <Route path="/jobs"                           element={<ActiveJobList />} />
+            <Route path="/job/:assignmentId"              element={<HMActiveJob />} />
+            <Route path="/job/:assignmentId/offer"        element={<OfferFlow />} />
           </Route>
 
           {/* Recruiter — active job */}

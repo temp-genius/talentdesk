@@ -1,7 +1,15 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+
+const OFFER_STATUS_STYLES = {
+  pending:      'bg-yellow-100 text-yellow-800',
+  accepted:     'bg-green-100 text-green-800',
+  declined:     'bg-red-100 text-red-800',
+  withdrawn:    'bg-gray-100 text-gray-600',
+  hm_confirmed: 'bg-blue-100 text-blue-800',
+}
 
 const MS_STATUS_STYLES = {
   pending:       'bg-gray-100 text-gray-600',
@@ -39,6 +47,7 @@ function fmtCurrency(amount, currency = 'EUR') {
 
 export default function HMActiveJob() {
   const { assignmentId } = useParams()
+  const navigate         = useNavigate()
   const { user } = useAuth()
   const [data, setData]       = useState(null)
   const [loading, setLoading] = useState(true)
@@ -66,6 +75,10 @@ export default function HMActiveJob() {
           id, candidate_first_name, candidate_last_name,
           candidate_email, current_job_title, recruiter_notes,
           interview_status, logged_at, created_at
+        ),
+        offers(
+          id, candidate_profile_id, agreed_salary, currency,
+          start_date, acceptance_status, offer_logged_at
         )
       `)
       .eq('id', assignmentId)
@@ -118,7 +131,17 @@ export default function HMActiveJob() {
   const recruiter = data?.recruiter_profiles
   const milestones = [...(data?.milestones ?? [])].sort((a, b) => a.milestone_number - b.milestone_number)
   const candidates = [...(data?.candidate_profiles ?? [])].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-  const m1 = milestones.find(m => m.milestone_number === 1)
+  const offers     = data?.offers ?? []
+  const m1  = milestones.find(m => m.milestone_number === 1)
+  const m2  = milestones.find(m => m.milestone_number === 2)
+
+  const showOfferSection =
+    m2?.status === 'released' ||
+    candidates.some(c => c.interview_status === 'completed')
+
+  function offerForCandidate(candidateId) {
+    return offers.find(o => o.candidate_profile_id === candidateId)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -311,7 +334,45 @@ export default function HMActiveJob() {
           )}
         </div>
 
-        {/* Section 4: Activity Feed */}
+        {/* Section 4: Offer Stage */}
+        {showOfferSection && (
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Offer Stage</h2>
+              <button
+                onClick={() => navigate(`/job/${assignmentId}/offer`)}
+                className="btn-primary text-xs px-3 py-1.5"
+              >
+                Manage Offers
+              </button>
+            </div>
+            {candidates.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">No candidates yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {candidates.map(c => {
+                  const offer = offerForCandidate(c.id)
+                  return (
+                    <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50">
+                      <span className="text-sm font-medium text-gray-900">
+                        {c.candidate_first_name} {c.candidate_last_name}
+                      </span>
+                      {offer ? (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${OFFER_STATUS_STYLES[offer.acceptance_status] ?? 'bg-gray-100 text-gray-600'}`}>
+                          Offer {offer.acceptance_status}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">No offer</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Section 5: Activity Feed */}
         <div className="card">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Activity</h2>
           <div className="space-y-3 text-sm text-gray-500">
