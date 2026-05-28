@@ -45,13 +45,15 @@ export default function OfferFlow() {
   const [error,   setError]   = useState('')
 
   // Modal state
-  const [modal,       setModal]       = useState(null)  // candidate object or null
-  const [salary,      setSalary]      = useState('')
-  const [startDate,   setStartDate]   = useState('')
-  const [confirmed,   setConfirmed]   = useState(false)
-  const [submitting,  setSubmitting]  = useState(false)
-  const [formErr,     setFormErr]     = useState('')
-  const [successMsg,  setSuccessMsg]  = useState('')
+  const [modal,          setModal]          = useState(null)  // candidate object or null
+  const [salary,         setSalary]         = useState('')
+  const [startDate,      setStartDate]      = useState('')
+  const [candidateEmail, setCandidateEmail] = useState('')
+  const [recruiterEmail, setRecruiterEmail] = useState('')
+  const [confirmed,      setConfirmed]      = useState(false)
+  const [submitting,     setSubmitting]     = useState(false)
+  const [formErr,        setFormErr]        = useState('')
+  const [successMsg,     setSuccessMsg]     = useState('')
 
   const load = useCallback(async () => {
     const { data: row, error: err } = await supabase
@@ -59,9 +61,10 @@ export default function OfferFlow() {
       .select(`
         id,
         jobs(id, title, currency),
+        recruiter_profiles(users(email)),
         candidate_profiles(
           id, candidate_first_name, candidate_last_name,
-          current_job_title, interview_status, created_at
+          candidate_email, current_job_title, interview_status, created_at
         ),
         offers(
           id, candidate_profile_id, agreed_salary, currency,
@@ -73,6 +76,7 @@ export default function OfferFlow() {
 
     if (err) { setError(err.message); setLoading(false); return }
     setData(row)
+    setRecruiterEmail(row?.recruiter_profiles?.users?.email ?? '')
     setLoading(false)
   }, [assignmentId])
 
@@ -82,6 +86,7 @@ export default function OfferFlow() {
     setModal(candidate)
     setSalary('')
     setStartDate('')
+    setCandidateEmail(candidate.candidate_email ?? '')
     setConfirmed(false)
     setFormErr('')
     setSuccessMsg('')
@@ -92,6 +97,10 @@ export default function OfferFlow() {
     setFormErr('')
     if (!salary || parseFloat(salary) <= 0) {
       setFormErr('Please enter the agreed salary.')
+      return
+    }
+    if (!candidateEmail) {
+      setFormErr('Please enter the candidate email address.')
       return
     }
     if (!confirmed) {
@@ -107,6 +116,7 @@ export default function OfferFlow() {
       agreed_salary:               parseFloat(salary),
       currency:                    data.jobs?.currency ?? 'EUR',
       start_date:                  startDate || null,
+      candidate_email:             candidateEmail,
       offer_logged_at:             new Date().toISOString(),
       offer_email_delay_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       acceptance_status:           'pending',
@@ -265,6 +275,33 @@ export default function OfferFlow() {
                   onChange={e => setStartDate(e.target.value)}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Candidate email *
+                </label>
+                <input
+                  type="email"
+                  className="input"
+                  value={candidateEmail}
+                  onChange={e => setCandidateEmail(e.target.value)}
+                  placeholder="candidate@example.com"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  The candidate will receive an offer confirmation email at this address.
+                </p>
+              </div>
+              {recruiterEmail && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter email</label>
+                  <input
+                    type="email"
+                    className="input bg-gray-50 text-gray-500 cursor-default"
+                    value={recruiterEmail}
+                    readOnly
+                  />
+                </div>
+              )}
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
