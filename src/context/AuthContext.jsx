@@ -148,7 +148,13 @@ export function AuthProvider({ children }) {
           .select('id')
           .single()
         if (rpError) {
-          console.error('[AuthContext] recruiter_profiles insert failed:', rpError)
+          console.error('[signup] recruiter_profiles insert FULL ERROR:', {
+            message: rpError.message,
+            code:    rpError.code,
+            details: rpError.details,
+            hint:    rpError.hint,
+            full:    rpError,
+          })
         } else {
           const profileId = rpData.id
           if (sectors?.length > 0) {
