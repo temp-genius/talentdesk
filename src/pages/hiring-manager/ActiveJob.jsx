@@ -49,9 +49,12 @@ function fmtCurrency(amount, currency = 'EUR') {
 export default function HMActiveJob() {
   const { assignmentId } = useParams()
   const { user } = useAuth()
-  const [data, setData]       = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState('')
+  const [data, setData]             = useState(null)
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState('')
+  const [approving, setApproving]   = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const [milestoneErr, setMilestoneErr] = useState('')
 
   const load = useCallback(async () => {
     const { data: row, error: err } = await supabase
@@ -68,7 +71,7 @@ export default function HMActiveJob() {
           linkedin_url, preferred_fee_percentage, users(email)
         ),
         milestones(
-          id, milestone_number, milestone_name, amount, currency,
+          id, milestone_number, milestone_name, amount, charge_amount, currency,
           status, triggered_at, review_window_expires_at, released_at
         ),
         candidate_profiles(
@@ -91,21 +94,77 @@ export default function HMActiveJob() {
 
   useEffect(() => { if (user) load() }, [user, load])
 
-  async function approveM1() {
+  async function approveShortlist() {
     const m1 = milestones.find(m => m.milestone_number === 1)
     if (!m1 || m1.status !== 'review_window') return
-    const { error: err } = await supabase
+    setApproving(true)
+    setMilestoneErr('')
+
+    // Charge M2 before approving
+    const { data: chargeResult, error: chargeErr } = await supabase.functions.invoke('stripe-charge-milestone', {
+      body: { assignment_id: assignmentId, milestone_number: 2 },
+    })
+
+    if (chargeErr || chargeResult?.error) {
+      setMilestoneErr(chargeErr?.message ?? chargeResult?.error ?? 'Stage 2 payment failed. Please try again.')
+      setApproving(false)
+      return
+    }
+
+    // Approve M1 milestone
+    const { error: updateErr } = await supabase
       .from('milestones')
       .update({ status: 'approved' })
       .eq('id', m1.id)
-    if (err) { alert(err.message); return }
 
-    // Notify recruiter — fire-and-forget
+    if (updateErr) { setMilestoneErr(updateErr.message); setApproving(false); return }
+
+    // Release M1 to recruiter — fire-and-forget
+    supabase.functions.invoke('stripe-release-milestone', {
+      body: { assignment_id: assignmentId, milestone_number: 1 },
+    }).catch(console.error)
+
+    // Notify recruiter
     const recruiterEmail = data?.recruiter_profiles?.users?.email
     if (recruiterEmail) {
       sendShortlistApprovedNotification(recruiterEmail, data?.jobs?.title ?? '')
     }
 
+    setApproving(false)
+    load()
+  }
+
+  async function confirmInterviews() {
+    const m2 = milestones.find(m => m.milestone_number === 2)
+    if (!m2 || m2.status !== 'review_window') return
+    setConfirming(true)
+    setMilestoneErr('')
+
+    // Charge M3 before confirming
+    const { data: chargeResult, error: chargeErr } = await supabase.functions.invoke('stripe-charge-milestone', {
+      body: { assignment_id: assignmentId, milestone_number: 3 },
+    })
+
+    if (chargeErr || chargeResult?.error) {
+      setMilestoneErr(chargeErr?.message ?? chargeResult?.error ?? 'Stage 3 payment failed. Please try again.')
+      setConfirming(false)
+      return
+    }
+
+    // Approve M2 milestone
+    const { error: updateErr } = await supabase
+      .from('milestones')
+      .update({ status: 'approved' })
+      .eq('id', m2.id)
+
+    if (updateErr) { setMilestoneErr(updateErr.message); setConfirming(false); return }
+
+    // Release M2 to recruiter — fire-and-forget
+    supabase.functions.invoke('stripe-release-milestone', {
+      body: { assignment_id: assignmentId, milestone_number: 2 },
+    }).catch(console.error)
+
+    setConfirming(false)
     load()
   }
 
@@ -286,6 +345,11 @@ export default function HMActiveJob() {
         {/* Section 2: Milestone Progress Tracker */}
         <div className="card">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">Milestone Progress</h2>
+          {milestoneErr && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">
+              {milestoneErr}
+            </div>
+          )}
           {milestones.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-4">No milestones defined yet.</p>
           ) : (
@@ -306,15 +370,34 @@ export default function HMActiveJob() {
                         {m.status === 'review_window' ? 'In Review' : m.status.charAt(0).toUpperCase() + m.status.slice(1)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-0.5">{fmtCurrency(m.amount, m.currency)}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {fmtCurrency(m.charge_amount ?? m.amount, m.currency)}
+                    </p>
                     {m.status === 'review_window' && m.review_window_expires_at && (
                       <p className="text-xs text-yellow-700 mt-1">
                         Review window expires: {new Date(m.review_window_expires_at).toLocaleDateString()}
                       </p>
                     )}
                     {m.status === 'review_window' && m.milestone_number === 1 && (
-                      <button onClick={approveM1} className="mt-2 btn-primary text-xs px-3 py-1.5">
-                        Approve Shortlist
+                      <button
+                        onClick={approveShortlist}
+                        disabled={approving}
+                        className="mt-2 btn-primary text-xs px-3 py-1.5 disabled:opacity-50"
+                      >
+                        {approving
+                          ? 'Processing…'
+                          : `Approve Shortlist and Pay ${fmtCurrency(m2?.charge_amount ?? m2?.amount ?? 0, m2?.currency ?? 'EUR')}`}
+                      </button>
+                    )}
+                    {m.status === 'review_window' && m.milestone_number === 2 && (
+                      <button
+                        onClick={confirmInterviews}
+                        disabled={confirming}
+                        className="mt-2 btn-primary text-xs px-3 py-1.5 disabled:opacity-50"
+                      >
+                        {confirming
+                          ? 'Processing…'
+                          : `Confirm Interviews and Pay ${fmtCurrency(m3?.charge_amount ?? m3?.amount ?? 0, m3?.currency ?? 'EUR')}`}
                       </button>
                     )}
                     {m.status === 'released' && m.released_at && (

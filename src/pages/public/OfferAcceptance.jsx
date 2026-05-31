@@ -41,7 +41,14 @@ export default function OfferAcceptance() {
       return
     }
     if (status === 'accepted' && offer?.id) {
-      supabase.rpc('complete_placement', { p_offer_id: offer.id }).catch(console.error)
+      supabase.rpc('complete_placement', { p_offer_id: offer.id })
+        .then(() => {
+          // Release M3 to recruiter after placement is complete — fire-and-forget
+          supabase.functions.invoke('stripe-release-milestone', {
+            body: { offer_id: offer.id, milestone_number: 3 },
+          }).catch(console.error)
+        })
+        .catch(console.error)
     }
     setResult(status)
   }

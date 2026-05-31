@@ -31,54 +31,58 @@ function fmtCurrency(amount, currency = 'EUR') {
   }).format(amount)
 }
 
-// ── Stripe payment form (must be inside <Elements>) ──────────────────
-function PaymentForm({ clientSecret, onSuccess, onError, onCancel, amount, currency }) {
+// ── Card setup form (saves card via SetupIntent) ──────────────────────
+function SetupForm({ clientSecret, onSuccess, onError, onCancel, amount, currency }) {
   const stripe   = useStripe()
   const elements = useElements()
-  const [paying, setPaying] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  async function handleConfirm(e) {
+  async function handleSave(e) {
     e.preventDefault()
     if (!stripe || !elements) return
-    setPaying(true)
+    setSaving(true)
 
-    const result = await stripe.confirmCardPayment(clientSecret, {
+    const result = await stripe.confirmCardSetup(clientSecret, {
       payment_method: { card: elements.getElement(CardElement) },
     })
 
-    setPaying(false)
+    setSaving(false)
 
     if (result.error) {
       onError(result.error.message)
       return
     }
-    if (result.paymentIntent?.status === 'succeeded') {
-      onSuccess()
+    if (result.setupIntent?.status === 'succeeded') {
+      onSuccess(result.setupIntent.payment_method)
     }
   }
 
   return (
-    <form onSubmit={handleConfirm} className="space-y-5">
+    <form onSubmit={handleSave} className="space-y-5">
       <div>
         <p className="text-sm font-medium text-gray-700 mb-1">Card details</p>
-        <div className="border border-gray-300 rounded-md px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500">
+        <div className="border border-gray-300 rounded-md px-4 py-3 bg-white
+                        focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500">
           <CardElement options={CARD_ELEMENT_OPTIONS} />
         </div>
+        <p className="text-xs text-gray-400 mt-1.5">
+          Your card will be charged automatically at each stage — no manual action required.
+        </p>
       </div>
       <div className="flex gap-3">
         <button
           type="submit"
-          disabled={paying || !stripe}
+          disabled={saving || !stripe}
           className="btn-primary flex-1 py-3 text-base disabled:opacity-50"
         >
-          {paying ? 'Processing…' : `Confirm Payment — ${fmtCurrency(amount, currency)}`}
+          {saving ? 'Saving card…' : `Pay Stage 1 — ${fmtCurrency(amount, currency)}`}
         </button>
         <button type="button" onClick={onCancel} className="btn-secondary px-4 py-3">
           Back
         </button>
       </div>
       <p className="text-xs text-gray-400 text-center">
-        Payments are processed securely via Stripe. TalentDesk holds funds in escrow until each milestone is released.
+        Payments are processed securely via Stripe.
       </p>
     </form>
   )
@@ -86,9 +90,9 @@ function PaymentForm({ clientSecret, onSuccess, onError, onCancel, amount, curre
 
 // ── Main component ────────────────────────────────────────────────────
 function StartJobInner() {
-  const [searchParams] = useSearchParams()
-  const recruiterId    = searchParams.get('recruiter_id')
-  const jobId          = searchParams.get('job_id')
+  const [searchParams]  = useSearchParams()
+  const recruiterId     = searchParams.get('recruiter_id')
+  const jobId           = searchParams.get('job_id')
   const { user, loading: authLoading } = useAuth()
 
   const [job,            setJob]            = useState(null)
@@ -99,24 +103,21 @@ function StartJobInner() {
   const [submitted,      setSubmitted]      = useState(false)
   const [authTimedOut,   setAuthTimedOut]   = useState(false)
 
-  const [shortlist,     setShortlist]    = useState(5)
-  const [agreed,        setAgreed]       = useState([false, false, false, false])
-  const [submitting,    setSubmitting]   = useState(false)
-  const [actionErr,     setActionErr]    = useState('')
-  const [clientSecret,  setClientSecret] = useState(null)
-  const [paymentStep,   setPaymentStep]  = useState(false)
+  const [shortlist,           setShortlist]           = useState(5)
+  const [agreed,              setAgreed]              = useState([false, false, false, false])
+  const [submitting,          setSubmitting]          = useState(false)
+  const [actionErr,           setActionErr]           = useState('')
+  const [setupClientSecret,   setSetupClientSecret]   = useState(null)
+  const [customerId,          setCustomerId]          = useState(null)
+  const [paymentStep,         setPaymentStep]         = useState(false)
+  const [processingMsg,       setProcessingMsg]       = useState('')
+  const [createdAssignmentId, setCreatedAssignmentId] = useState(null)
 
   const mounted = useRef(true)
   useEffect(() => {
     mounted.current = true
     return () => { mounted.current = false }
   }, [])
-
-  console.log('START JOB RENDER', {
-    authLoading, authTimedOut, loading, error: error || '(none)',
-    userId: user?.id ?? 'null', recruiterId, jobId,
-    job: job?.id ?? 'null', recruiter: recruiter?.id ?? 'null',
-  })
 
   useEffect(() => {
     if (!authLoading) return
@@ -149,22 +150,23 @@ function StartJobInner() {
     async function fetchAll() {
       if (mounted.current) setLoading(true)
 
-      const jobResult = await supabase.from('jobs').select('*').eq('id', jobId).single()
-      const recruiterResult = await supabase
-        .from('recruiter_profiles')
-        .select('id, user_id, first_name, last_name, bio, preferred_fee_percentage, total_placements, availability_status, users(email)')
-        .eq('id', recruiterId)
-        .single()
-      const companyResult = await supabase
-        .from('hiring_company_profiles')
-        .select('id, company_name')
-        .eq('user_id', user.id)
-        .single()
+      const [jobResult, recruiterResult, companyResult] = await Promise.all([
+        supabase.from('jobs').select('*').eq('id', jobId).single(),
+        supabase
+          .from('recruiter_profiles')
+          .select('id, user_id, first_name, last_name, bio, preferred_fee_percentage, total_placements, availability_status, stripe_account_id, users(email)')
+          .eq('id', recruiterId)
+          .single(),
+        supabase
+          .from('hiring_company_profiles')
+          .select('id, company_name, stripe_customer_id, stripe_payment_method_id')
+          .eq('user_id', user.id)
+          .single(),
+      ])
 
       if (!mounted.current) return
-
-      if (jobResult.error)      { setError(`Could not load job: ${jobResult.error.message}`); setLoading(false); return }
-      if (recruiterResult.error){ setError(`Could not load recruiter: ${recruiterResult.error.message}`); setLoading(false); return }
+      if (jobResult.error)       { setError(`Could not load job: ${jobResult.error.message}`); setLoading(false); return }
+      if (recruiterResult.error) { setError(`Could not load recruiter: ${recruiterResult.error.message}`); setLoading(false); return }
 
       setJob(jobResult.data)
       setRecruiter(recruiterResult.data)
@@ -177,7 +179,7 @@ function StartJobInner() {
     })
   }, [user, authLoading, authTimedOut, recruiterId, jobId])
 
-  // ── Render guards ─────────────────────────────────────────────────
+  // ── Render guards ──────────────────────────────────────────────────
   if (authLoading && !authTimedOut) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-2">
       <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-primary-600" />
@@ -233,6 +235,7 @@ function StartJobInner() {
         <p className="text-gray-500 text-sm mb-6">
           <strong>{job.title}</strong> is now active and{' '}
           <strong>{recruiter.first_name} {recruiter.last_name}</strong> has been assigned.
+          Stage 1 payment has been processed.
         </p>
         <div className="flex gap-3">
           <Link to="/messages" className="btn-primary flex-1">Messages</Link>
@@ -249,11 +252,12 @@ function StartJobInner() {
   const currency = job.currency ?? 'EUR'
 
   const milestones = [
-    { number: 1, name: 'CV Submission',    amount: Math.round(totalFee * 0.3), pct: 30 },
-    { number: 2, name: 'Interviews Stage', amount: Math.round(totalFee * 0.3), pct: 30 },
-    { number: 3, name: 'Offer Accepted',   amount: Math.round(totalFee * 0.4), pct: 40 },
+    { number: 1, name: 'Shortlist Submission',  charge: Math.round(totalFee * 0.20), pct: 20, chargeAt: 'today (Stage 1)' },
+    { number: 2, name: 'Shortlist Approval',    charge: Math.round(totalFee * 0.30), pct: 30, chargeAt: 'when you approve the shortlist' },
+    { number: 3, name: 'Interview Confirmation',charge: Math.round(totalFee * 0.50), pct: 50, chargeAt: 'when you confirm interviews' },
   ]
 
+  const m1Charge  = milestones[0].charge
   const allAgreed = agreed.every(Boolean)
 
   async function createAssignmentAndMilestones() {
@@ -265,7 +269,7 @@ function StartJobInner() {
 
     if (jraErr || !assignment) {
       setActionErr(jraErr?.message ?? 'Failed to create assignment.')
-      return false
+      return { ok: false, assignmentId: null }
     }
 
     const { error: msErr } = await supabase.from('milestones').insert(
@@ -273,93 +277,123 @@ function StartJobInner() {
         job_recruiter_assignment_id: assignment.id,
         milestone_number: m.number,
         milestone_name:   m.name,
-        amount:           m.amount,
+        amount:           m.charge,
+        charge_amount:    m.charge,
+        transfer_amount:  Math.round(m.charge * 0.85),
         currency,
         status: 'pending',
       }))
     )
 
-    if (msErr) { setActionErr(msErr.message); return false }
+    if (msErr) { setActionErr(msErr.message); return { ok: false, assignmentId: null } }
 
     await supabase.from('jobs').update({ status: 'active', agreed_shortlist_size: shortlist }).eq('id', jobId)
 
-    // Notify recruiter of new assignment — fire-and-forget
     const recruiterEmail = recruiter.users?.email
     if (recruiterEmail) {
-      sendJobStartedNotification(
-        recruiterEmail,
-        job.title,
-        companyProfile?.company_name ?? null,
-        shortlist,
-      )
+      sendJobStartedNotification(recruiterEmail, job.title, companyProfile?.company_name ?? null, shortlist)
     }
 
-    return true
+    return { ok: true, assignmentId: assignment.id }
   }
 
+  // Step 1: user clicks "Pay and Start Job" — create customer + show card form
   async function handleStart() {
     if (!allAgreed) return
     setSubmitting(true)
     setActionErr('')
 
-    // If no fee (salary not set), skip payment
+    // Skip payment if no salary
     if (totalFee === 0) {
-      const ok = await createAssignmentAndMilestones()
+      const { ok } = await createAssignmentAndMilestones()
       setSubmitting(false)
       if (ok) setSubmitted(true)
       return
     }
 
-    // Call Edge Function to create PaymentIntent
-    const { data: piData, error: piErr } = await supabase.functions.invoke('create-payment-intent', {
-      body: { jobId, recruiterId },
+    const { data, error: fnErr } = await supabase.functions.invoke('stripe-create-customer', {
+      body: { user_id: user.id, email: user.email },
     })
 
     setSubmitting(false)
 
-    if (piErr || piData?.error || !piData?.clientSecret) {
-      setActionErr(piErr?.message ?? piData?.error ?? 'Payment setup failed. Please try again.')
+    if (fnErr || data?.error) {
+      setActionErr(fnErr?.message ?? data?.error ?? 'Payment setup failed. Please try again.')
       return
     }
 
-    setClientSecret(piData.clientSecret)
+    setCustomerId(data.customerId)
+    setSetupClientSecret(data.setupIntentClientSecret)
     setPaymentStep(true)
   }
 
-  async function handlePaymentSuccess() {
+  // Step 2: card saved — store details, create DB records, charge M1
+  async function handleCardSaved(paymentMethodId) {
     setSubmitting(true)
-    const ok = await createAssignmentAndMilestones()
+    setActionErr('')
+    setProcessingMsg('Saving your payment details…')
+
+    // Persist Stripe customer + payment method to HM profile
+    await supabase
+      .from('hiring_company_profiles')
+      .update({ stripe_customer_id: customerId, stripe_payment_method_id: paymentMethodId })
+      .eq('user_id', user.id)
+
+    setProcessingMsg('Creating assignment…')
+    const { ok, assignmentId } = await createAssignmentAndMilestones()
+
+    if (!ok) {
+      setSubmitting(false)
+      setProcessingMsg('')
+      setPaymentStep(false)
+      return
+    }
+
+    setCreatedAssignmentId(assignmentId)
+    setProcessingMsg('Processing Stage 1 payment…')
+
+    const { data: chargeData, error: chargeErr } = await supabase.functions.invoke('stripe-charge-milestone', {
+      body: { assignment_id: assignmentId, milestone_number: 1 },
+    })
+
     setSubmitting(false)
-    if (ok) setSubmitted(true)
+    setProcessingMsg('')
+
+    if (chargeErr || chargeData?.error) {
+      setActionErr(chargeErr?.message ?? chargeData?.error ?? 'Stage 1 payment failed. Please contact support.')
+      return
+    }
+
+    setSubmitted(true)
   }
 
-  function handlePaymentError(msg) {
+  function handleCardError(msg) {
     setActionErr(msg)
-    setPaymentStep(false)
   }
 
-  // ── Payment step ──────────────────────────────────────────────────
-  if (paymentStep && clientSecret) {
+  // ── Payment step (card collection) ────────────────────────────────
+  if (paymentStep && setupClientSecret) {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200">
-          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="max-w-3xl mx-auto px-6 py-4">
             <Link to="/hiring-manager/dashboard" className="text-lg font-bold text-slate-900 tracking-tight">
               Talent<span className="text-primary-600">Desk</span>
             </Link>
           </div>
         </header>
+
         <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Complete Payment</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Add Payment Card</h1>
             <p className="text-gray-500 mt-1 text-sm">
-              Funds are held in escrow and released as milestones are completed.
+              Your card is saved for automatic charges at each milestone stage.
             </p>
           </div>
 
           <div className="card">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Summary</h2>
-            <dl className="space-y-2 text-sm mb-6">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Payment Summary</h2>
+            <dl className="space-y-2 text-sm mb-5">
               <div className="flex justify-between">
                 <dt className="text-gray-500">Role</dt>
                 <dd className="font-medium text-gray-900">{job.title}</dd>
@@ -369,10 +403,17 @@ function StartJobInner() {
                 <dd className="font-medium text-gray-900">{recruiter.first_name} {recruiter.last_name}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Total escrow</dt>
-                <dd className="font-bold text-gray-900 text-base">{fmtCurrency(totalFee, currency)}</dd>
+                <dt className="text-gray-500">Stage 1 — due now (20%)</dt>
+                <dd className="font-bold text-gray-900 text-base">{fmtCurrency(m1Charge, currency)}</dd>
               </div>
             </dl>
+
+            {submitting && processingMsg && (
+              <div className="flex items-center gap-2 text-sm text-primary-600 mb-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600" />
+                {processingMsg}
+              </div>
+            )}
 
             {actionErr && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">
@@ -380,21 +421,23 @@ function StartJobInner() {
               </div>
             )}
 
-            <PaymentForm
-              clientSecret={clientSecret}
-              amount={totalFee}
-              currency={currency}
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-              onCancel={() => { setPaymentStep(false); setClientSecret(null) }}
-            />
+            {!submitting && (
+              <SetupForm
+                clientSecret={setupClientSecret}
+                amount={m1Charge}
+                currency={currency}
+                onSuccess={handleCardSaved}
+                onError={handleCardError}
+                onCancel={() => { setPaymentStep(false); setSetupClientSecret(null); setCustomerId(null) }}
+              />
+            )}
           </div>
         </div>
       </div>
     )
   }
 
-  // ── Full form ──────────────────────────────────────────────────────
+  // ── Main form ─────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
@@ -417,6 +460,15 @@ function StartJobInner() {
         {actionErr && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
             {actionErr}
+          </div>
+        )}
+
+        {/* Recruiter bank account warning */}
+        {!recruiter.stripe_account_id && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> This recruiter has not yet connected their bank account. They have been notified and you can proceed — payment will be held until they connect.
+            </p>
           </div>
         )}
 
@@ -456,9 +508,7 @@ function StartJobInner() {
             {job.seniority_level && (
               <div className="flex justify-between">
                 <dt className="text-gray-500">Seniority</dt>
-                <dd className="font-medium text-gray-900 capitalize">
-                  {job.seniority_level.replace('_', '-')}
-                </dd>
+                <dd className="font-medium text-gray-900 capitalize">{job.seniority_level.replace('_', '-')}</dd>
               </div>
             )}
           </dl>
@@ -472,9 +522,7 @@ function StartJobInner() {
               <p className="text-sm font-semibold text-gray-900">
                 {recruiter.first_name} {recruiter.last_name}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Placement fee: {fee}% of agreed annual salary
-              </p>
+              <p className="text-xs text-gray-500 mt-0.5">Placement fee: {fee}% of agreed annual salary</p>
             </div>
             <p className="text-3xl font-extrabold text-primary-600">{fee}%</p>
           </div>
@@ -489,18 +537,30 @@ function StartJobInner() {
                 {fmtCurrency(maxSal, currency)} × {fee}% ={' '}
                 <strong className="text-gray-800">{fmtCurrency(totalFee, currency)} total fee</strong>
               </p>
-              <div className="space-y-2">
-                {milestones.map(m => (
+              <div className="space-y-0">
+                {milestones.map((m, i) => (
                   <div key={m.number}
-                    className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    className={`flex items-start justify-between py-3 ${i < milestones.length - 1 ? 'border-b border-gray-100' : ''}`}>
                     <div>
-                      <p className="text-sm font-medium text-gray-800">Milestone {m.number}: {m.name}</p>
-                      <p className="text-xs text-gray-400">{m.pct}% of total fee</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        Stage {m.number}: {m.name}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {m.pct}% of total — charged {m.chargeAt}
+                      </p>
                     </div>
-                    <p className="text-sm font-bold text-gray-900">{fmtCurrency(m.amount, currency)}</p>
+                    <div className="text-right ml-4 flex-shrink-0">
+                      <p className="text-sm font-bold text-gray-900">{fmtCurrency(m.charge, currency)}</p>
+                      {m.number === 1 && (
+                        <p className="text-xs text-primary-600 font-medium mt-0.5">Due today</p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
+                Your card is saved at checkout and charged automatically at each stage — no manual action required.
+              </p>
             </>
           ) : (
             <p className="text-sm text-gray-400 italic">
@@ -509,7 +569,7 @@ function StartJobInner() {
           )}
         </div>
 
-        {/* Shortlist */}
+        {/* Shortlist size */}
         <div className="card">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
             Agreed Shortlist Size
@@ -561,9 +621,9 @@ function StartJobInner() {
             className="btn-primary w-full text-base py-3 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting
-              ? 'Setting up payment…'
+              ? 'Preparing payment…'
               : totalFee > 0
-                ? `Pay ${fmtCurrency(totalFee, currency)} and Start Job`
+                ? `Pay Stage 1 — ${fmtCurrency(m1Charge, currency)} and Start Job`
                 : 'Start Job'}
           </button>
           {!allAgreed && (
@@ -573,7 +633,7 @@ function StartJobInner() {
           )}
           {totalFee > 0 && allAgreed && (
             <p className="text-center text-xs text-gray-400 mt-2">
-              Payment is held in escrow and released as milestones are completed
+              Stage 1 ({fmtCurrency(m1Charge, currency)}) is charged today. Stages 2 and 3 are charged automatically at subsequent milestones.
             </p>
           )}
         </div>
