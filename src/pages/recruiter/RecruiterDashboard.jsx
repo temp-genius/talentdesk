@@ -51,7 +51,7 @@ export default function RecruiterDashboard() {
     if (!user) return
     supabase
       .from('recruiter_profiles')
-      .select('id, first_name, last_name, status, availability_status, total_placements')
+      .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements')
       .eq('user_id', user.id)
       .single()
       .then(({ data }) => {
@@ -192,18 +192,19 @@ export default function RecruiterDashboard() {
                 <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
                   Your Profile
                 </h2>
-                <dl className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Name</dt>
-                    <dd className="text-gray-900 font-medium">{displayName}</dd>
-                  </div>
-                  {profile?.availability_status && (
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Availability</dt>
-                      <dd className="text-gray-900 font-medium capitalize">{profile.availability_status}</dd>
-                    </div>
-                  )}
-                </dl>
+                <p className="font-semibold text-gray-900 text-sm">{displayName}</p>
+                {profile?.headline && (
+                  <p className="text-xs text-gray-500 mt-0.5 mb-2">{profile.headline}</p>
+                )}
+                {profile?.availability_status && (
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium capitalize
+                    ${{ available: 'bg-green-100 text-green-700', limited: 'bg-amber-100 text-amber-700', unavailable: 'bg-gray-100 text-gray-500' }[profile.availability_status] ?? 'bg-gray-100 text-gray-500'}`}>
+                    {profile.availability_status}
+                  </span>
+                )}
+                <Link to="/recruiter/profile/edit" className="btn-secondary text-xs w-full block text-center mt-3">
+                  Edit Profile
+                </Link>
               </div>
 
               {/* Stats card */}
@@ -223,6 +224,18 @@ export default function RecruiterDashboard() {
                 </dl>
               </div>
             </div>
+
+            {/* Bio completeness warning */}
+            {profile?.status === 'approved' && !profile?.bio && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center justify-between">
+                <p className="text-sm text-amber-800">
+                  Your profile is incomplete. Add a bio and specialisms to appear in search results.
+                </p>
+                <Link to="/recruiter/profile/edit" className="text-sm font-medium text-amber-800 underline whitespace-nowrap ml-4">
+                  Complete your profile
+                </Link>
+              </div>
+            )}
 
             {/* Specialisms */}
             {profile?.status === 'approved' && (

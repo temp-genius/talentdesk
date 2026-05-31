@@ -23,6 +23,7 @@ import CancelJob              from './pages/hiring-manager/CancelJob'
 import RecruiterActiveJob     from './pages/recruiter/ActiveJob'
 import RecruiterLeaveReview   from './pages/recruiter/LeaveReview'
 import WithdrawJob            from './pages/recruiter/WithdrawJob'
+import EditProfile            from './pages/recruiter/EditProfile'
 import OfferAcceptance        from './pages/public/OfferAcceptance'
 import AdminDashboard         from './pages/admin/AdminDashboard'
 
@@ -66,9 +67,10 @@ export default function App() {
 
           {/* Recruiter — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['recruiter']} />}>
-            <Route path="/recruiter/dashboard"   element={<RecruiterDashboard />} />
-            <Route path="/recruiter/pending"     element={<RecruiterProfileSetup />} />
-            <Route path="/recruiter/messages"    element={<RecruiterMessages />} />
+            <Route path="/recruiter/dashboard"     element={<RecruiterDashboard />} />
+            <Route path="/recruiter/pending"       element={<RecruiterProfileSetup />} />
+            <Route path="/recruiter/messages"      element={<RecruiterMessages />} />
+            <Route path="/recruiter/profile/edit"  element={<EditProfile />} />
           </Route>
 
           {/* Hiring manager — protected */}

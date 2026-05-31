@@ -207,8 +207,8 @@ export default function RecruiterPublicProfile() {
       const { data: p, error } = await supabase
         .from('recruiter_profiles')
         .select(`
-          id, user_id, first_name, last_name, bio, profile_photo_url,
-          years_experience, availability_status, preferred_fee_percentage,
+          id, user_id, first_name, last_name, bio, headline, sample_placements,
+          profile_photo_url, years_experience, availability_status, preferred_fee_percentage,
           total_placements, average_days_to_shortlist, linkedin_url,
           linkedin_network_size_tier, response_time_average, created_at,
           recruiter_specialisms!left(specialism_categories(sector, specialism_name)),
@@ -289,7 +289,7 @@ export default function RecruiterPublicProfile() {
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
 
   const fullName  = [profile.first_name, profile.last_name].filter(Boolean).join(' ')
-  const headline  = [firstSector, profile.years_experience ? `${profile.years_experience} yrs exp` : null].filter(Boolean).join(' · ')
+  const headline  = profile.headline || [firstSector, profile.years_experience ? `${profile.years_experience} yrs exp` : null].filter(Boolean).join(' · ')
   const isHM      = user && userType === 'hiring_manager'
 
   return (
@@ -385,6 +385,14 @@ export default function RecruiterPublicProfile() {
                 />
               </div>
             </div>
+
+            {/* Notable Placements */}
+            {profile.sample_placements && (
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Notable Placements</h2>
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{profile.sample_placements}</p>
+              </div>
+            )}
 
             {/* Specialisms & markets */}
             {(Object.keys(specialismsBySector).length > 0 || markets.length > 0) && (

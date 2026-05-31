@@ -44,7 +44,7 @@ export default function RecruiterCard({ recruiter, jobId }) {
   const initials = [recruiter.first_name, recruiter.last_name]
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
 
-  const headline = [
+  const headline = recruiter.headline || [
     firstSector,
     recruiter.years_experience ? `${recruiter.years_experience} yrs exp` : null,
   ].filter(Boolean).join(' · ')

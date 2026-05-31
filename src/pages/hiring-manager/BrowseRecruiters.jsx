@@ -253,7 +253,7 @@ export default function BrowseRecruiters() {
     supabase
       .from('recruiter_profiles')
       .select(`
-        id, user_id, first_name, last_name, bio, profile_photo_url,
+        id, user_id, first_name, last_name, bio, headline, profile_photo_url,
         years_experience, availability_status, preferred_fee_percentage,
         total_placements, linkedin_url, linkedin_network_size_tier,
         response_time_average, last_active_at, created_at,
