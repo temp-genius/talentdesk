@@ -4,31 +4,46 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import RecruiterCard from '../../components/recruiter/RecruiterCard'
 
-const FILTER_COUNTRIES  = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
-const FILTER_SECTORS    = ['Technology', 'Finance', 'Legal', 'HR', 'Marketing', 'Operations', 'Logistics', 'Construction', 'Healthcare', 'Executive']
-const FILTER_FEES       = [{ label: '6%', value: '6' }, { label: '8%', value: '8' }, { label: '10%', value: '10' }]
-const FILTER_AVAIL      = [{ label: 'Available now', value: 'available' }, { label: 'Limited', value: 'limited' }]
+const FILTER_COUNTRIES = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
+const FILTER_FEES      = [{ label: '6%', value: '6' }, { label: '8%', value: '8' }, { label: '10%', value: '10' }]
+const FILTER_AVAIL     = [{ label: 'Available now', value: 'available' }, { label: 'Limited', value: 'limited' }]
 
 const SORT_OPTIONS = [
-  { value: 'relevance', label: 'Most Relevant'     },
-  { value: 'rating',    label: 'Highest Rated'      },
-  { value: 'placements',label: 'Most Placements'    },
-  { value: 'fee_asc',   label: 'Lowest Fee'         },
-  { value: 'response',  label: 'Fastest Response'   },
-  { value: 'newest',    label: 'Newest to Platform' },
-  { value: 'active',    label: 'Recently Active'    },
+  { value: 'relevance',  label: 'Most Relevant'     },
+  { value: 'rating',     label: 'Highest Rated'      },
+  { value: 'placements', label: 'Most Placements'    },
+  { value: 'fee_asc',    label: 'Lowest Fee'         },
+  { value: 'response',   label: 'Fastest Response'   },
+  { value: 'newest',     label: 'Newest to Platform' },
+  { value: 'active',     label: 'Recently Active'    },
 ]
 
-function computeRelevance(r, filters) {
+const STOPWORDS = new Set([
+  'the','a','an','in','on','at','to','for','of','and','or','with','by','from',
+  'is','as','be','will','you','we','our','their','this','that','it','its',
+  'are','have','has','been','your','my','not','but','all','can','would','should',
+  'may','also','who','what','how','where','when','which','they','them','its',
+])
+
+function extractKeywords(text) {
+  return (text ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !STOPWORDS.has(w))
+}
+
+function computeRelevance(r, filters, jobKeywords) {
   let score = 0
-  const rSectors   = r.recruiter_sectors?.map(s => s.sector_name) ?? []
-  const rCountries = r.recruiter_locations?.map(l => l.country)   ?? []
+  const rIds       = (r.recruiter_specialisms ?? []).map(rs => rs.specialism_category_id)
+  const rNames     = (r.recruiter_specialisms ?? []).map(rs => rs.specialism_categories?.specialism_name ?? '').filter(Boolean)
+  const rCountries = (r.recruiter_locations ?? []).map(l => l.country)
   const sc         = r.recruiter_scores?.[0] ?? null
 
-  // Sector match (35 pts)
-  if (filters.sectors.length > 0) {
-    const matches = filters.sectors.filter(s => rSectors.includes(s)).length
-    score += (matches / filters.sectors.length) * 35
+  // Specialism match (35 pts) — exact match scores full, partial scores proportionally
+  if (filters.specialisms.length > 0) {
+    const matches = filters.specialisms.filter(id => rIds.includes(id)).length
+    score += (matches / filters.specialisms.length) * 35
   } else {
     score += 35
   }
@@ -40,7 +55,7 @@ function computeRelevance(r, filters) {
     score += 25
   }
 
-  // Performance (20 pts): rating 0-10 + placements 0-10
+  // Performance (20 pts): rating 0–10 + placements 0–10
   score += sc?.overall_average ? (sc.overall_average / 5) * 10 : 5
   score += Math.min((r.total_placements ?? 0) / 10, 10)
 
@@ -51,11 +66,18 @@ function computeRelevance(r, filters) {
   else if (r.response_time_average && r.response_time_average <= 24) score += 2
 
   // Profile completeness (5 pts)
-  if (r.bio)                             score += 1
-  if (r.linkedin_url)                    score += 1
-  if (r.recruiter_tools?.length > 0)     score += 1
-  if (r.linkedin_network_size_tier)      score += 1
+  if (r.bio)                              score += 1
+  if (r.linkedin_url)                     score += 1
+  if (r.recruiter_tools?.length > 0)      score += 1
+  if (r.linkedin_network_size_tier)       score += 1
   if (r.preferred_fee_percentage != null) score += 1
+
+  // Job keyword bonus
+  if (jobKeywords.length > 0) {
+    const haystack = [r.bio ?? '', ...rNames, r.first_name ?? '', r.last_name ?? '']
+      .join(' ').toLowerCase()
+    score += jobKeywords.filter(kw => haystack.includes(kw)).length
+  }
 
   return score
 }
@@ -96,8 +118,8 @@ function EmptyState({ hasFilters, onClear }) {
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       </div>
-      <p className="text-gray-700 font-medium mb-1">No recruiters found matching your criteria</p>
-      <p className="text-sm text-gray-500 mb-5">Try adjusting your filters to see more results</p>
+      <p className="text-gray-700 font-medium mb-1">No recruiters match your criteria</p>
+      <p className="text-sm text-gray-500 mb-5">Try adjusting your filters or search terms</p>
       {hasFilters && (
         <button onClick={onClear} className="btn-secondary text-sm">Clear all filters</button>
       )}
@@ -107,7 +129,7 @@ function EmptyState({ hasFilters, onClear }) {
 
 function FilterSection({ title, children }) {
   return (
-    <div className="border-b border-gray-100 pb-5 mb-5 last:border-0 last:pb-0 last:mb-0">
+    <div className="border-b border-gray-100 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">{title}</h3>
       {children}
     </div>
@@ -128,27 +150,106 @@ function FilterCheckbox({ label, checked, onChange }) {
   )
 }
 
-const EMPTY_FILTERS = { countries: [], sectors: [], fees: [], availability: [] }
+function SpecialismFilterSection({ categories, filters, onToggle }) {
+  const sectors = [...new Set(categories.map(c => c.sector))]
+  const [sectorOpen, setSectorOpen] = useState({})
+
+  function toggleSector(sector) {
+    setSectorOpen(prev => ({ ...prev, [sector]: !prev[sector] }))
+  }
+
+  return (
+    <div className="space-y-0.5">
+      {sectors.map(sector => {
+        const specs = categories.filter(c => c.sector === sector)
+        const isOpen = !!sectorOpen[sector]
+        const count = specs.filter(s => filters.specialisms.includes(s.id)).length
+        return (
+          <div key={sector}>
+            <button
+              type="button"
+              onClick={() => toggleSector(sector)}
+              className="w-full flex items-center justify-between py-1 text-left"
+            >
+              <span className="text-sm text-gray-700 leading-snug">{sector}</span>
+              <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                {count > 0 && (
+                  <span className="text-xs bg-primary-100 text-primary-700 px-1.5 py-0.5 rounded-full font-medium leading-none">
+                    {count}
+                  </span>
+                )}
+                <svg
+                  className={`w-3.5 h-3.5 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            {isOpen && (
+              <div className="ml-3 mt-0.5 mb-1 space-y-0.5">
+                {specs.map(spec => (
+                  <FilterCheckbox
+                    key={spec.id}
+                    label={spec.specialism_name}
+                    checked={filters.specialisms.includes(spec.id)}
+                    onChange={() => onToggle('specialisms', spec.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+const EMPTY_FILTERS = { countries: [], specialisms: [], fees: [], availability: [] }
 
 export default function BrowseRecruiters() {
   const { user, logout } = useAuth()
-  const [searchParams]                = useSearchParams()
-  const jobId                         = searchParams.get('job')
-  const [jobTitle, setJobTitle]       = useState(null)
-  const [recruiters, setRecruiters]   = useState([])
-  const [loading, setLoading]         = useState(true)
-  const [sort, setSort]               = useState('relevance')
-  const [filters, setFilters]         = useState(EMPTY_FILTERS)
+  const [searchParams]              = useSearchParams()
+  const jobId                       = searchParams.get('job')
 
+  const [recruiters, setRecruiters] = useState([])
+  const [allCategories, setAllCategories] = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [sort, setSort]             = useState('relevance')
+  const [filters, setFilters]       = useState(EMPTY_FILTERS)
+  const [search, setSearch]         = useState('')
+  const [jobTitle, setJobTitle]     = useState(null)
+  const [jobKeywords, setJobKeywords] = useState([])
+
+  // Load specialism categories for the filter sidebar
   useEffect(() => {
-    if (!user || !jobId) return
-    supabase.from('jobs').select('title').eq('id', jobId).single()
-      .then(({ data }) => { if (data) setJobTitle(data.title) })
-  }, [user, jobId])
+    supabase
+      .from('specialism_categories')
+      .select('id, sector, specialism_name')
+      .order('display_order')
+      .then(({ data }) => { if (data) setAllCategories(data) })
+  }, [])
 
+  // Load job details and extract keywords
+  useEffect(() => {
+    if (!jobId) return
+    supabase
+      .from('jobs')
+      .select('title, description, sector')
+      .eq('id', jobId)
+      .single()
+      .then(({ data }) => {
+        if (!data) return
+        setJobTitle(data.title)
+        const raw = [data.title ?? '', data.description ?? '', data.sector ?? ''].join(' ')
+        const kws = [...new Set(extractKeywords(raw))]
+        setJobKeywords(kws)
+      })
+  }, [jobId])
+
+  // Load approved recruiters with specialisms
   useEffect(() => {
     if (!user) { setLoading(false); return }
-    console.log('Auth user at query time:', user)
     supabase
       .from('recruiter_profiles')
       .select(`
@@ -156,14 +257,16 @@ export default function BrowseRecruiters() {
         years_experience, availability_status, preferred_fee_percentage,
         total_placements, linkedin_url, linkedin_network_size_tier,
         response_time_average, last_active_at, created_at,
-        recruiter_sectors!left(sector_name),
+        recruiter_specialisms!left(
+          specialism_category_id,
+          specialism_categories(sector, specialism_name)
+        ),
         recruiter_locations!left(country, region),
         recruiter_tools!left(tool_name, verified),
         recruiter_scores!left(overall_average, total_hm_reviews, total_candidate_reviews)
       `)
       .eq('status', 'approved')
       .then(({ data, error }) => {
-        console.log('Supabase recruiter_profiles result:', data, error)
         if (!error && data) setRecruiters(data)
         setLoading(false)
       })
@@ -178,18 +281,23 @@ export default function BrowseRecruiters() {
     }))
   }
 
-  const clearFilters = useCallback(() => setFilters(EMPTY_FILTERS), [])
+  const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setSearch('') }, [])
 
-  const hasActiveFilters = Object.values(filters).some(a => a.length > 0)
+  const hasActiveFilters = search.length >= 3 || Object.values(filters).some(a => a.length > 0)
+
+  const searchWords = useMemo(() => {
+    if (search.length < 3) return []
+    return extractKeywords(search)
+  }, [search])
 
   const filtered = useMemo(() => recruiters.filter(r => {
     if (filters.countries.length > 0) {
-      const rc = r.recruiter_locations?.map(l => l.country) ?? []
+      const rc = (r.recruiter_locations ?? []).map(l => l.country)
       if (!filters.countries.some(c => rc.includes(c))) return false
     }
-    if (filters.sectors.length > 0) {
-      const rs = r.recruiter_sectors?.map(s => s.sector_name) ?? []
-      if (!filters.sectors.some(s => rs.includes(s))) return false
+    if (filters.specialisms.length > 0) {
+      const rIds = (r.recruiter_specialisms ?? []).map(rs => rs.specialism_category_id)
+      if (!filters.specialisms.some(id => rIds.includes(id))) return false
     }
     if (filters.fees.length > 0) {
       const fee = String(Math.round(r.preferred_fee_percentage ?? -1))
@@ -198,16 +306,27 @@ export default function BrowseRecruiters() {
     if (filters.availability.length > 0) {
       if (!filters.availability.includes(r.availability_status)) return false
     }
+    if (searchWords.length > 0) {
+      const rNames = (r.recruiter_specialisms ?? [])
+        .map(rs => rs.specialism_categories?.specialism_name ?? '')
+      const haystack = [r.bio ?? '', r.first_name ?? '', r.last_name ?? '', ...rNames]
+        .join(' ').toLowerCase()
+      if (!searchWords.some(kw => haystack.includes(kw))) return false
+    }
     return true
-  }), [recruiters, filters])
+  }), [recruiters, filters, searchWords])
 
   const sorted = useMemo(() => {
     const arr = [...filtered]
     switch (sort) {
       case 'relevance':
-        return arr.sort((a, b) => computeRelevance(b, filters) - computeRelevance(a, filters))
+        return arr.sort((a, b) =>
+          computeRelevance(b, filters, jobKeywords) - computeRelevance(a, filters, jobKeywords)
+        )
       case 'rating':
-        return arr.sort((a, b) => (b.recruiter_scores?.[0]?.overall_average ?? 0) - (a.recruiter_scores?.[0]?.overall_average ?? 0))
+        return arr.sort((a, b) =>
+          (b.recruiter_scores?.[0]?.overall_average ?? 0) - (a.recruiter_scores?.[0]?.overall_average ?? 0)
+        )
       case 'placements':
         return arr.sort((a, b) => (b.total_placements ?? 0) - (a.total_placements ?? 0))
       case 'fee_asc':
@@ -226,7 +345,7 @@ export default function BrowseRecruiters() {
       default:
         return arr
     }
-  }, [filtered, sort, filters])
+  }, [filtered, sort, filters, jobKeywords])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -246,33 +365,51 @@ export default function BrowseRecruiters() {
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-6">
+        <div className="mb-5">
           <h1 className="text-2xl font-bold text-gray-900">Browse Recruiters</h1>
           <p className="text-gray-500 mt-1 text-sm">Find the right specialist for your next hire</p>
         </div>
 
-        {/* Job context banner */}
-        {jobId && (
-          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <p className="text-sm text-green-800">
-                {jobTitle
-                  ? <>Browsing recruiters for: <strong>{jobTitle}</strong></>
-                  : 'Role posted — select a recruiter to start a conversation'}
-              </p>
-            </div>
-            <Link to="/post-job" className="text-xs text-green-700 hover:underline flex-shrink-0 ml-4">
+        {/* Search */}
+        <div className="mb-4">
+          <div className="relative max-w-lg">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              className="input pl-9 w-full"
+              placeholder="Search by name, specialism, or keyword…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          {search.length > 0 && search.length < 3 && (
+            <p className="text-xs text-gray-400 mt-1 ml-1">Type at least 3 characters to search</p>
+          )}
+        </div>
+
+        {/* Job match banner */}
+        {jobId && jobTitle && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-6 flex items-center gap-2">
+            <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <p className="text-sm text-blue-800">
+              Showing recruiters matched to your role: <strong>{jobTitle}</strong>
+            </p>
+            <Link to="/post-job" className="text-xs text-blue-600 hover:underline ml-auto flex-shrink-0">
               Post another role
             </Link>
           </div>
         )}
 
         <div className="flex gap-8 items-start">
-          {/* ── Filter sidebar ── */}
-          <aside className="w-52 flex-shrink-0 bg-white rounded-xl border border-gray-200 p-5 sticky top-24">
+          {/* Filter sidebar */}
+          <aside className="w-60 flex-shrink-0 bg-white rounded-xl border border-gray-200 p-5 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-900">Filters</h2>
               {hasActiveFilters && (
@@ -285,35 +422,33 @@ export default function BrowseRecruiters() {
             <FilterSection title="Country">
               <div className="space-y-1">
                 {FILTER_COUNTRIES.map(c => (
-                  <FilterCheckbox
-                    key={c} label={c}
+                  <FilterCheckbox key={c} label={c}
                     checked={filters.countries.includes(c)}
-                    onChange={() => toggle('countries', c)}
-                  />
+                    onChange={() => toggle('countries', c)} />
                 ))}
               </div>
             </FilterSection>
 
-            <FilterSection title="Sector">
-              <div className="space-y-1">
-                {FILTER_SECTORS.map(s => (
-                  <FilterCheckbox
-                    key={s} label={s}
-                    checked={filters.sectors.includes(s)}
-                    onChange={() => toggle('sectors', s)}
-                  />
-                ))}
-              </div>
+            <FilterSection title="Specialisms">
+              {allCategories.length > 0 ? (
+                <SpecialismFilterSection
+                  categories={allCategories}
+                  filters={filters}
+                  onToggle={toggle}
+                />
+              ) : (
+                <div className="flex justify-center py-3">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600" />
+                </div>
+              )}
             </FilterSection>
 
             <FilterSection title="Fee">
               <div className="space-y-1">
                 {FILTER_FEES.map(f => (
-                  <FilterCheckbox
-                    key={f.value} label={f.label}
+                  <FilterCheckbox key={f.value} label={f.label}
                     checked={filters.fees.includes(f.value)}
-                    onChange={() => toggle('fees', f.value)}
-                  />
+                    onChange={() => toggle('fees', f.value)} />
                 ))}
               </div>
             </FilterSection>
@@ -321,23 +456,23 @@ export default function BrowseRecruiters() {
             <FilterSection title="Availability">
               <div className="space-y-1">
                 {FILTER_AVAIL.map(a => (
-                  <FilterCheckbox
-                    key={a.value} label={a.label}
+                  <FilterCheckbox key={a.value} label={a.label}
                     checked={filters.availability.includes(a.value)}
-                    onChange={() => toggle('availability', a.value)}
-                  />
+                    onChange={() => toggle('availability', a.value)} />
                 ))}
               </div>
             </FilterSection>
           </aside>
 
-          {/* ── Results ── */}
+          {/* Results */}
           <div className="flex-1 min-w-0">
-            {/* Sort bar */}
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-gray-500">
                 {loading ? 'Loading…' : (
-                  <><span className="font-semibold text-gray-800">{sorted.length}</span> recruiter{sorted.length !== 1 ? 's' : ''} found</>
+                  <>
+                    <span className="font-semibold text-gray-800">{sorted.length}</span>{' '}
+                    recruiter{sorted.length !== 1 ? 's' : ''} found
+                  </>
                 )}
               </p>
               <select
@@ -345,9 +480,7 @@ export default function BrowseRecruiters() {
                 value={sort}
                 onChange={e => setSort(e.target.value)}
               >
-                {SORT_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
+                {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
 

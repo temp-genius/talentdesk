@@ -1,11 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
+import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 
-const SECTORS = [
-  'Technology', 'Finance', 'Legal', 'HR', 'Marketing',
-  'Operations', 'Logistics', 'Construction', 'Healthcare', 'Executive',
-]
 const MARKETS = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
 const TOTAL_STEPS = 4
 
@@ -49,6 +47,15 @@ export default function RecruiterSignup() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [specialismCategories, setSpecialismCategories] = useState([])
+
+  useEffect(() => {
+    supabase
+      .from('specialism_categories')
+      .select('id, sector, specialism_name')
+      .order('display_order')
+      .then(({ data }) => { if (data) setSpecialismCategories(data) })
+  }, [])
 
   const [form, setForm] = useState({
     firstName: '',
@@ -56,7 +63,7 @@ export default function RecruiterSignup() {
     email: '',
     password: '',
     yearsExperience: '',
-    sectors: [],
+    specialisms: [],
     markets: [],
     linkedinLicence: '',
     linkedinUrl: '',
@@ -90,7 +97,7 @@ export default function RecruiterSignup() {
     }
     if (step === 2) {
       if (!form.yearsExperience) return 'Years of experience is required'
-      if (form.sectors.length === 0) return 'Please select at least one sector'
+      if (form.specialisms.length === 0) return 'Please select at least one specialism'
       if (form.markets.length === 0) return 'Please select at least one market'
     }
     if (step === 3) {
@@ -131,7 +138,7 @@ export default function RecruiterSignup() {
         userType: 'recruiter',
         firstName: form.firstName,
         lastName: form.lastName,
-        sectors: form.sectors,
+        specialisms: form.specialisms,
         markets: form.markets,
         years_experience: form.yearsExperience ? parseInt(form.yearsExperience, 10) : null,
         linkedin_url: form.linkedinUrl || null,
@@ -240,10 +247,10 @@ export default function RecruiterSignup() {
             </div>
           )}
 
-          {/* ── Step 2: Experience ── */}
+          {/* ── Step 2: Specialisms & markets ── */}
           {step === 2 && (
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-5">Your experience</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-5">Your specialisms</h2>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -262,21 +269,19 @@ export default function RecruiterSignup() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Sectors you specialise in
+                    Sectors and specialisms you recruit in
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {SECTORS.map(sector => (
-                      <label key={sector} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={form.sectors.includes(sector)}
-                          onChange={() => toggle('sectors', sector)}
-                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                        />
-                        {sector}
-                      </label>
-                    ))}
-                  </div>
+                  {specialismCategories.length === 0 ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
+                    </div>
+                  ) : (
+                    <SpecialismSelector
+                      categories={specialismCategories}
+                      selected={form.specialisms}
+                      onChange={v => set('specialisms', v)}
+                    />
+                  )}
                 </div>
 
                 <div>

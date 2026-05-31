@@ -104,7 +104,7 @@ export function AuthProvider({ children }) {
 
   async function signup({
     email, password, userType: type,
-    firstName, lastName, sectors, markets, ...rest
+    firstName, lastName, sectors, markets, specialisms, ...rest
   }) {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -162,6 +162,15 @@ export function AuthProvider({ children }) {
               markets.map(country => ({ recruiter_profile_id: profileId, country }))
             )
             if (locErr) console.error('[AuthContext] recruiter_locations insert failed:', locErr)
+          }
+          if (specialisms?.length > 0) {
+            const { error: spErr } = await supabase.from('recruiter_specialisms').insert(
+              specialisms.map(specialism_category_id => ({
+                recruiter_profile_id: profileId,
+                specialism_category_id,
+              }))
+            )
+            if (spErr) console.error('[AuthContext] recruiter_specialisms insert failed:', spErr)
           }
         }
       } catch (e) {

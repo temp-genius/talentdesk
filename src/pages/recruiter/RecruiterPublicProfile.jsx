@@ -211,7 +211,7 @@ export default function RecruiterPublicProfile() {
           years_experience, availability_status, preferred_fee_percentage,
           total_placements, average_days_to_shortlist, linkedin_url,
           linkedin_network_size_tier, response_time_average, created_at,
-          recruiter_sectors(sector_name),
+          recruiter_specialisms!left(specialism_categories(sector, specialism_name)),
           recruiter_locations(country, region),
           recruiter_tools(tool_name, verified),
           recruiter_scores(overall_average, total_hm_reviews, total_candidate_reviews, average_candidate_satisfaction)
@@ -270,17 +270,26 @@ export default function RecruiterPublicProfile() {
   }
 
   const scores     = profile.recruiter_scores?.[0] ?? null
-  const sectors    = profile.recruiter_sectors?.map(s => s.sector_name) ?? []
   const markets    = profile.recruiter_locations?.map(l => l.country) ?? []
   const tools      = profile.recruiter_tools ?? []
   const rating     = scores?.overall_average ?? null
   const totalReviews = (scores?.total_hm_reviews ?? 0) + (scores?.total_candidate_reviews ?? 0)
 
+  // Group specialisms by sector
+  const specialismsBySector = (profile.recruiter_specialisms ?? []).reduce((acc, rs) => {
+    const cat = rs.specialism_categories
+    if (!cat) return acc
+    if (!acc[cat.sector]) acc[cat.sector] = []
+    acc[cat.sector].push(cat.specialism_name)
+    return acc
+  }, {})
+  const firstSector = Object.keys(specialismsBySector)[0] ?? null
+
   const initials = [profile.first_name, profile.last_name]
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
 
   const fullName  = [profile.first_name, profile.last_name].filter(Boolean).join(' ')
-  const headline  = [sectors[0], profile.years_experience ? `${profile.years_experience} yrs exp` : null].filter(Boolean).join(' · ')
+  const headline  = [firstSector, profile.years_experience ? `${profile.years_experience} yrs exp` : null].filter(Boolean).join(' · ')
   const isHM      = user && userType === 'hiring_manager'
 
   return (
@@ -377,14 +386,21 @@ export default function RecruiterPublicProfile() {
               </div>
             </div>
 
-            {/* Sectors & markets */}
-            {(sectors.length > 0 || markets.length > 0) && (
-              <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-                {sectors.length > 0 && (
+            {/* Specialisms & markets */}
+            {(Object.keys(specialismsBySector).length > 0 || markets.length > 0) && (
+              <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+                {Object.keys(specialismsBySector).length > 0 && (
                   <div>
-                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Sectors</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {sectors.map(s => <Tag key={s} label={s} color="blue" />)}
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Specialisms</h2>
+                    <div className="space-y-3">
+                      {Object.entries(specialismsBySector).map(([sector, specs]) => (
+                        <div key={sector}>
+                          <p className="text-xs font-semibold text-gray-500 mb-1.5">{sector}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {specs.map(s => <Tag key={s} label={s} color="blue" />)}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

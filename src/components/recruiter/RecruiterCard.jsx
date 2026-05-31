@@ -30,18 +30,22 @@ function AvailabilityBadge({ status }) {
 }
 
 export default function RecruiterCard({ recruiter, jobId }) {
-  const jobParam = jobId ? `?job=${jobId}` : ''
-  const scores   = recruiter.recruiter_scores?.[0] ?? null
-  const sectors  = recruiter.recruiter_sectors?.map(s => s.sector_name) ?? []
-  const rating   = scores?.overall_average ?? null
-  const reviews  = (scores?.total_hm_reviews ?? 0) + (scores?.total_candidate_reviews ?? 0)
+  const jobParam    = jobId ? `?job=${jobId}` : ''
+  const scores      = recruiter.recruiter_scores?.[0] ?? null
+  const rating      = scores?.overall_average ?? null
+  const reviews     = (scores?.total_hm_reviews ?? 0) + (scores?.total_candidate_reviews ?? 0)
   const hasLinkedIn = !!(recruiter.linkedin_url && recruiter.linkedin_network_size_tier)
+
+  const specialisms = (recruiter.recruiter_specialisms ?? [])
+    .map(rs => rs.specialism_categories?.specialism_name)
+    .filter(Boolean)
+  const firstSector = recruiter.recruiter_specialisms?.[0]?.specialism_categories?.sector ?? null
 
   const initials = [recruiter.first_name, recruiter.last_name]
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
 
   const headline = [
-    sectors[0],
+    firstSector,
     recruiter.years_experience ? `${recruiter.years_experience} yrs exp` : null,
   ].filter(Boolean).join(' · ')
 
@@ -106,14 +110,14 @@ export default function RecruiterCard({ recruiter, jobId }) {
         )}
       </div>
 
-      {/* Sector tags */}
-      {sectors.length > 0 && (
+      {/* Specialism tags */}
+      {specialisms.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {sectors.slice(0, 4).map(s => (
-            <span key={s} className="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-xs">{s}</span>
+          {specialisms.slice(0, 3).map(s => (
+            <span key={s} className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium">{s}</span>
           ))}
-          {sectors.length > 4 && (
-            <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-400 text-xs">+{sectors.length - 4}</span>
+          {specialisms.length > 3 && (
+            <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-400 text-xs">+{specialisms.length - 3}</span>
           )}
         </div>
       )}

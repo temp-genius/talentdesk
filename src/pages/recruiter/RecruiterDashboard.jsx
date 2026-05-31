@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 
 const STATUS_STYLES = {
   pending:  'bg-yellow-100 text-yellow-800',
@@ -38,6 +39,13 @@ export default function RecruiterDashboard() {
   const [assignments,    setAssignments]   = useState([])
   const [loadingJobs,    setLoadingJobs]   = useState(false)
 
+  // Specialism editing
+  const [allCategories,      setAllCategories]      = useState([])
+  const [currentSpecialisms, setCurrentSpecialisms] = useState([])
+  const [editingSpecialisms, setEditingSpecialisms] = useState(false)
+  const [draftSpecialisms,   setDraftSpecialisms]   = useState([])
+  const [savingSpecialisms,  setSavingSpecialisms]  = useState(false)
+
   // Load recruiter profile (with id and total_placements)
   useEffect(() => {
     if (!user) return
@@ -51,6 +59,47 @@ export default function RecruiterDashboard() {
         setLoadingProfile(false)
       })
   }, [user])
+
+  // Load specialism categories + current specialisms once profile is approved
+  useEffect(() => {
+    if (!profile?.id || profile.status !== 'approved') return
+    supabase
+      .from('specialism_categories')
+      .select('id, sector, specialism_name')
+      .order('display_order')
+      .then(({ data }) => { if (data) setAllCategories(data) })
+    supabase
+      .from('recruiter_specialisms')
+      .select('specialism_category_id')
+      .eq('recruiter_profile_id', profile.id)
+      .then(({ data }) => {
+        if (data) setCurrentSpecialisms(data.map(s => s.specialism_category_id))
+      })
+  }, [profile?.id, profile?.status])
+
+  async function saveSpecialisms() {
+    setSavingSpecialisms(true)
+    await supabase
+      .from('recruiter_specialisms')
+      .delete()
+      .eq('recruiter_profile_id', profile.id)
+    if (draftSpecialisms.length > 0) {
+      await supabase.from('recruiter_specialisms').insert(
+        draftSpecialisms.map(specialism_category_id => ({
+          recruiter_profile_id: profile.id,
+          specialism_category_id,
+        }))
+      )
+    }
+    setCurrentSpecialisms(draftSpecialisms)
+    setEditingSpecialisms(false)
+    setSavingSpecialisms(false)
+  }
+
+  function startEditSpecialisms() {
+    setDraftSpecialisms([...currentSpecialisms])
+    setEditingSpecialisms(true)
+  }
 
   // Load active assignments once profile id is available
   useEffect(() => {
@@ -174,6 +223,72 @@ export default function RecruiterDashboard() {
                 </dl>
               </div>
             </div>
+
+            {/* Specialisms */}
+            {profile?.status === 'approved' && (
+              <div className="card">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Specialisms</h2>
+                  {!editingSpecialisms && (
+                    <button onClick={startEditSpecialisms} className="text-xs text-primary-600 hover:underline">
+                      {currentSpecialisms.length > 0 ? 'Edit' : 'Add Specialisms'}
+                    </button>
+                  )}
+                </div>
+
+                {editingSpecialisms ? (
+                  <div className="space-y-4">
+                    <SpecialismSelector
+                      categories={allCategories}
+                      selected={draftSpecialisms}
+                      onChange={setDraftSpecialisms}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveSpecialisms}
+                        disabled={savingSpecialisms}
+                        className="btn-primary flex-1 text-sm"
+                      >
+                        {savingSpecialisms ? 'Saving…' : 'Save Specialisms'}
+                      </button>
+                      <button
+                        onClick={() => setEditingSpecialisms(false)}
+                        className="btn-secondary flex-1 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : currentSpecialisms.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">
+                    No specialisms added yet. Add them so hiring managers can find you.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {Object.entries(
+                      allCategories
+                        .filter(c => currentSpecialisms.includes(c.id))
+                        .reduce((acc, c) => {
+                          if (!acc[c.sector]) acc[c.sector] = []
+                          acc[c.sector].push(c.specialism_name)
+                          return acc
+                        }, {})
+                    ).map(([sector, specs]) => (
+                      <div key={sector}>
+                        <p className="text-xs font-semibold text-gray-500 mb-1">{sector}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {specs.map(s => (
+                            <span key={s} className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Active assignments */}
             {profile?.status === 'approved' && (
