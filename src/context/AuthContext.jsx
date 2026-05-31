@@ -120,14 +120,9 @@ export function AuthProvider({ children }) {
       return { ...authData, emailConfirmationRequired: true }
     }
 
-    const { error: userError } = await supabase.from('users').insert({
-      id: userId,
-      email,
-      user_type: type,
-      email_verified: false,
-      status: 'pending',
-    })
-    if (userError) throw userError
+    // Give the handle_new_user trigger time to insert into public.users
+    // before profile inserts that FK-reference it run.
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     if (type === 'recruiter') {
       try {
@@ -192,6 +187,7 @@ export function AuthProvider({ children }) {
           industry:       rest.industry ?? null,
           company_size:   rest.companySize ?? null,
           country:        rest.country ?? null,
+          trust_tier:     'new',
         })
         if (hcpError) console.error('[AuthContext] hiring_company_profiles insert failed:', hcpError)
       } catch (e) {
