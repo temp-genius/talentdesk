@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -6,11 +6,33 @@ import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 
 const MARKETS  = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
 const BIO_MAX  = 600
+const CLIENT_TYPES = [
+  { value: 'startup',      label: 'Startups' },
+  { value: 'scaleup',      label: 'Scale-ups' },
+  { value: 'enterprise',   label: 'Enterprise' },
+  { value: 'sme',          label: 'SME' },
+  { value: 'public_sector',label: 'Public Sector' },
+]
+
+const CAREER_DNA_OPTIONS = [
+  { value: 'agency',   label: 'Agency',   desc: 'Grew up placing across multiple clients in a recruitment agency' },
+  { value: 'inhouse',  label: 'In-house',  desc: 'Built career as an internal talent partner within companies' },
+  { value: 'hybrid',   label: 'Hybrid',    desc: 'Mix of both agency and in-house experience' },
+]
+
+const CAPACITY_OPTIONS = [
+  { value: 'open_to_new',  label: 'Open to new roles',    color: 'green' },
+  { value: 'nearly_full',  label: 'Nearly at capacity',   color: 'amber' },
+  { value: 'full',         label: 'At full capacity',     color: 'red'   },
+]
+
 const EMPTY_FORM = {
   firstName: '', lastName: '', bio: '', headline: '',
   linkedinUrl: '', yearsExperience: '',
   preferredFeePercentage: '', availabilityStatus: 'available',
   samplePlacements: '',
+  careerDna: '', capacityStatus: 'open_to_new',
+  previousEmployers: '', previousClientTypes: [],
 }
 
 function calcScore(form, specialisms, markets) {
@@ -66,14 +88,66 @@ function InfoBox({ children }) {
   )
 }
 
+function CardSelector({ options, value, onChange }) {
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {options.map(opt => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(value === opt.value ? '' : opt.value)}
+          className={`rounded-lg border-2 p-3 text-left transition-all ${
+            value === opt.value
+              ? 'border-primary-500 bg-primary-50'
+              : 'border-gray-200 hover:border-gray-300 bg-white'
+          }`}
+        >
+          <p className={`text-sm font-semibold ${value === opt.value ? 'text-primary-700' : 'text-gray-900'}`}>
+            {opt.label}
+          </p>
+          {opt.desc && (
+            <p className="text-xs text-gray-500 mt-1 leading-snug">{opt.desc}</p>
+          )}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function CapacitySelector({ value, onChange }) {
+  const colorMap = { green: 'border-green-500 bg-green-50', amber: 'border-amber-500 bg-amber-50', red: 'border-red-500 bg-red-50' }
+  const textMap  = { green: 'text-green-700', amber: 'text-amber-700', red: 'text-red-700' }
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {CAPACITY_OPTIONS.map(opt => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`rounded-lg border-2 p-3 text-left transition-all ${
+            value === opt.value ? colorMap[opt.color] : 'border-gray-200 hover:border-gray-300 bg-white'
+          }`}
+        >
+          <p className={`text-sm font-semibold ${value === opt.value ? textMap[opt.color] : 'text-gray-900'}`}>
+            {opt.label}
+          </p>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export default function EditProfile() {
   const { user } = useAuth()
+  const fileInputRef = useRef(null)
 
-  const [profileId, setProfileId] = useState(null)
-  const [form,      setForm]      = useState(EMPTY_FORM)
-  const [specialisms, setSpecialisms] = useState([])
-  const [markets,     setMarkets]     = useState([])
-  const [allCategories, setAllCategories] = useState([])
+  const [profileId,      setProfileId]     = useState(null)
+  const [form,           setForm]          = useState(EMPTY_FORM)
+  const [specialisms,    setSpecialisms]   = useState([])
+  const [markets,        setMarkets]       = useState([])
+  const [allCategories,  setAllCategories] = useState([])
+  const [photoUrl,       setPhotoUrl]      = useState(null)
+  const [photoUploading, setPhotoUploading]= useState(false)
 
   const [loading, setLoading] = useState(true)
   const [saving,  setSaving]  = useState(false)
@@ -86,7 +160,10 @@ export default function EditProfile() {
       const [profileRes, catsRes] = await Promise.all([
         supabase
           .from('recruiter_profiles')
-          .select('id, first_name, last_name, bio, headline, linkedin_url, years_experience, preferred_fee_percentage, availability_status, sample_placements')
+          .select(`id, first_name, last_name, bio, headline, linkedin_url, years_experience,
+                   preferred_fee_percentage, availability_status, sample_placements,
+                   profile_photo_url, career_dna, capacity_status,
+                   previous_employers, previous_client_types`)
           .eq('user_id', user.id)
           .single(),
         supabase
@@ -99,16 +176,21 @@ export default function EditProfile() {
       if (!p) { setLoading(false); return }
 
       setProfileId(p.id)
+      setPhotoUrl(p.profile_photo_url ?? null)
       setForm({
-        firstName:            p.first_name ?? '',
-        lastName:             p.last_name ?? '',
-        bio:                  p.bio ?? '',
-        headline:             p.headline ?? '',
-        linkedinUrl:          p.linkedin_url ?? '',
-        yearsExperience:      p.years_experience?.toString() ?? '',
+        firstName:              p.first_name ?? '',
+        lastName:               p.last_name ?? '',
+        bio:                    p.bio ?? '',
+        headline:               p.headline ?? '',
+        linkedinUrl:            p.linkedin_url ?? '',
+        yearsExperience:        p.years_experience?.toString() ?? '',
         preferredFeePercentage: p.preferred_fee_percentage?.toString() ?? '',
-        availabilityStatus:   p.availability_status ?? 'available',
-        samplePlacements:     p.sample_placements ?? '',
+        availabilityStatus:     p.availability_status ?? 'available',
+        samplePlacements:       p.sample_placements ?? '',
+        careerDna:              p.career_dna ?? '',
+        capacityStatus:         p.capacity_status ?? 'open_to_new',
+        previousEmployers:      p.previous_employers ?? '',
+        previousClientTypes:    p.previous_client_types ?? [],
       })
       if (catsRes.data) setAllCategories(catsRes.data)
 
@@ -133,6 +215,43 @@ export default function EditProfile() {
     )
   }
 
+  function toggleClientType(value) {
+    setForm(prev => ({
+      ...prev,
+      previousClientTypes: prev.previousClientTypes.includes(value)
+        ? prev.previousClientTypes.filter(v => v !== value)
+        : [...prev.previousClientTypes, value],
+    }))
+  }
+
+  async function handlePhotoUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    setPhotoUploading(true)
+    setError('')
+
+    const ext  = file.name.split('.').pop()
+    const path = `${user.id}/avatar.${ext}`
+
+    const { error: uploadErr } = await supabase.storage
+      .from('profile-photos')
+      .upload(path, file, { upsert: true, contentType: file.type })
+
+    if (uploadErr) { setError(uploadErr.message); setPhotoUploading(false); return }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('profile-photos')
+      .getPublicUrl(path)
+
+    await supabase
+      .from('recruiter_profiles')
+      .update({ profile_photo_url: publicUrl })
+      .eq('id', profileId)
+
+    setPhotoUrl(`${publicUrl}?t=${Date.now()}`)
+    setPhotoUploading(false)
+  }
+
   async function handleSave() {
     if (!profileId) return
     setSaving(true)
@@ -151,12 +270,15 @@ export default function EditProfile() {
         preferred_fee_percentage: form.preferredFeePercentage ? parseFloat(form.preferredFeePercentage) : null,
         availability_status:      form.availabilityStatus,
         sample_placements:        form.samplePlacements.trim() || null,
+        career_dna:               form.careerDna || null,
+        capacity_status:          form.capacityStatus,
+        previous_employers:       form.previousEmployers.trim() || null,
+        previous_client_types:    form.previousClientTypes.length > 0 ? form.previousClientTypes : null,
       })
       .eq('id', profileId)
 
     if (updateErr) { setError(updateErr.message); setSaving(false); return }
 
-    // Sync specialisms
     await supabase.from('recruiter_specialisms').delete().eq('recruiter_profile_id', profileId)
     if (specialisms.length > 0) {
       await supabase.from('recruiter_specialisms').insert(
@@ -164,7 +286,6 @@ export default function EditProfile() {
       )
     }
 
-    // Sync markets
     await supabase.from('recruiter_locations').delete().eq('recruiter_profile_id', profileId)
     if (markets.length > 0) {
       await supabase.from('recruiter_locations').insert(
@@ -179,6 +300,7 @@ export default function EditProfile() {
 
   const score    = useMemo(() => calcScore(form, specialisms, markets), [form, specialisms, markets])
   const initials = [form.firstName, form.lastName].filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
+  const showClientTypes = form.careerDna === 'agency' || form.careerDna === 'hybrid'
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -188,7 +310,6 @@ export default function EditProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sticky header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -209,26 +330,53 @@ export default function EditProfile() {
       </header>
 
       <div className="max-w-2xl mx-auto px-6 py-8">
-        {/* Completeness bar */}
         <CompletenessBar score={score} />
 
-        {/* Profile photo */}
+        {/* Profile Photo */}
         <SectionCard title="Profile Photo">
           <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-full bg-primary-100 text-primary-700 font-bold text-2xl flex items-center justify-center flex-shrink-0">
-              {initials}
+            <div className="w-20 h-20 rounded-full bg-primary-100 text-primary-700 font-bold text-2xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {photoUrl
+                ? <img src={photoUrl} alt={initials} className="w-full h-full object-cover" />
+                : initials}
             </div>
             <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
               <button
                 type="button"
                 className="btn-secondary text-sm"
-                onClick={() => alert('Photo upload is coming in a future update.')}
+                disabled={photoUploading}
+                onClick={() => fileInputRef.current?.click()}
               >
-                Upload Photo
+                {photoUploading ? 'Uploading…' : photoUrl ? 'Change Photo' : 'Upload Photo'}
               </button>
-              <p className="text-xs text-gray-400 mt-1.5">Photo upload coming soon</p>
+              <p className="text-xs text-gray-400 mt-1.5">JPG or PNG, recommended 400×400px</p>
             </div>
           </div>
+        </SectionCard>
+
+        {/* Career DNA */}
+        <SectionCard title="Career DNA">
+          <InfoBox>
+            Your career DNA tells hiring managers where you developed your skills. Agency recruiters bring broad market knowledge; in-house recruiters bring deep process and culture-fit expertise; hybrid recruiters offer both.
+          </InfoBox>
+          <CardSelector
+            options={CAREER_DNA_OPTIONS}
+            value={form.careerDna}
+            onChange={v => setField('careerDna', v)}
+          />
+        </SectionCard>
+
+        {/* Capacity Status */}
+        <SectionCard title="Current Capacity">
+          <p className="text-sm text-gray-500 mb-3">Let hiring managers know how much bandwidth you currently have.</p>
+          <CapacitySelector value={form.capacityStatus} onChange={v => setField('capacityStatus', v)} />
         </SectionCard>
 
         {/* Bio */}
@@ -258,21 +406,11 @@ export default function EditProfile() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">First name</label>
-                <input
-                  type="text" className="input"
-                  value={form.firstName}
-                  onChange={e => setField('firstName', e.target.value)}
-                  placeholder="Jane"
-                />
+                <input type="text" className="input" value={form.firstName} onChange={e => setField('firstName', e.target.value)} placeholder="Jane" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last name</label>
-                <input
-                  type="text" className="input"
-                  value={form.lastName}
-                  onChange={e => setField('lastName', e.target.value)}
-                  placeholder="Smith"
-                />
+                <input type="text" className="input" value={form.lastName} onChange={e => setField('lastName', e.target.value)} placeholder="Smith" />
               </div>
             </div>
 
@@ -293,23 +431,13 @@ export default function EditProfile() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 LinkedIn profile URL <span className="text-red-500">*</span>
               </label>
-              <input
-                type="url" className="input"
-                value={form.linkedinUrl}
-                onChange={e => setField('linkedinUrl', e.target.value)}
-                placeholder="https://www.linkedin.com/in/yourname"
-              />
+              <input type="url" className="input" value={form.linkedinUrl} onChange={e => setField('linkedinUrl', e.target.value)} placeholder="https://www.linkedin.com/in/yourname" />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Years experience</label>
-                <input
-                  type="number" min="0" max="50" className="input"
-                  value={form.yearsExperience}
-                  onChange={e => setField('yearsExperience', e.target.value)}
-                  placeholder="e.g. 5"
-                />
+                <input type="number" min="0" max="50" className="input" value={form.yearsExperience} onChange={e => setField('yearsExperience', e.target.value)} placeholder="e.g. 5" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Preferred fee</label>
@@ -332,14 +460,46 @@ export default function EditProfile() {
           </div>
         </SectionCard>
 
+        {/* Previous Employers */}
+        <SectionCard title="Previous Employers">
+          <InfoBox>
+            List the companies you have worked at as a recruiter. This builds trust with hiring managers who recognise reputable agencies or companies you have trained at.
+          </InfoBox>
+          <input
+            type="text"
+            className="input"
+            value={form.previousEmployers}
+            onChange={e => setField('previousEmployers', e.target.value)}
+            placeholder="e.g. Hays, Michael Page, Stripe, Intercom"
+            maxLength={300}
+          />
+
+          {showClientTypes && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Client types you have placed for
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {CLIENT_TYPES.map(ct => (
+                  <label key={ct.value} className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.previousClientTypes.includes(ct.value)}
+                      onChange={() => toggleClientType(ct.value)}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+                    />
+                    {ct.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </SectionCard>
+
         {/* Specialisms */}
         <SectionCard title="Specialisms">
           {allCategories.length > 0 ? (
-            <SpecialismSelector
-              categories={allCategories}
-              selected={specialisms}
-              onChange={setSpecialisms}
-            />
+            <SpecialismSelector categories={allCategories} selected={specialisms} onChange={setSpecialisms} />
           ) : (
             <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
@@ -379,7 +539,6 @@ export default function EditProfile() {
           />
         </SectionCard>
 
-        {/* Bottom save */}
         <div className="flex items-center justify-between pb-12">
           {saved && <span className="text-sm text-green-600 font-medium">Profile saved!</span>}
           {error && <span className="text-sm text-red-600">{error}</span>}

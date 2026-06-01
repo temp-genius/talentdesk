@@ -7,6 +7,15 @@ import RecruiterCard from '../../components/recruiter/RecruiterCard'
 const FILTER_COUNTRIES = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
 const FILTER_FEES      = [{ label: '6%', value: '6' }, { label: '8%', value: '8' }, { label: '10%', value: '10' }]
 const FILTER_AVAIL     = [{ label: 'Available now', value: 'available' }, { label: 'Limited', value: 'limited' }]
+const FILTER_CAREER_DNA = [
+  { label: 'Agency',   value: 'agency'  },
+  { label: 'In-house', value: 'inhouse' },
+  { label: 'Hybrid',   value: 'hybrid'  },
+]
+const FILTER_CAPACITY  = [
+  { label: 'Open to new',  value: 'open_to_new'  },
+  { label: 'Nearly full',  value: 'nearly_full'  },
+]
 
 const SORT_OPTIONS = [
   { value: 'relevance',  label: 'Most Relevant'     },
@@ -33,6 +42,50 @@ function extractKeywords(text) {
     .filter(w => w.length > 2 && !STOPWORDS.has(w))
 }
 
+function computeMatchScore(r, jobSpecialismIds, jobCountries, jobKeywords, jobCareerDna) {
+  let score = 0
+  const rIds       = (r.recruiter_specialisms ?? []).map(rs => rs.specialism_category_id)
+  const rCountries = (r.recruiter_locations ?? []).map(l => l.country)
+
+  // Sector / specialism match (35 pts)
+  if (jobSpecialismIds.length > 0) {
+    const matches = jobSpecialismIds.filter(id => rIds.includes(id)).length
+    score += (matches / jobSpecialismIds.length) * 35
+  } else {
+    score += 35
+  }
+
+  // Market match (25 pts)
+  if (jobCountries.length > 0) {
+    if (jobCountries.some(c => rCountries.includes(c))) score += 25
+  } else {
+    score += 25
+  }
+
+  // Bio keyword match (20 pts)
+  if (jobKeywords.length > 0) {
+    const rNames   = (r.recruiter_specialisms ?? []).map(rs => rs.specialism_categories?.specialism_name ?? '')
+    const haystack = [r.bio ?? '', ...rNames].join(' ').toLowerCase()
+    const hits     = jobKeywords.filter(kw => haystack.includes(kw)).length
+    score += Math.min((hits / jobKeywords.length) * 20, 20)
+  } else {
+    score += 20
+  }
+
+  // Career DNA match (10 pts)
+  if (jobCareerDna && r.career_dna) {
+    if (r.career_dna === jobCareerDna || r.career_dna === 'hybrid') score += 10
+  } else {
+    score += 10
+  }
+
+  // Capacity (10 pts)
+  if (r.capacity_status === 'open_to_new') score += 10
+  else if (r.capacity_status === 'nearly_full') score += 5
+
+  return Math.round(score)
+}
+
 function computeRelevance(r, filters, jobKeywords) {
   let score = 0
   const rIds       = (r.recruiter_specialisms ?? []).map(rs => rs.specialism_category_id)
@@ -40,45 +93,30 @@ function computeRelevance(r, filters, jobKeywords) {
   const rCountries = (r.recruiter_locations ?? []).map(l => l.country)
   const sc         = r.recruiter_scores?.[0] ?? null
 
-  // Specialism match (35 pts) — exact match scores full, partial scores proportionally
   if (filters.specialisms.length > 0) {
     const matches = filters.specialisms.filter(id => rIds.includes(id)).length
     score += (matches / filters.specialisms.length) * 35
   } else {
     score += 35
   }
-
-  // Location match (25 pts)
   if (filters.countries.length > 0) {
     if (filters.countries.some(c => rCountries.includes(c))) score += 25
   } else {
     score += 25
   }
-
-  // Performance (20 pts): rating 0–10 + placements 0–10
   score += sc?.overall_average ? (sc.overall_average / 5) * 10 : 5
   score += Math.min((r.total_placements ?? 0) / 10, 10)
-
-  // Availability & response (15 pts)
-  if (r.availability_status === 'available') score += 15
-  else if (r.availability_status === 'limited') score += 8
-  if (r.response_time_average && r.response_time_average <= 4) score += 5
-  else if (r.response_time_average && r.response_time_average <= 24) score += 2
-
-  // Profile completeness (5 pts)
+  if (r.availability_status === 'available') score += 10
+  else if (r.availability_status === 'limited') score += 5
+  if (r.capacity_status === 'open_to_new') score += 5
+  else if (r.capacity_status === 'nearly_full') score += 2
   if (r.bio)                              score += 1
   if (r.linkedin_url)                     score += 1
-  if (r.recruiter_tools?.length > 0)      score += 1
-  if (r.linkedin_network_size_tier)       score += 1
   if (r.preferred_fee_percentage != null) score += 1
-
-  // Job keyword bonus
   if (jobKeywords.length > 0) {
-    const haystack = [r.bio ?? '', ...rNames, r.first_name ?? '', r.last_name ?? '']
-      .join(' ').toLowerCase()
+    const haystack = [r.bio ?? '', ...rNames].join(' ').toLowerCase()
     score += jobKeywords.filter(kw => haystack.includes(kw)).length
   }
-
   return score
 }
 
@@ -86,7 +124,7 @@ function SkeletonCard() {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse space-y-3">
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-full bg-gray-200" />
+        <div className="w-12 h-12 rounded-full bg-gray-200" />
         <div className="flex-1 space-y-1.5">
           <div className="h-3.5 bg-gray-200 rounded w-32" />
           <div className="h-3 bg-gray-200 rounded w-24" />
@@ -96,10 +134,10 @@ function SkeletonCard() {
         <div className="h-5 w-24 bg-gray-200 rounded-full" />
         <div className="h-5 w-28 bg-gray-200 rounded-full" />
       </div>
+      <div className="h-6 bg-gray-200 rounded-md" />
       <div className="flex gap-2">
         <div className="h-4 w-20 bg-gray-200 rounded" />
         <div className="h-4 w-16 bg-gray-200 rounded" />
-        <div className="h-4 w-18 bg-gray-200 rounded" />
       </div>
       <div className="flex gap-2 pt-1">
         <div className="h-7 flex-1 bg-gray-200 rounded-md" />
@@ -161,9 +199,9 @@ function SpecialismFilterSection({ categories, filters, onToggle }) {
   return (
     <div className="space-y-0.5">
       {sectors.map(sector => {
-        const specs = categories.filter(c => c.sector === sector)
+        const specs  = categories.filter(c => c.sector === sector)
         const isOpen = !!sectorOpen[sector]
-        const count = specs.filter(s => filters.specialisms.includes(s.id)).length
+        const count  = specs.filter(s => filters.specialisms.includes(s.id)).length
         return (
           <div key={sector}>
             <button
@@ -205,23 +243,25 @@ function SpecialismFilterSection({ categories, filters, onToggle }) {
   )
 }
 
-const EMPTY_FILTERS = { countries: [], specialisms: [], fees: [], availability: [] }
+const EMPTY_FILTERS = { countries: [], specialisms: [], fees: [], availability: [], careerDna: [], capacity: [] }
 
 export default function BrowseRecruiters() {
   const { user, logout } = useAuth()
-  const [searchParams]              = useSearchParams()
-  const jobId                       = searchParams.get('job')
+  const [searchParams] = useSearchParams()
+  const jobId = searchParams.get('job')
 
-  const [recruiters, setRecruiters] = useState([])
-  const [allCategories, setAllCategories] = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [sort, setSort]             = useState('relevance')
-  const [filters, setFilters]       = useState(EMPTY_FILTERS)
-  const [search, setSearch]         = useState('')
-  const [jobTitle, setJobTitle]     = useState(null)
-  const [jobKeywords, setJobKeywords] = useState([])
+  const [recruiters,       setRecruiters]       = useState([])
+  const [allCategories,    setAllCategories]     = useState([])
+  const [loading,          setLoading]           = useState(true)
+  const [sort,             setSort]              = useState('relevance')
+  const [filters,          setFilters]           = useState(EMPTY_FILTERS)
+  const [search,           setSearch]            = useState('')
+  const [jobTitle,         setJobTitle]          = useState(null)
+  const [jobKeywords,      setJobKeywords]       = useState([])
+  const [jobSpecialismIds, setJobSpecialismIds]  = useState([])
+  const [jobCountries,     setJobCountries]      = useState([])
+  const [jobCareerDna,     setJobCareerDna]      = useState(null)
 
-  // Load specialism categories for the filter sidebar
   useEffect(() => {
     supabase
       .from('specialism_categories')
@@ -230,7 +270,6 @@ export default function BrowseRecruiters() {
       .then(({ data }) => { if (data) setAllCategories(data) })
   }, [])
 
-  // Load job details and extract keywords
   useEffect(() => {
     if (!jobId) return
     supabase
@@ -242,12 +281,10 @@ export default function BrowseRecruiters() {
         if (!data) return
         setJobTitle(data.title)
         const raw = [data.title ?? '', data.description ?? '', data.sector ?? ''].join(' ')
-        const kws = [...new Set(extractKeywords(raw))]
-        setJobKeywords(kws)
+        setJobKeywords([...new Set(extractKeywords(raw))])
       })
   }, [jobId])
 
-  // Load approved recruiters with specialisms
   useEffect(() => {
     if (!user) { setLoading(false); return }
     supabase
@@ -257,6 +294,8 @@ export default function BrowseRecruiters() {
         years_experience, availability_status, preferred_fee_percentage,
         total_placements, linkedin_url, linkedin_network_size_tier,
         response_time_average, last_active_at, created_at,
+        career_dna, capacity_status, previous_employers,
+        average_days_to_shortlist, last_placement_at,
         recruiter_specialisms!left(
           specialism_category_id,
           specialism_categories(sector, specialism_name)
@@ -282,7 +321,6 @@ export default function BrowseRecruiters() {
   }
 
   const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setSearch('') }, [])
-
   const hasActiveFilters = search.length >= 3 || Object.values(filters).some(a => a.length > 0)
 
   const searchWords = useMemo(() => {
@@ -306,20 +344,33 @@ export default function BrowseRecruiters() {
     if (filters.availability.length > 0) {
       if (!filters.availability.includes(r.availability_status)) return false
     }
+    if (filters.careerDna.length > 0) {
+      if (!r.career_dna || !filters.careerDna.includes(r.career_dna)) return false
+    }
+    if (filters.capacity.length > 0) {
+      if (!filters.capacity.includes(r.capacity_status)) return false
+    }
     if (searchWords.length > 0) {
-      const rNames = (r.recruiter_specialisms ?? [])
-        .map(rs => rs.specialism_categories?.specialism_name ?? '')
-      const haystack = [r.bio ?? '', r.first_name ?? '', r.last_name ?? '', ...rNames]
-        .join(' ').toLowerCase()
+      const rNames   = (r.recruiter_specialisms ?? []).map(rs => rs.specialism_categories?.specialism_name ?? '')
+      const haystack = [r.bio ?? '', r.first_name ?? '', r.last_name ?? '', ...rNames].join(' ').toLowerCase()
       if (!searchWords.some(kw => haystack.includes(kw))) return false
     }
     return true
   }), [recruiters, filters, searchWords])
 
+  const withScores = useMemo(() => {
+    if (!jobId) return filtered.map(r => ({ ...r, _matchScore: null }))
+    return filtered.map(r => ({
+      ...r,
+      _matchScore: computeMatchScore(r, jobSpecialismIds, jobCountries, jobKeywords, jobCareerDna),
+    }))
+  }, [filtered, jobId, jobSpecialismIds, jobCountries, jobKeywords, jobCareerDna])
+
   const sorted = useMemo(() => {
-    const arr = [...filtered]
+    const arr = [...withScores]
     switch (sort) {
       case 'relevance':
+        if (jobId) return arr.sort((a, b) => (b._matchScore ?? 0) - (a._matchScore ?? 0))
         return arr.sort((a, b) =>
           computeRelevance(b, filters, jobKeywords) - computeRelevance(a, filters, jobKeywords)
         )
@@ -345,11 +396,10 @@ export default function BrowseRecruiters() {
       default:
         return arr
     }
-  }, [filtered, sort, filters, jobKeywords])
+  }, [withScores, sort, filters, jobKeywords, jobId])
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/hiring-manager/dashboard" className="text-lg font-bold text-slate-900 tracking-tight">
@@ -370,7 +420,6 @@ export default function BrowseRecruiters() {
           <p className="text-gray-500 mt-1 text-sm">Find the right specialist for your next hire</p>
         </div>
 
-        {/* Search */}
         <div className="mb-4">
           <div className="relative max-w-lg">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
@@ -391,7 +440,6 @@ export default function BrowseRecruiters() {
           )}
         </div>
 
-        {/* Job match banner */}
         {jobId && jobTitle && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-6 flex items-center gap-2">
             <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -408,7 +456,6 @@ export default function BrowseRecruiters() {
         )}
 
         <div className="flex gap-8 items-start">
-          {/* Filter sidebar */}
           <aside className="w-60 flex-shrink-0 bg-white rounded-xl border border-gray-200 p-5 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-900">Filters</h2>
@@ -431,16 +478,32 @@ export default function BrowseRecruiters() {
 
             <FilterSection title="Specialisms">
               {allCategories.length > 0 ? (
-                <SpecialismFilterSection
-                  categories={allCategories}
-                  filters={filters}
-                  onToggle={toggle}
-                />
+                <SpecialismFilterSection categories={allCategories} filters={filters} onToggle={toggle} />
               ) : (
                 <div className="flex justify-center py-3">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600" />
                 </div>
               )}
+            </FilterSection>
+
+            <FilterSection title="Career DNA">
+              <div className="space-y-1">
+                {FILTER_CAREER_DNA.map(f => (
+                  <FilterCheckbox key={f.value} label={f.label}
+                    checked={filters.careerDna.includes(f.value)}
+                    onChange={() => toggle('careerDna', f.value)} />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection title="Capacity">
+              <div className="space-y-1">
+                {FILTER_CAPACITY.map(f => (
+                  <FilterCheckbox key={f.value} label={f.label}
+                    checked={filters.capacity.includes(f.value)}
+                    onChange={() => toggle('capacity', f.value)} />
+                ))}
+              </div>
             </FilterSection>
 
             <FilterSection title="Fee">
@@ -464,7 +527,6 @@ export default function BrowseRecruiters() {
             </FilterSection>
           </aside>
 
-          {/* Results */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-gray-500">
@@ -492,7 +554,14 @@ export default function BrowseRecruiters() {
               <EmptyState hasFilters={hasActiveFilters} onClear={clearFilters} />
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {sorted.map(r => <RecruiterCard key={r.id} recruiter={r} jobId={jobId} />)}
+                {sorted.map(r => (
+                  <RecruiterCard
+                    key={r.id}
+                    recruiter={r}
+                    jobId={jobId}
+                    matchScore={r._matchScore}
+                  />
+                ))}
               </div>
             )}
           </div>

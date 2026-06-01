@@ -211,6 +211,8 @@ export default function RecruiterPublicProfile() {
           profile_photo_url, years_experience, availability_status, preferred_fee_percentage,
           total_placements, average_days_to_shortlist, linkedin_url,
           linkedin_network_size_tier, response_time_average, created_at,
+          career_dna, capacity_status, previous_employers, previous_client_types,
+          last_placement_at,
           recruiter_specialisms!left(specialism_categories(sector, specialism_name)),
           recruiter_locations(country, region),
           recruiter_tools(tool_name, verified),
@@ -274,6 +276,36 @@ export default function RecruiterPublicProfile() {
   const tools      = profile.recruiter_tools ?? []
   const rating     = scores?.overall_average ?? null
   const totalReviews = (scores?.total_hm_reviews ?? 0) + (scores?.total_candidate_reviews ?? 0)
+
+  const CAREER_DNA_META = {
+    agency:  { label: 'Agency',   desc: 'Developed skills placing across multiple clients in a recruitment agency', color: 'bg-violet-100 text-violet-700' },
+    inhouse: { label: 'In-house', desc: 'Built expertise as an internal talent partner within companies',          color: 'bg-indigo-100 text-indigo-700' },
+    hybrid:  { label: 'Hybrid',   desc: 'Combines agency market knowledge with in-house process expertise',        color: 'bg-purple-100 text-purple-700' },
+  }
+  const CAPACITY_META = {
+    open_to_new:  { label: 'Open to new roles',  bar: 'bg-green-500', pct: 33,  cls: 'text-green-700 bg-green-50' },
+    nearly_full:  { label: 'Nearly at capacity', bar: 'bg-amber-500', pct: 66,  cls: 'text-amber-700 bg-amber-50' },
+    full:         { label: 'At full capacity',   bar: 'bg-red-500',   pct: 100, cls: 'text-red-700 bg-red-50'     },
+  }
+  const CLIENT_TYPE_LABELS = {
+    startup: 'Startups', scaleup: 'Scale-ups', enterprise: 'Enterprise',
+    sme: 'SME', public_sector: 'Public Sector',
+  }
+
+  const careerDnaMeta  = CAREER_DNA_META[profile.career_dna] ?? null
+  const capacityMeta   = CAPACITY_META[profile.capacity_status] ?? null
+  const employers      = (profile.previous_employers ?? '').split(',').map(s => s.trim()).filter(Boolean)
+  const clientTypes    = profile.previous_client_types ?? []
+
+  function lastPlacementLabel(dateStr) {
+    if (!dateStr) return null
+    const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
+    if (days < 7)   return 'in the last week'
+    if (days < 30)  return `${Math.floor(days / 7)} weeks ago`
+    if (days < 365) return `${Math.floor(days / 30)} months ago`
+    return `${Math.floor(days / 365)} years ago`
+  }
+  const lastPlacement = lastPlacementLabel(profile.last_placement_at)
 
   // Group specialisms by sector
   const specialismsBySector = (profile.recruiter_specialisms ?? []).reduce((acc, rs) => {
@@ -370,6 +402,55 @@ export default function RecruiterPublicProfile() {
               )}
             </div>
 
+            {/* Career DNA + Capacity */}
+            {(careerDnaMeta || capacityMeta || employers.length > 0) && (
+              <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+                {careerDnaMeta && (
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Career DNA</h2>
+                    <div className="flex items-start gap-3">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${careerDnaMeta.color}`}>
+                        {careerDnaMeta.label}
+                      </span>
+                      <p className="text-sm text-gray-600 leading-relaxed">{careerDnaMeta.desc}</p>
+                    </div>
+                  </div>
+                )}
+
+                {capacityMeta && (
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Current Capacity</h2>
+                    <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-lg ${capacityMeta.cls}`}>
+                      <div className="w-24 bg-white/60 rounded-full h-2">
+                        <div className={`${capacityMeta.bar} h-2 rounded-full`} style={{ width: `${capacityMeta.pct}%` }} />
+                      </div>
+                      <span className="text-sm font-medium">{capacityMeta.label}</span>
+                    </div>
+                  </div>
+                )}
+
+                {employers.length > 0 && (
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Previous Employers</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {employers.map(emp => (
+                        <span key={emp} className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-slate-100 text-slate-700">
+                          {emp}
+                        </span>
+                      ))}
+                    </div>
+                    {clientTypes.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {clientTypes.map(ct => (
+                          <Tag key={ct} label={CLIENT_TYPE_LABELS[ct] ?? ct} color="blue" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Track record */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Track Record</h2>
@@ -384,6 +465,12 @@ export default function RecruiterPublicProfile() {
                   label={`Rating (${totalReviews} reviews)`}
                 />
               </div>
+              {lastPlacement && (
+                <p className="text-sm text-gray-500 mt-4">
+                  Last verified placement: <span className="font-medium text-gray-700">{lastPlacement}</span>
+                  <span className="text-xs text-gray-400 ml-1">(verified by platform)</span>
+                </p>
+              )}
             </div>
 
             {/* Notable Placements */}
