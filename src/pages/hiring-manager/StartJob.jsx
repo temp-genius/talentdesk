@@ -32,7 +32,7 @@ function fmtCurrency(amount, currency = 'EUR') {
 }
 
 // ── Card setup form (saves card via SetupIntent) ──────────────────────
-function SetupForm({ clientSecret, onSuccess, onError, onCancel, amount, currency }) {
+function SetupForm({ clientSecret, onSuccess, onError, onCancel, amount, currency, email }) {
   const stripe   = useStripe()
   const elements = useElements()
   const [saving, setSaving] = useState(false)
@@ -42,18 +42,22 @@ function SetupForm({ clientSecret, onSuccess, onError, onCancel, amount, currenc
     if (!stripe || !elements) return
     setSaving(true)
 
-    const result = await stripe.confirmCardSetup(clientSecret, {
-      payment_method: { card: elements.getElement(CardElement) },
+    const cardElement = elements.getElement(CardElement)
+    const { setupIntent, error } = await stripe.confirmCardSetup(clientSecret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: { email },
+      },
     })
 
     setSaving(false)
 
-    if (result.error) {
-      onError(result.error.message)
+    if (error) {
+      onError(error.message)
       return
     }
-    if (result.setupIntent?.status === 'succeeded') {
-      onSuccess(result.setupIntent.payment_method)
+    if (setupIntent?.status === 'succeeded') {
+      onSuccess(setupIntent.payment_method)
     }
   }
 
@@ -107,11 +111,10 @@ function StartJobInner() {
   const [agreed,              setAgreed]              = useState([false, false, false, false])
   const [submitting,          setSubmitting]          = useState(false)
   const [actionErr,           setActionErr]           = useState('')
-  const [setupClientSecret,   setSetupClientSecret]   = useState(null)
-  const [customerId,          setCustomerId]          = useState(null)
-  const [paymentStep,         setPaymentStep]         = useState(false)
-  const [processingMsg,       setProcessingMsg]       = useState('')
-  const [createdAssignmentId, setCreatedAssignmentId] = useState(null)
+  const [setupClientSecret, setSetupClientSecret] = useState(null)
+  const [customerId,        setCustomerId]        = useState(null)
+  const [paymentStep,       setPaymentStep]       = useState(false)
+  const [processingMsg,     setProcessingMsg]     = useState('')
 
   const mounted = useRef(true)
   useEffect(() => {
@@ -260,7 +263,8 @@ function StartJobInner() {
   const m1Charge  = milestones[0].charge
   const allAgreed = agreed.every(Boolean)
 
-  async function createAssignmentAndMilestones() {
+  // Creates the assignment + milestones in the DB (job stays draft until charge succeeds)
+  async function createAssignmentRecords() {
     const { data: assignment, error: jraErr } = await supabase
       .from('job_recruiter_assignments')
       .insert({ job_id: jobId, recruiter_id: recruiterId, status: 'assigned' })
@@ -287,30 +291,37 @@ function StartJobInner() {
 
     if (msErr) { setActionErr(msErr.message); return { ok: false, assignmentId: null } }
 
-    await supabase.from('jobs').update({ status: 'active', agreed_shortlist_size: shortlist }).eq('id', jobId)
+    return { ok: true, assignmentId: assignment.id }
+  }
+
+  // Activates the job and notifies the recruiter — only called after charge succeeds
+  async function activateJob() {
+    await supabase.from('jobs')
+      .update({ status: 'active', agreed_shortlist_size: shortlist })
+      .eq('id', jobId)
 
     const recruiterEmail = recruiter.users?.email
     if (recruiterEmail) {
       sendJobStartedNotification(recruiterEmail, job.title, companyProfile?.company_name ?? null, shortlist)
     }
-
-    return { ok: true, assignmentId: assignment.id }
   }
 
-  // Step 1: user clicks "Pay and Start Job" — create customer + show card form
+  // Step 1: user clicks "Pay and Start Job" — create Stripe customer + show card form
   async function handleStart() {
     if (!allAgreed) return
     setSubmitting(true)
     setActionErr('')
 
-    // Skip payment if no salary
+    // Skip payment entirely if no fee (no salary set)
     if (totalFee === 0) {
-      const { ok } = await createAssignmentAndMilestones()
+      const { ok } = await createAssignmentRecords()
+      if (ok) await activateJob()
       setSubmitting(false)
       if (ok) setSubmitted(true)
       return
     }
 
+    // Step 1: create/retrieve Stripe customer and a SetupIntent
     const { data, error: fnErr } = await supabase.functions.invoke('stripe-create-customer', {
       body: { user_id: user.id, email: user.email },
     })
@@ -327,43 +338,47 @@ function StartJobInner() {
     setPaymentStep(true)
   }
 
-  // Step 2: card saved — store details, create DB records, charge M1
+  // Steps 2-6: card confirmed — update profile, create records, charge M1, activate job
   async function handleCardSaved(paymentMethodId) {
     setSubmitting(true)
     setActionErr('')
-    setProcessingMsg('Saving your payment details…')
 
-    // Persist Stripe customer + payment method to HM profile
+    // Step 4: persist Stripe customer + saved payment method to HM profile
+    setProcessingMsg('Saving your payment details…')
     await supabase
       .from('hiring_company_profiles')
       .update({ stripe_customer_id: customerId, stripe_payment_method_id: paymentMethodId })
       .eq('user_id', user.id)
 
+    // Step 5 (prerequisite): create assignment + milestones so stripe-charge-milestone has an ID to work with
     setProcessingMsg('Creating assignment…')
-    const { ok, assignmentId } = await createAssignmentAndMilestones()
+    const { ok, assignmentId } = await createAssignmentRecords()
 
     if (!ok) {
       setSubmitting(false)
       setProcessingMsg('')
-      setPaymentStep(false)
       return
     }
 
-    setCreatedAssignmentId(assignmentId)
+    // Step 5: charge Stage 1 using the saved payment method
     setProcessingMsg('Processing Stage 1 payment…')
-
     const { data: chargeData, error: chargeErr } = await supabase.functions.invoke('stripe-charge-milestone', {
       body: { assignment_id: assignmentId, milestone_number: 1 },
     })
 
-    setSubmitting(false)
-    setProcessingMsg('')
-
     if (chargeErr || chargeData?.error) {
+      setSubmitting(false)
+      setProcessingMsg('')
       setActionErr(chargeErr?.message ?? chargeData?.error ?? 'Stage 1 payment failed. Please contact support.')
       return
     }
 
+    // Step 6: charge succeeded — activate job and notify recruiter
+    setProcessingMsg('Activating job…')
+    await activateJob()
+
+    setSubmitting(false)
+    setProcessingMsg('')
     setSubmitted(true)
   }
 
@@ -426,6 +441,7 @@ function StartJobInner() {
                 clientSecret={setupClientSecret}
                 amount={m1Charge}
                 currency={currency}
+                email={user.email}
                 onSuccess={handleCardSaved}
                 onError={handleCardError}
                 onCancel={() => { setPaymentStep(false); setSetupClientSecret(null); setCustomerId(null) }}
