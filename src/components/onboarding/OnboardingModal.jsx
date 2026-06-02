@@ -48,25 +48,42 @@ const RECRUITER_SLIDES = [
     ),
   },
   {
-    icon: '✅',
-    title: 'Your first steps',
+    icon: '💳',
+    title: 'How your payments are triggered',
     body: (
-      <ul className="space-y-3">
-        {[
-          'Complete your profile with a detailed bio and specialisms so hiring managers can find you.',
-          'Connect your bank account to receive milestone payments.',
-          'Browse available roles or wait for hiring managers to contact you.',
-          'Set your capacity status so hiring managers know your availability.',
-          'Log all candidate activity on the platform — CVs sent, interviews scheduled, and offers made must all be recorded here to trigger your milestone payments.',
-        ].map((item, i) => (
-          <li key={i} className="flex items-start gap-3">
-            <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-              {i + 1}
-            </span>
-            <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="space-y-1">
+        <p className="text-sm text-gray-600 leading-relaxed mb-3">
+          Three things must be logged on the TalentDesk platform to release your payments.
+        </p>
+        <ul className="space-y-3">
+          {[
+            {
+              label: 'Log your candidates',
+              detail: 'After sending CVs by email return to the platform and log each candidate. This triggers your Stage 1 payment review. Sending emails alone is not enough — candidates must be logged here.',
+            },
+            {
+              label: 'Log confirmed interview dates',
+              detail: 'When interviews are scheduled log the confirmed dates on the platform. The hiring manager confirms interviews happened. This triggers Stage 2.',
+            },
+            {
+              label: 'Log the offer',
+              detail: 'When your candidate verbally accepts log the offer on the platform. The candidate receives an acceptance email. When they click Accept your Stage 3 payment releases.',
+            },
+          ].map((item, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <span className="text-sm text-gray-600 leading-relaxed">
+                <strong className="text-gray-800">{item.label} — </strong>{item.detail}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-sm font-bold text-gray-900 pt-3">
+          All payment triggers happen through the platform dashboard.
+        </p>
+      </div>
     ),
   },
   {

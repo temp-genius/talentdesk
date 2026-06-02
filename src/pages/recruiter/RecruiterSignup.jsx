@@ -407,35 +407,6 @@ export default function RecruiterSignup() {
           {step === 4 && (
             <form onSubmit={handleSubmit}>
               <h2 className="text-lg font-semibold text-gray-900 mb-5">About you</h2>
-
-              {/* How payments work */}
-              <div className="border-l-4 border-slate-800 bg-slate-50 rounded-r-lg px-5 py-4 mb-6">
-                <p className="text-sm font-bold text-slate-900 mb-3">How you get paid on TalentDesk</p>
-                <ol className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-slate-800 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-                    <span className="text-sm text-slate-700 leading-relaxed">
-                      <strong>Send CVs by email, then log them on the platform.</strong> You send CVs to the hiring manager from your TalentDesk email as normal. Then return to the platform and log each candidate — name, current role, brief note. Logging candidates on the platform is what triggers your Stage 1 payment review. Without logging candidates on the system no payment can be released.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-slate-800 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
-                    <span className="text-sm text-slate-700 leading-relaxed">
-                      <strong>Confirm interviews through the platform.</strong> When interviews are scheduled log the confirmed dates on the platform. The hiring manager confirms interviews took place. This triggers your Stage 2 payment. Interviews that happen outside the system cannot trigger payment — they must be logged here.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-slate-800 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                    <span className="text-sm text-slate-700 leading-relaxed">
-                      <strong>Log the offer on the platform.</strong> When your candidate verbally accepts relay the offer details and log it on the platform. The candidate receives an automated acceptance email. When they click Accept your Stage 3 payment releases automatically.
-                    </span>
-                  </li>
-                </ol>
-                <p className="text-sm font-bold text-slate-900 mt-4">
-                  All actions that trigger payments must be logged on the TalentDesk platform. Sending emails alone is not enough.
-                </p>
-              </div>
-
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
