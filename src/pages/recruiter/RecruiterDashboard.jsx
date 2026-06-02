@@ -48,24 +48,56 @@ export default function RecruiterDashboard() {
   const [draftSpecialisms,   setDraftSpecialisms]   = useState([])
   const [savingSpecialisms,  setSavingSpecialisms]  = useState(false)
 
-  // Load recruiter profile (with id and total_placements)
+  // Load recruiter profile — retry up to 3 times with 1500ms gaps to allow DB trigger to complete
   useEffect(() => {
     if (!user) return
-    supabase
-      .from('recruiter_profiles')
-      .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (error) console.warn('[RecruiterDashboard] profile fetch error:', error.message, error.code)
-        setProfile(data ?? null)
-        setLoadingProfile(false)
-      })
-      .catch(err => {
-        console.error('[RecruiterDashboard] profile fetch threw:', err)
+    let cancelled = false
+
+    async function fetchWithRetry() {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        if (cancelled) return
+        try {
+          const { data, error } = await supabase
+            .from('recruiter_profiles')
+            .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          if (cancelled) return
+
+          if (error) {
+            console.warn('[RecruiterDashboard] profile fetch error:', error.message, error.code)
+            setProfile(null)
+            setLoadingProfile(false)
+            return
+          }
+
+          if (data) {
+            setProfile(data)
+            setLoadingProfile(false)
+            return
+          }
+
+          if (attempt < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1500))
+          }
+        } catch (err) {
+          if (cancelled) return
+          console.error('[RecruiterDashboard] profile fetch threw:', err)
+          setProfile(null)
+          setLoadingProfile(false)
+          return
+        }
+      }
+
+      if (!cancelled) {
         setProfile(null)
         setLoadingProfile(false)
-      })
+      }
+    }
+
+    fetchWithRetry()
+    return () => { cancelled = true }
   }, [user])
 
   // Load specialism categories + current specialisms once profile is approved

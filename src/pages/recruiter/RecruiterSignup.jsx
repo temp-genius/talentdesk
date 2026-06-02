@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
@@ -44,6 +44,7 @@ function ErrorBanner({ message }) {
 
 export default function RecruiterSignup() {
   const { signup } = useAuth()
+  const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -150,6 +151,7 @@ export default function RecruiterSignup() {
         bio: form.bio || null,
       })
       setSubmitted(true)
+      setTimeout(() => navigate('/recruiter/dashboard'), 1500)
     } catch (err) {
       setError(err.message ?? 'Something went wrong. Please try again.')
     } finally {
