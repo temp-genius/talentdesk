@@ -31,6 +31,7 @@ import TermsOfService         from './pages/legal/TermsOfService'
 import PrivacyPolicy          from './pages/legal/PrivacyPolicy'
 import RecruiterAgreement     from './pages/legal/RecruiterAgreement'
 import AdminDashboard         from './pages/admin/AdminDashboard'
+import VettingPanel           from './pages/admin/VettingPanel'
 
 const DASHBOARD_BY_TYPE = {
   recruiter:      '/recruiter/dashboard',
@@ -106,7 +107,8 @@ export default function App() {
 
           {/* Admin — protected */}
           <Route element={<ProtectedRoute allowedUserTypes={['admin']} />}>
-            <Route path="/admin/dashboard"       element={<AdminDashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/vetting"   element={<VettingPanel />} />
           </Route>
 
           {/* Fallback */}

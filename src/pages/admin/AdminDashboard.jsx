@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import AdminNav from '../../components/admin/AdminNav'
 
 // ── helpers ──────────────────────────────────────────────────────────
 function fmtCurrency(n, currency = 'EUR') {
@@ -638,23 +639,11 @@ const TABS = [
 ]
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth()
   const [tab, setTab] = useState('actions')
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
-            <span className="ml-2 text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Admin</span>
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">{user?.email}</span>
-            <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
-          </div>
-        </div>
-      </header>
+      <AdminNav />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
