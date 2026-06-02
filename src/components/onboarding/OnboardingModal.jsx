@@ -57,6 +57,7 @@ const RECRUITER_SLIDES = [
           'Connect your bank account to receive milestone payments.',
           'Browse available roles or wait for hiring managers to contact you.',
           'Set your capacity status so hiring managers know your availability.',
+          'Log all candidate activity on the platform — CVs sent, interviews scheduled, and offers made must all be recorded here to trigger your milestone payments.',
         ].map((item, i) => (
           <li key={i} className="flex items-start gap-3">
             <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
