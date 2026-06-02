@@ -185,6 +185,12 @@ export default function OnboardingModal({ userType }) {
   const [visible,  setVisible]  = useState(() => !localStorage.getItem(key))
   const [slide,    setSlide]    = useState(0)
 
+  console.log(
+    `[OnboardingModal] userType="${userType}" key="${key}" ` +
+    `storedValue=${JSON.stringify(localStorage.getItem(key))} ` +
+    `visible=${!localStorage.getItem(key)}`
+  )
+
   if (!visible) return null
 
   const slides   = SLIDES_BY_TYPE[userType] ?? []

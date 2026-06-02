@@ -56,8 +56,14 @@ export default function RecruiterDashboard() {
       .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements')
       .eq('user_id', user.id)
       .single()
-      .then(({ data }) => {
-        setProfile(data)
+      .then(({ data, error }) => {
+        if (error) console.warn('[RecruiterDashboard] profile fetch error:', error.message, error.code)
+        setProfile(data ?? null)
+        setLoadingProfile(false)
+      })
+      .catch(err => {
+        console.error('[RecruiterDashboard] profile fetch threw:', err)
+        setProfile(null)
         setLoadingProfile(false)
       })
   }, [user])
@@ -364,6 +370,7 @@ export default function RecruiterDashboard() {
         )}
       </div>
       <Footer />
+      {console.log('[RecruiterDashboard] rendering OnboardingModal with userType="recruiter"')}
       <OnboardingModal userType="recruiter" />
     </main>
   )
