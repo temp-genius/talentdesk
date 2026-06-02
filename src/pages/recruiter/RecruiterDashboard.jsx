@@ -383,7 +383,6 @@ export default function RecruiterDashboard() {
         )}
       </div>
       <Footer />
-      {console.log('[RecruiterDashboard] rendering OnboardingModal with userType="recruiter"')}
       <OnboardingModal userType="recruiter" />
     </main>
   )

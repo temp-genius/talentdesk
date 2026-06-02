@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
-const STORAGE_KEY = {
+const STORAGE_PREFIX = {
   recruiter:      'talentdesk_onboarded_recruiter',
   hiring_manager: 'talentdesk_onboarded_hiring_manager',
 }
@@ -181,15 +182,10 @@ const SLIDES_BY_TYPE = {
 }
 
 export default function OnboardingModal({ userType }) {
-  const key = STORAGE_KEY[userType]
+  const { user } = useAuth()
+  const key = `${STORAGE_PREFIX[userType]}_${user?.id ?? 'anon'}`
   const [visible,  setVisible]  = useState(() => !localStorage.getItem(key))
   const [slide,    setSlide]    = useState(0)
-
-  console.log(
-    `[OnboardingModal] userType="${userType}" key="${key}" ` +
-    `storedValue=${JSON.stringify(localStorage.getItem(key))} ` +
-    `visible=${!localStorage.getItem(key)}`
-  )
 
   if (!visible) return null
 
