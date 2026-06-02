@@ -20,6 +20,22 @@ const CAREER_DNA_OPTIONS = [
   { value: 'hybrid',  label: 'Both — Agency and In-House', desc: 'You have significant experience in both agency recruitment and in-house talent acquisition.' },
 ]
 
+const TOOLS = [
+  'LinkedIn Basic',
+  'LinkedIn Recruiter Lite',
+  'LinkedIn Recruiter',
+  'Indeed CV Database',
+  'IrishJobs CV Database',
+  'Jobs.ie',
+  'Glassdoor',
+  'Reed',
+  'Totaljobs',
+  'Monster',
+  'CV Library',
+  'Direct Sourcing and Boolean Search',
+  'Referral Networks',
+]
+
 const CAPACITY_OPTIONS = [
   { value: 'open_to_new',  label: 'Open to new roles',    color: 'green' },
   { value: 'nearly_full',  label: 'Nearly at capacity',   color: 'amber' },
@@ -148,6 +164,7 @@ export default function EditProfile() {
   const [allCategories,  setAllCategories] = useState([])
   const [photoUrl,       setPhotoUrl]      = useState(null)
   const [photoUploading, setPhotoUploading]= useState(false)
+  const [selectedTools,  setSelectedTools] = useState([])
 
   const [loading, setLoading] = useState(true)
   const [saving,  setSaving]  = useState(false)
@@ -194,12 +211,14 @@ export default function EditProfile() {
       })
       if (catsRes.data) setAllCategories(catsRes.data)
 
-      const [specsRes, locsRes] = await Promise.all([
+      const [specsRes, locsRes, toolsRes] = await Promise.all([
         supabase.from('recruiter_specialisms').select('specialism_category_id').eq('recruiter_profile_id', p.id),
         supabase.from('recruiter_locations').select('country').eq('recruiter_profile_id', p.id),
+        supabase.from('recruiter_tools').select('tool_name').eq('recruiter_profile_id', p.id),
       ])
       setSpecialisms(specsRes.data?.map(s => s.specialism_category_id) ?? [])
       setMarkets(locsRes.data?.map(l => l.country) ?? [])
+      setSelectedTools(toolsRes.data?.map(t => t.tool_name) ?? [])
       setLoading(false)
     }
     load()
@@ -212,6 +231,12 @@ export default function EditProfile() {
   function toggleMarket(country) {
     setMarkets(prev =>
       prev.includes(country) ? prev.filter(c => c !== country) : [...prev, country]
+    )
+  }
+
+  function toggleTool(tool) {
+    setSelectedTools(prev =>
+      prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool]
     )
   }
 
@@ -290,6 +315,13 @@ export default function EditProfile() {
     if (markets.length > 0) {
       await supabase.from('recruiter_locations').insert(
         markets.map(country => ({ recruiter_profile_id: profileId, country }))
+      )
+    }
+
+    await supabase.from('recruiter_tools').delete().eq('recruiter_profile_id', profileId)
+    if (selectedTools.length > 0) {
+      await supabase.from('recruiter_tools').insert(
+        selectedTools.map(tool_name => ({ recruiter_profile_id: profileId, tool_name, verified: false }))
       )
     }
 
@@ -520,6 +552,26 @@ export default function EditProfile() {
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
                 />
                 {country}
+              </label>
+            ))}
+          </div>
+        </SectionCard>
+
+        {/* Tools and Sourcing Resources */}
+        <SectionCard title="Tools and Sourcing Resources">
+          <p className="text-sm text-gray-500 mb-4">
+            List the sourcing tools and databases you actively use. This helps hiring managers understand your sourcing capability.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {TOOLS.map(tool => (
+              <label key={tool} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-gray-900">
+                <input
+                  type="checkbox"
+                  checked={selectedTools.includes(tool)}
+                  onChange={() => toggleTool(tool)}
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+                />
+                {tool}
               </label>
             ))}
           </div>

@@ -526,7 +526,10 @@ export default function BrowseRecruiters() {
               </div>
             </FilterSection>
 
-            <FilterSection title="Fee">
+            <FilterSection title="Standard rate">
+              <p className="text-xs text-gray-400 mb-2 leading-relaxed">
+                Recruiters may negotiate within the 6 to 10 percent range on the discovery call.
+              </p>
               <div className="space-y-1">
                 {FILTER_FEES.map(f => (
                   <FilterCheckbox key={f.value} label={f.label}

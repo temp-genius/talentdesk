@@ -556,9 +556,9 @@ export default function RecruiterPublicProfile() {
             {/* Fee card */}
             {profile.preferred_fee_percentage != null && (
               <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Placement Fee</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Standard rate</p>
                 <p className="text-4xl font-extrabold text-primary-600">{profile.preferred_fee_percentage}%</p>
-                <p className="text-xs text-gray-400 mt-1">of agreed annual salary</p>
+                <p className="text-xs text-gray-400 mt-1">Actual fee agreed on engagement — within the TalentDesk 6 to 10 percent range.</p>
               </div>
             )}
 

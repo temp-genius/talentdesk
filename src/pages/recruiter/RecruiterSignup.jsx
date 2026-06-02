@@ -6,7 +6,7 @@ import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 import Footer from '../../components/layout/Footer'
 
 const MARKETS = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
-const TOTAL_STEPS = 4
+const TOTAL_STEPS = 3
 
 function StepIndicator({ current }) {
   return (
@@ -69,9 +69,7 @@ export default function RecruiterSignup() {
     yearsExperience: '',
     specialisms: [],
     markets: [],
-    linkedinLicence: '',
     linkedinUrl: '',
-    linkedinNetworkSizeTier: '',
     preferredFeePercentage: '',
     bio: '',
     availabilityStatus: 'available',
@@ -105,7 +103,6 @@ export default function RecruiterSignup() {
       if (form.markets.length === 0) return 'Please select at least one market'
     }
     if (step === 3) {
-      if (!form.linkedinLicence) return 'Please indicate whether you have a LinkedIn Recruiter licence'
       if (!form.linkedinUrl.trim()) {
         return 'LinkedIn profile URL is required — we use this to verify your credentials before approving your application.'
       }
@@ -113,8 +110,6 @@ export default function RecruiterSignup() {
       if (!url.includes('linkedin.com')) {
         return 'Please enter a valid LinkedIn URL (e.g. https://www.linkedin.com/in/yourname).'
       }
-      if (!form.linkedinNetworkSizeTier) return 'Please select your LinkedIn network size'
-      if (!form.preferredFeePercentage) return 'Please select your preferred fee percentage'
     }
     return null
   }
@@ -133,6 +128,8 @@ export default function RecruiterSignup() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    const err = validate()
+    if (err) { setError(err); return }
     setError('')
     setSubmitting(true)
     try {
@@ -146,7 +143,6 @@ export default function RecruiterSignup() {
         markets: form.markets,
         years_experience: form.yearsExperience ? parseInt(form.yearsExperience, 10) : null,
         linkedin_url: form.linkedinUrl || null,
-        linkedin_network_size_tier: form.linkedinNetworkSizeTier || null,
         preferred_fee_percentage: form.preferredFeePercentage
           ? parseFloat(form.preferredFeePercentage) : null,
         availability_status: form.availabilityStatus,
@@ -318,71 +314,31 @@ export default function RecruiterSignup() {
             </div>
           )}
 
-          {/* ── Step 3: LinkedIn & fees ── */}
+          {/* ── Step 3: Profile & rates ── */}
           {step === 3 && (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-5">LinkedIn & fees</h2>
+            <form onSubmit={handleSubmit}>
+              <h2 className="text-lg font-semibold text-gray-900 mb-5">Profile and rates</h2>
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Do you have a LinkedIn Recruiter licence?
-                  </label>
-                  <div className="flex gap-6">
-                    {[
-                      { value: 'yes', label: 'Yes' },
-                      { value: 'no',  label: 'No' },
-                    ].map(opt => (
-                      <label key={opt.value} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="linkedinLicence"
-                          value={opt.value}
-                          checked={form.linkedinLicence === opt.value}
-                          onChange={() => set('linkedinLicence', opt.value)}
-                          className="border-gray-300 text-primary-600 focus:ring-primary-500"
-                        />
-                        {opt.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    LinkedIn profile URL *
+                    Short bio{' '}
+                    <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
-                  <input
-                    type="url"
-                    className="input"
-                    value={form.linkedinUrl}
-                    onChange={e => set('linkedinUrl', e.target.value)}
-                    placeholder="https://www.linkedin.com/in/yourname"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Required — we use this to verify your credentials before approving your application.
+                  <p className="text-xs text-gray-500 mb-2">
+                    Include the exact role types you place, sectors you specialise in, seniority levels, and markets you cover. Keyword-rich bios help hiring managers find you.
                   </p>
+                  <textarea
+                    className="input resize-none"
+                    rows={4}
+                    value={form.bio}
+                    onChange={e => set('bio', e.target.value)}
+                    placeholder="e.g. Senior technology recruiter specialising in Java, Python and data engineering roles for Irish fintech companies at mid to senior level…"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    LinkedIn network size
-                  </label>
-                  <select
-                    className="input"
-                    value={form.linkedinNetworkSizeTier}
-                    onChange={e => set('linkedinNetworkSizeTier', e.target.value)}
-                  >
-                    <option value="">Select network size</option>
-                    <option value="small">Small — under 1,000</option>
-                    <option value="medium">Medium — 1,000 to 5,000</option>
-                    <option value="large">Large — 5,000 to 10,000</option>
-                    <option value="xlarge">X-Large — over 10,000</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preferred fee percentage
+                    Standard rate
                   </label>
                   <select
                     className="input"
@@ -394,32 +350,9 @@ export default function RecruiterSignup() {
                     <option value="8">8%</option>
                     <option value="10">10%</option>
                   </select>
-                </div>
-              </div>
-              <div className="mt-6 flex justify-between">
-                <button className="btn-secondary" onClick={back}>Back</button>
-                <button className="btn-primary" onClick={next}>Continue</button>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 4: About & availability ── */}
-          {step === 4 && (
-            <form onSubmit={handleSubmit}>
-              <h2 className="text-lg font-semibold text-gray-900 mb-5">About you</h2>
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Short bio{' '}
-                    <span className="text-gray-400 font-normal">(optional)</span>
-                  </label>
-                  <textarea
-                    className="input resize-none"
-                    rows={4}
-                    value={form.bio}
-                    onChange={e => set('bio', e.target.value)}
-                    placeholder="Tell hiring companies about your background, specialisations, and what makes you great at recruiting…"
-                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    TalentDesk recruiters work within the 6 to 10 percent range. This is your starting rate — the actual fee is agreed on the discovery call.
+                  </p>
                 </div>
 
                 <div>
@@ -435,6 +368,22 @@ export default function RecruiterSignup() {
                     <option value="limited">Limited — can take some roles</option>
                     <option value="unavailable">Unavailable — not taking work right now</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    LinkedIn profile URL <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    className="input"
+                    value={form.linkedinUrl}
+                    onChange={e => set('linkedinUrl', e.target.value)}
+                    placeholder="https://www.linkedin.com/in/yourname"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Required — we use this to verify your credentials before approving your application.
+                  </p>
                 </div>
 
                 <div className="border-t border-gray-100 pt-5 space-y-3">

@@ -107,6 +107,7 @@ function StartJobInner() {
   const [submitted,      setSubmitted]      = useState(false)
   const [authTimedOut,   setAuthTimedOut]   = useState(false)
 
+  const [feePercentage,       setFeePercentage]       = useState(null)
   const [shortlist,           setShortlist]           = useState(5)
   const [agreed,              setAgreed]              = useState([false, false, false, false])
   const [submitting,          setSubmitting]          = useState(false)
@@ -174,6 +175,8 @@ function StartJobInner() {
       setJob(jobResult.data)
       setRecruiter(recruiterResult.data)
       setCompanyProfile(companyResult.data ?? null)
+      const preferredFee = recruiterResult.data?.preferred_fee_percentage
+      setFeePercentage([6, 8, 10].includes(preferredFee) ? preferredFee : 8)
       setLoading(false)
     }
 
@@ -249,7 +252,7 @@ function StartJobInner() {
   )
 
   // ── Calculations ──────────────────────────────────────────────────
-  const fee      = recruiter.preferred_fee_percentage ?? 0
+  const fee      = feePercentage ?? 0
   const maxSal   = job.salary_max ?? job.salary_min ?? 0
   const totalFee = Math.round(maxSal * (fee / 100))
   const currency = job.currency ?? 'EUR'
@@ -533,15 +536,28 @@ function StartJobInner() {
         {/* Recruiter */}
         <div className="card">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Recruiter</h2>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900">
                 {recruiter.first_name} {recruiter.last_name}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">Placement fee: {fee}% of agreed annual salary</p>
+              <p className="text-xs text-gray-500 mt-0.5">Standard rate — agreed as a percentage of annual salary</p>
             </div>
-            <p className="text-3xl font-extrabold text-primary-600">{fee}%</p>
+            <div className="flex-shrink-0">
+              <select
+                className="input w-24 text-sm font-bold text-primary-600"
+                value={feePercentage ?? ''}
+                onChange={e => setFeePercentage(Number(e.target.value))}
+              >
+                <option value="6">6%</option>
+                <option value="8">8%</option>
+                <option value="10">10%</option>
+              </select>
+            </div>
           </div>
+          <p className="text-xs text-gray-400 mt-3">
+            All TalentDesk engagements are priced between 6 and 10 percent of the agreed annual salary. This is enforced by the platform.
+          </p>
         </div>
 
         {/* Fee breakdown */}
