@@ -55,7 +55,7 @@ export default function RecruiterDashboard() {
       .from('recruiter_profiles')
       .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
       .then(({ data, error }) => {
         if (error) console.warn('[RecruiterDashboard] profile fetch error:', error.message, error.code)
         setProfile(data ?? null)
@@ -155,6 +155,19 @@ export default function RecruiterDashboard() {
         {loadingProfile ? (
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+          </div>
+        ) : !profile ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center mb-5">
+              <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Your profile is being set up</h1>
+            <p className="text-gray-500 text-sm max-w-sm">
+              It can take a moment for your account to be ready. Please refresh the page in a few seconds.
+            </p>
           </div>
         ) : (
           <>
