@@ -40,6 +40,8 @@ export default function RecruiterDashboard() {
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [assignments,    setAssignments]   = useState([])
   const [loadingJobs,    setLoadingJobs]   = useState(false)
+  const [connectingStripe, setConnectingStripe] = useState(false)
+  const [stripeError,      setStripeError]      = useState('')
 
   // Specialism editing
   const [allCategories,      setAllCategories]      = useState([])
@@ -59,7 +61,7 @@ export default function RecruiterDashboard() {
         try {
           const { data, error } = await supabase
             .from('recruiter_profiles')
-            .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements')
+            .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements, stripe_account_id')
             .eq('user_id', user.id)
             .maybeSingle()
 
@@ -162,6 +164,21 @@ export default function RecruiterDashboard() {
       })
   }, [profile])
 
+  async function connectStripe() {
+    if (!user || !profile?.id) return
+    setConnectingStripe(true)
+    setStripeError('')
+    const { data, error: fnErr } = await supabase.functions.invoke('stripe-connect-onboard', {
+      body: { user_id: user.id, recruiter_profile_id: profile.id },
+    })
+    setConnectingStripe(false)
+    if (fnErr || data?.error) {
+      setStripeError(fnErr?.message ?? data?.error ?? 'Failed to start Stripe onboarding. Please try again.')
+      return
+    }
+    if (data?.url) window.location.href = data.url
+  }
+
   const displayName = profile?.first_name
     ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}`
     : user?.email
@@ -203,6 +220,53 @@ export default function RecruiterDashboard() {
           </div>
         ) : (
           <>
+            {/* Stripe Connect banner — approved but no bank account connected */}
+            {profile.status === 'approved' && !profile.stripe_account_id && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-base font-bold text-amber-900 mb-1">
+                      Connect your bank account to receive payments
+                    </h2>
+                    <p className="text-sm text-amber-800 mb-4">
+                      You need to connect your bank account through Stripe before any milestone payments can be released to you. This takes about 5 minutes and is required before you can receive money for completed work.
+                    </p>
+                    {stripeError && (
+                      <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mb-3">
+                        {stripeError}
+                      </p>
+                    )}
+                    <button
+                      onClick={connectStripe}
+                      disabled={connectingStripe}
+                      className="btn-primary disabled:opacity-50"
+                    >
+                      {connectingStripe ? 'Preparing…' : 'Connect with Stripe →'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Stripe Connected badge */}
+            {profile.status === 'approved' && profile.stripe_account_id && (
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5 mb-6">
+                <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-sm text-green-800">
+                  <span className="font-semibold">Bank account connected.</span>{' '}
+                  Payments will transfer within 2 business days of each milestone release.
+                </p>
+              </div>
+            )}
+
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-gray-900">
                 Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}

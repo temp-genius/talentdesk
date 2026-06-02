@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -8,20 +8,27 @@ export default function StripeOnboarding() {
   const [searchParams] = useSearchParams()
   const status = searchParams.get('status')
 
+  const [profileId,  setProfileId]  = useState(null)
   const [connecting, setConnecting] = useState(false)
-  const [error, setError]           = useState('')
+  const [error,      setError]      = useState('')
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('recruiter_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data?.id) setProfileId(data.id) })
+  }, [user])
 
   async function handleConnect() {
-    if (!user) return
+    if (!user || !profileId) return
     setConnecting(true)
     setError('')
 
     const { data, error: fnErr } = await supabase.functions.invoke('stripe-connect-onboard', {
-      body: {
-        user_id:     user.id,
-        return_url:  `${window.location.origin}/recruiter/stripe-onboarding?status=complete`,
-        refresh_url: `${window.location.origin}/recruiter/stripe-onboarding?status=refresh`,
-      },
+      body: { user_id: user.id, recruiter_profile_id: profileId },
     })
 
     setConnecting(false)
@@ -45,11 +52,43 @@ export default function StripeOnboarding() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Bank Account Connected!</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Bank Account Connected</h1>
           <p className="text-gray-500 text-sm mb-6">
-            Your Stripe account is set up. Payments will be transferred directly to your bank account when milestones are released.
+            Your bank account is connected. You will receive milestone payments within 2 business days of each release.
           </p>
           <Link to="/recruiter/dashboard" className="btn-primary block text-center">
+            Go to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === 'refresh') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="card max-w-md w-full text-center">
+          <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Onboarding Session Expired</h1>
+          <p className="text-gray-500 text-sm mb-6">
+            Your onboarding session expired before you could complete setup. Click below to start again — it only takes a few minutes.
+          </p>
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">{error}</div>
+          )}
+          <button
+            onClick={handleConnect}
+            disabled={connecting || !profileId}
+            className="btn-primary w-full disabled:opacity-50"
+          >
+            {connecting ? 'Preparing…' : 'Try Again →'}
+          </button>
+          <Link to="/recruiter/dashboard" className="block text-sm text-gray-500 hover:text-gray-700 mt-4">
             Back to Dashboard
           </Link>
         </div>
@@ -90,17 +129,9 @@ export default function StripeOnboarding() {
               <li>• Milestone payments are held securely in escrow by TalentDesk</li>
               <li>• When a milestone is released, funds transfer directly to your bank</li>
               <li>• TalentDesk retains a 15% platform fee on each milestone</li>
-              <li>• Payments typically arrive within 2–3 business days</li>
+              <li>• Payments typically arrive within 2 business days</li>
             </ul>
           </div>
-
-          {status === 'refresh' && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-amber-800">
-                Your onboarding link expired. Click below to generate a new one.
-              </p>
-            </div>
-          )}
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">
@@ -110,7 +141,7 @@ export default function StripeOnboarding() {
 
           <button
             onClick={handleConnect}
-            disabled={connecting}
+            disabled={connecting || !profileId}
             className="btn-primary w-full py-3 text-base disabled:opacity-50"
           >
             {connecting ? 'Preparing…' : 'Connect with Stripe →'}
