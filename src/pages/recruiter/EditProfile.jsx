@@ -15,9 +15,9 @@ const CLIENT_TYPES = [
 ]
 
 const CAREER_DNA_OPTIONS = [
-  { value: 'agency',   label: 'Agency',   desc: 'Grew up placing across multiple clients in a recruitment agency' },
-  { value: 'inhouse',  label: 'In-house',  desc: 'Built career as an internal talent partner within companies' },
-  { value: 'hybrid',   label: 'Hybrid',    desc: 'Mix of both agency and in-house experience' },
+  { value: 'agency',  label: 'Agency Recruiter',        desc: 'You come from agency recruitment. You know how to headhunt, manage pipelines at volume, and work across multiple clients.' },
+  { value: 'inhouse', label: 'In-House TA',             desc: 'You come from internal talent acquisition. You understand company culture, stakeholder management, and employer branding.' },
+  { value: 'hybrid',  label: 'Both — Agency and In-House', desc: 'You have significant experience in both agency recruitment and in-house talent acquisition.' },
 ]
 
 const CAPACITY_OPTIONS = [
@@ -364,7 +364,7 @@ export default function EditProfile() {
         {/* Career DNA */}
         <SectionCard title="Career DNA">
           <InfoBox>
-            Your career DNA tells hiring managers where you developed your skills. Agency recruiters bring broad market knowledge; in-house recruiters bring deep process and culture-fit expertise; hybrid recruiters offer both.
+            Your background tells hiring managers how you work. Agency recruiters bring broad market reach and pipeline volume. In-house TA professionals bring deep culture and stakeholder expertise. Select both if you have significant experience in each.
           </InfoBox>
           <CardSelector
             options={CAREER_DNA_OPTIONS}

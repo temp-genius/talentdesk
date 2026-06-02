@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom'
 
-const CAREER_DNA_LABELS = {
-  agency:  { label: 'Agency Background',   cls: 'bg-violet-100 text-violet-700' },
-  inhouse: { label: 'In-House Background', cls: 'bg-indigo-100 text-indigo-700' },
-  hybrid:  { label: 'Hybrid Background',   cls: 'bg-purple-100 text-purple-700' },
+const AGENCY_TAG  = { label: 'Agency Recruiter', cls: 'bg-blue-100 text-blue-700' }
+const INHOUSE_TAG = { label: 'In-House TA',      cls: 'bg-purple-100 text-purple-700' }
+
+function careerDnaTags(value) {
+  if (value === 'agency')  return [AGENCY_TAG]
+  if (value === 'inhouse') return [INHOUSE_TAG]
+  if (value === 'hybrid')  return [AGENCY_TAG, INHOUSE_TAG]
+  return []
 }
 
 const CAPACITY_CONFIG = {
@@ -88,7 +92,7 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
   ].filter(Boolean).join(' · ')
 
   const capacity    = CAPACITY_CONFIG[recruiter.capacity_status] ?? CAPACITY_CONFIG.open_to_new
-  const dna         = CAREER_DNA_LABELS[recruiter.career_dna] ?? null
+  const dnaTags     = careerDnaTags(recruiter.career_dna)
   const employers   = (recruiter.previous_employers ?? '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
   const clientTypes = (recruiter.previous_client_types ?? []).slice(0, 4)
   const lastPlacement = timeAgo(recruiter.last_placement_at)
@@ -139,11 +143,13 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
             </div>
 
             {/* Career DNA */}
-            {dna && (
-              <div>
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${dna.cls}`}>
-                  {dna.label}
-                </span>
+            {dnaTags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {dnaTags.map(tag => (
+                  <span key={tag.label} className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${tag.cls}`}>
+                    {tag.label}
+                  </span>
+                ))}
               </div>
             )}
 

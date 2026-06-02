@@ -277,10 +277,10 @@ export default function RecruiterPublicProfile() {
   const rating     = scores?.overall_average ?? null
   const totalReviews = (scores?.total_hm_reviews ?? 0) + (scores?.total_candidate_reviews ?? 0)
 
-  const CAREER_DNA_META = {
-    agency:  { label: 'Agency',   desc: 'Developed skills placing across multiple clients in a recruitment agency', color: 'bg-violet-100 text-violet-700' },
-    inhouse: { label: 'In-house', desc: 'Built expertise as an internal talent partner within companies',          color: 'bg-indigo-100 text-indigo-700' },
-    hybrid:  { label: 'Hybrid',   desc: 'Combines agency market knowledge with in-house process expertise',        color: 'bg-purple-100 text-purple-700' },
+  const CAREER_DNA_TAGS = {
+    agency:  { tags: [{ label: 'Agency Recruiter', cls: 'bg-blue-100 text-blue-700' }],                                                             desc: 'Comes from agency recruitment — experienced in headhunting, volume pipelines, and multi-client delivery.' },
+    inhouse: { tags: [{ label: 'In-House TA',      cls: 'bg-purple-100 text-purple-700' }],                                                         desc: 'Comes from internal talent acquisition — deep expertise in culture fit, stakeholder management, and employer branding.' },
+    hybrid:  { tags: [{ label: 'Agency Recruiter', cls: 'bg-blue-100 text-blue-700' }, { label: 'In-House TA', cls: 'bg-purple-100 text-purple-700' }], desc: 'Significant experience in both agency recruitment and in-house talent acquisition.' },
   }
   const CAPACITY_META = {
     open_to_new:  { label: 'Open to new roles',  bar: 'bg-green-500', pct: 33,  cls: 'text-green-700 bg-green-50' },
@@ -292,7 +292,7 @@ export default function RecruiterPublicProfile() {
     sme: 'SME', public_sector: 'Public Sector',
   }
 
-  const careerDnaMeta  = CAREER_DNA_META[profile.career_dna] ?? null
+  const careerDnaMeta  = CAREER_DNA_TAGS[profile.career_dna] ?? null
   const capacityMeta   = CAPACITY_META[profile.capacity_status] ?? null
   const employers      = (profile.previous_employers ?? '').split(',').map(s => s.trim()).filter(Boolean)
   const clientTypes    = profile.previous_client_types ?? []
@@ -409,9 +409,13 @@ export default function RecruiterPublicProfile() {
                   <div>
                     <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Career DNA</h2>
                     <div className="flex items-start gap-3">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${careerDnaMeta.color}`}>
-                        {careerDnaMeta.label}
-                      </span>
+                      <div className="flex flex-wrap gap-1.5 flex-shrink-0">
+                        {careerDnaMeta.tags.map(tag => (
+                          <span key={tag.label} className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${tag.cls}`}>
+                            {tag.label}
+                          </span>
+                        ))}
+                      </div>
                       <p className="text-sm text-gray-600 leading-relaxed">{careerDnaMeta.desc}</p>
                     </div>
                   </div>

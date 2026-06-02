@@ -8,9 +8,9 @@ const FILTER_COUNTRIES = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
 const FILTER_FEES      = [{ label: '6%', value: '6' }, { label: '8%', value: '8' }, { label: '10%', value: '10' }]
 const FILTER_AVAIL     = [{ label: 'Available now', value: 'available' }, { label: 'Limited', value: 'limited' }]
 const FILTER_CAREER_DNA = [
-  { label: 'Agency',   value: 'agency'  },
-  { label: 'In-house', value: 'inhouse' },
-  { label: 'Hybrid',   value: 'hybrid'  },
+  { label: 'Agency Recruiter',       value: 'agency'  },
+  { label: 'In-House TA',            value: 'inhouse' },
+  { label: 'Both Agency and In-House', value: 'hybrid'  },
 ]
 const FILTER_CAPACITY  = [
   { label: 'Open to new',  value: 'open_to_new'  },
