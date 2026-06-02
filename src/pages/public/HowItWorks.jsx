@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import Footer from '../../components/layout/Footer'
 
 /* ── Shared ── */
 function StepCard({ number, icon, title, description }) {
@@ -328,10 +329,7 @@ export default function HowItWorks() {
         </section>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-6 px-6 text-center text-sm text-gray-400">
-        © {new Date().getFullYear()} TalentDesk · <Link to="/" className="hover:text-gray-600">Home</Link>
-      </footer>
+      <Footer />
     </div>
   )
 }

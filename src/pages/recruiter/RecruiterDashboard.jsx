@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 import OnboardingModal from '../../components/onboarding/OnboardingModal'
+import Footer from '../../components/layout/Footer'
 
 const STATUS_STYLES = {
   pending:  'bg-yellow-100 text-yellow-800',
@@ -362,11 +363,7 @@ export default function RecruiterDashboard() {
           </>
         )}
       </div>
-      <footer className="mt-auto py-4 text-center border-t border-gray-100">
-        <Link to="/how-it-works" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
-          How TalentDesk works
-        </Link>
-      </footer>
+      <Footer />
       <OnboardingModal userType="recruiter" />
     </main>
   )

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
+import Footer from '../../components/layout/Footer'
 
 const MARKETS = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
 const TOTAL_STEPS = 4
@@ -56,6 +57,9 @@ export default function RecruiterSignup() {
       .order('display_order')
       .then(({ data }) => { if (data) setSpecialismCategories(data) })
   }, [])
+
+  const [agreedTerms,    setAgreedTerms]    = useState(false)
+  const [agreedLinkedin, setAgreedLinkedin] = useState(false)
 
   const [form, setForm] = useState({
     firstName: '',
@@ -158,7 +162,8 @@ export default function RecruiterSignup() {
 
   if (submitted) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-gray-50">
+      <main className="flex-1 flex items-center justify-center px-4">
         <div className="card w-full max-w-md text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,11 +178,14 @@ export default function RecruiterSignup() {
           <Link to="/" className="btn-secondary w-full text-center block">Back to Home</Link>
         </div>
       </main>
+      <Footer />
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <main className="flex-1 py-12 px-4">
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
           <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight">
@@ -428,10 +436,42 @@ export default function RecruiterSignup() {
                     <option value="unavailable">Unavailable — not taking work right now</option>
                   </select>
                 </div>
+
+                <div className="border-t border-gray-100 pt-5 space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agreedTerms}
+                      onChange={e => setAgreedTerms(e.target.checked)}
+                      className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I have read and agree to the{' '}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">Terms of Service</a>
+                      {' '}and{' '}
+                      <a href="/recruiter-agreement" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">Recruiter Agreement</a>
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agreedLinkedin}
+                      onChange={e => setAgreedLinkedin(e.target.checked)}
+                      className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I understand that TalentDesk will review my LinkedIn profile and application details before approving my account
+                    </span>
+                  </label>
+                </div>
               </div>
               <div className="mt-6 flex justify-between">
                 <button type="button" className="btn-secondary" onClick={back}>Back</button>
-                <button type="submit" className="btn-primary" disabled={submitting}>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={submitting || !agreedTerms || !agreedLinkedin}
+                >
                   {submitting ? 'Submitting…' : 'Submit Application'}
                 </button>
               </div>
@@ -445,5 +485,7 @@ export default function RecruiterSignup() {
         </p>
       </div>
     </main>
+    <Footer />
+    </div>
   )
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { BLOCKED_EMAIL_DOMAINS } from '../../utils/emailValidation'
+import Footer from '../../components/layout/Footer'
 
 const INDUSTRIES = [
   'Technology', 'Finance & Banking', 'Legal', 'Consulting', 'Healthcare',
@@ -60,6 +61,7 @@ export default function HiringManagerSignup() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [additionalBlockedDomains, setAdditionalBlockedDomains] = useState([])
+  const [agreedTerms, setAgreedTerms] = useState(false)
 
   useEffect(() => {
     supabase.from('blocked_email_domains').select('domain').then(({ data }) => {
@@ -147,7 +149,8 @@ export default function HiringManagerSignup() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <main className="flex-1 py-12 px-4">
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
           <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight">
@@ -291,9 +294,25 @@ export default function HiringManagerSignup() {
                   </select>
                 </div>
               </div>
+              <div className="border-t border-gray-100 pt-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreedTerms}
+                    onChange={e => setAgreedTerms(e.target.checked)}
+                    className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
+                  />
+                  <span className="text-sm text-gray-700">
+                    I have read and agree to the{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">Terms of Service</a>
+                    {' '}and{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">Privacy Policy</a>
+                  </span>
+                </label>
+              </div>
               <div className="mt-6 flex justify-between">
                 <button type="button" className="btn-secondary" onClick={back}>Back</button>
-                <button type="submit" className="btn-primary" disabled={submitting}>
+                <button type="submit" className="btn-primary" disabled={submitting || !agreedTerms}>
                   {submitting ? 'Creating account…' : 'Create Account'}
                 </button>
               </div>
@@ -307,5 +326,7 @@ export default function HiringManagerSignup() {
         </p>
       </div>
     </main>
+    <Footer />
+    </div>
   )
 }

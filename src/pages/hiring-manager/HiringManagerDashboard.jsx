@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import OnboardingModal from '../../components/onboarding/OnboardingModal'
+import Footer from '../../components/layout/Footer'
 
 const MS_STATUS_LABELS = {
   pending:       'Shortlist Pending',
@@ -223,11 +224,7 @@ export default function HiringManagerDashboard() {
           </>
         )}
       </div>
-      <footer className="py-4 text-center border-t border-gray-100 bg-white">
-        <Link to="/how-it-works" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
-          How TalentDesk works
-        </Link>
-      </footer>
+      <Footer />
       <OnboardingModal userType="hiring_manager" />
     </div>
   )

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Footer from '../../components/layout/Footer'
 
 export default function HomePage() {
   return (
@@ -120,10 +121,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-500 py-6 px-6 text-center text-sm">
-        <p>&copy; {new Date().getFullYear()} TalentDesk. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   )
 }
