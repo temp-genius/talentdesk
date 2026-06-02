@@ -122,26 +122,46 @@ function computeRelevance(r, filters, jobKeywords) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse space-y-3">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-gray-200" />
-        <div className="flex-1 space-y-1.5">
-          <div className="h-3.5 bg-gray-200 rounded w-32" />
-          <div className="h-3 bg-gray-200 rounded w-24" />
+    <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+      <div className="flex gap-6">
+        <div className="w-1/4 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-14 h-14 rounded-full bg-gray-200 flex-shrink-0" />
+            <div className="flex-1 space-y-2 pt-1">
+              <div className="h-4 bg-gray-200 rounded w-28" />
+              <div className="h-3 bg-gray-200 rounded w-20" />
+            </div>
+          </div>
+          <div className="h-6 bg-gray-200 rounded-full w-32" />
+          <div className="h-5 bg-gray-200 rounded w-20" />
+        </div>
+        <div className="flex-1 space-y-3">
+          <div className="flex gap-2">
+            <div className="flex-1 h-16 bg-gray-200 rounded-lg" />
+            <div className="flex-1 h-16 bg-gray-200 rounded-lg" />
+            <div className="flex-1 h-16 bg-gray-200 rounded-lg" />
+          </div>
+          <div className="h-3 bg-gray-200 rounded w-full" />
+          <div className="h-3 bg-gray-200 rounded w-48" />
+        </div>
+        <div className="w-[35%] space-y-3">
+          <div className="h-14 bg-gray-200 rounded-lg w-24 self-end ml-auto" />
+          <div className="h-3 bg-gray-200 rounded w-28" />
+          <div className="flex gap-1">
+            <div className="h-6 w-16 bg-gray-200 rounded-md" />
+            <div className="h-6 w-20 bg-gray-200 rounded-md" />
+          </div>
         </div>
       </div>
-      <div className="flex gap-2">
-        <div className="h-5 w-24 bg-gray-200 rounded-full" />
-        <div className="h-5 w-28 bg-gray-200 rounded-full" />
-      </div>
-      <div className="h-6 bg-gray-200 rounded-md" />
-      <div className="flex gap-2">
-        <div className="h-4 w-20 bg-gray-200 rounded" />
-        <div className="h-4 w-16 bg-gray-200 rounded" />
-      </div>
-      <div className="flex gap-2 pt-1">
-        <div className="h-7 flex-1 bg-gray-200 rounded-md" />
-        <div className="h-7 flex-1 bg-gray-200 rounded-md" />
+      <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between">
+        <div className="flex gap-2">
+          <div className="h-6 w-16 bg-gray-200 rounded-full" />
+          <div className="h-6 w-20 bg-gray-200 rounded-full" />
+        </div>
+        <div className="flex gap-2">
+          <div className="h-8 w-28 bg-gray-200 rounded-md" />
+          <div className="h-8 w-44 bg-gray-200 rounded-md" />
+        </div>
       </div>
     </div>
   )
@@ -547,13 +567,13 @@ export default function BrowseRecruiters() {
             </div>
 
             {loading ? (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+              <div className="flex flex-col gap-4">
+                {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : sorted.length === 0 ? (
               <EmptyState hasFilters={hasActiveFilters} onClear={clearFilters} />
             ) : (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="flex flex-col gap-4">
                 {sorted.map(r => (
                   <RecruiterCard
                     key={r.id}
