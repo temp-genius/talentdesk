@@ -9,7 +9,10 @@ export default function HomePage() {
           <span className="text-xl font-bold text-white tracking-tight">
             Talent<span className="text-primary-400">Desk</span>
           </span>
-          <Link to="/login" className="btn-secondary text-sm">Sign in</Link>
+          <div className="flex items-center gap-4">
+            <Link to="/how-it-works" className="text-sm text-slate-300 hover:text-white transition-colors">How it works</Link>
+            <Link to="/login" className="btn-secondary text-sm">Sign in</Link>
+          </div>
         </div>
       </header>
 

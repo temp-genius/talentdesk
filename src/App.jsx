@@ -26,6 +26,7 @@ import WithdrawJob            from './pages/recruiter/WithdrawJob'
 import EditProfile            from './pages/recruiter/EditProfile'
 import StripeOnboarding       from './pages/recruiter/StripeOnboarding'
 import OfferAcceptance        from './pages/public/OfferAcceptance'
+import HowItWorks             from './pages/public/HowItWorks'
 import AdminDashboard         from './pages/admin/AdminDashboard'
 
 const DASHBOARD_BY_TYPE = {
@@ -62,6 +63,7 @@ export default function App() {
 
           {/* Public recruiter profile — viewable by anyone */}
           <Route path="/recruiter/profile/:id"   element={<RecruiterPublicProfile />} />
+          <Route path="/how-it-works"            element={<HowItWorks />} />
 
           {/* Public offer acceptance — no auth required */}
           <Route path="/offer/:token"            element={<OfferAcceptance />} />
