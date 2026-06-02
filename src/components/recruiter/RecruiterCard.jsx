@@ -33,6 +33,14 @@ const CLIENT_TYPE_LABELS = {
   sme: 'SME', public_sector: 'Public Sector',
 }
 
+function feeDisplay(val) {
+  if (val == null) return null
+  const nums = val.toString().split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n)).sort((a, b) => a - b)
+  if (nums.length === 0) return null
+  if (nums.length === 1) return `${nums[0]}%`
+  return `${nums[0]}–${nums[nums.length - 1]}%`
+}
+
 function timeAgo(dateStr) {
   if (!dateStr) return null
   const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
@@ -154,11 +162,11 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
             )}
 
             {/* Fee */}
-            {recruiter.preferred_fee_percentage != null && (
+            {feeDisplay(recruiter.preferred_fee_percentage) && (
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wide leading-none mb-0.5">Standard rate</p>
                 <p className="text-lg font-bold text-primary-600 leading-none">
-                  {recruiter.preferred_fee_percentage}%
+                  {feeDisplay(recruiter.preferred_fee_percentage)}
                 </p>
               </div>
             )}

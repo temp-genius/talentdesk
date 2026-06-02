@@ -358,8 +358,8 @@ export default function BrowseRecruiters() {
       if (!filters.specialisms.some(id => rIds.includes(id))) return false
     }
     if (filters.fees.length > 0) {
-      const fee = String(Math.round(r.preferred_fee_percentage ?? -1))
-      if (!filters.fees.includes(fee)) return false
+      const recruiterFees = (r.preferred_fee_percentage ?? '').toString().split(',').map(s => s.trim()).filter(Boolean)
+      if (!filters.fees.some(f => recruiterFees.includes(f))) return false
     }
     if (filters.availability.length > 0) {
       if (!filters.availability.includes(r.availability_status)) return false

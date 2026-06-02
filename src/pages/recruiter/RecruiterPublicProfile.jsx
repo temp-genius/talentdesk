@@ -292,6 +292,14 @@ export default function RecruiterPublicProfile() {
     sme: 'SME', public_sector: 'Public Sector',
   }
 
+  function feeDisplay(val) {
+    if (val == null) return null
+    const nums = val.toString().split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n)).sort((a, b) => a - b)
+    if (nums.length === 0) return null
+    if (nums.length === 1) return `${nums[0]}%`
+    return `${nums[0]}–${nums[nums.length - 1]}%`
+  }
+
   const careerDnaMeta  = CAREER_DNA_TAGS[profile.career_dna] ?? null
   const capacityMeta   = CAPACITY_META[profile.capacity_status] ?? null
   const employers      = (profile.previous_employers ?? '').split(',').map(s => s.trim()).filter(Boolean)
@@ -554,10 +562,10 @@ export default function RecruiterPublicProfile() {
           {/* ── Right sidebar: contact + fee ── */}
           <div className="space-y-4 lg:sticky lg:top-24">
             {/* Fee card */}
-            {profile.preferred_fee_percentage != null && (
+            {feeDisplay(profile.preferred_fee_percentage) && (
               <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
                 <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Standard rate</p>
-                <p className="text-4xl font-extrabold text-primary-600">{profile.preferred_fee_percentage}%</p>
+                <p className="text-4xl font-extrabold text-primary-600">{feeDisplay(profile.preferred_fee_percentage)}</p>
                 <p className="text-xs text-gray-400 mt-1">Actual fee agreed on engagement — within the TalentDesk 6 to 10 percent range.</p>
               </div>
             )}

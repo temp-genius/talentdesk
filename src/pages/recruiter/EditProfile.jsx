@@ -45,7 +45,7 @@ const CAPACITY_OPTIONS = [
 const EMPTY_FORM = {
   firstName: '', lastName: '', bio: '', headline: '',
   linkedinUrl: '', yearsExperience: '',
-  preferredFeePercentage: '', availabilityStatus: 'available',
+  preferredFeePercentage: [], availabilityStatus: 'available',
   samplePlacements: '',
   careerDna: '', capacityStatus: 'open_to_new',
   previousEmployers: '', previousClientTypes: [],
@@ -201,7 +201,9 @@ export default function EditProfile() {
         headline:               p.headline ?? '',
         linkedinUrl:            p.linkedin_url ?? '',
         yearsExperience:        p.years_experience?.toString() ?? '',
-        preferredFeePercentage: p.preferred_fee_percentage?.toString() ?? '',
+        preferredFeePercentage: p.preferred_fee_percentage
+          ? p.preferred_fee_percentage.toString().split(',').map(s => s.trim()).filter(Boolean)
+          : [],
         availabilityStatus:     p.availability_status ?? 'available',
         samplePlacements:       p.sample_placements ?? '',
         careerDna:              p.career_dna ?? '',
@@ -292,7 +294,8 @@ export default function EditProfile() {
         headline:                 form.headline.trim() || null,
         linkedin_url:             form.linkedinUrl.trim() || null,
         years_experience:         form.yearsExperience ? parseInt(form.yearsExperience, 10) : null,
-        preferred_fee_percentage: form.preferredFeePercentage ? parseFloat(form.preferredFeePercentage) : null,
+        preferred_fee_percentage: form.preferredFeePercentage.length > 0
+          ? [...form.preferredFeePercentage].sort().join(',') : null,
         availability_status:      form.availabilityStatus,
         sample_placements:        form.samplePlacements.trim() || null,
         career_dna:               form.careerDna || null,
@@ -466,19 +469,10 @@ export default function EditProfile() {
               <input type="url" className="input" value={form.linkedinUrl} onChange={e => setField('linkedinUrl', e.target.value)} placeholder="https://www.linkedin.com/in/yourname" />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Years experience</label>
                 <input type="number" min="0" max="50" className="input" value={form.yearsExperience} onChange={e => setField('yearsExperience', e.target.value)} placeholder="e.g. 5" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred fee</label>
-                <select className="input" value={form.preferredFeePercentage} onChange={e => setField('preferredFeePercentage', e.target.value)}>
-                  <option value="">Select</option>
-                  <option value="6">6%</option>
-                  <option value="8">8%</option>
-                  <option value="10">10%</option>
-                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
@@ -488,6 +482,28 @@ export default function EditProfile() {
                   <option value="unavailable">Unavailable</option>
                 </select>
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Standard rate</label>
+              <div className="flex gap-5">
+                {['6', '8', '10'].map(fee => (
+                  <label key={fee} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.preferredFeePercentage.includes(fee)}
+                      onChange={() => setForm(prev => ({
+                        ...prev,
+                        preferredFeePercentage: prev.preferredFeePercentage.includes(fee)
+                          ? prev.preferredFeePercentage.filter(v => v !== fee)
+                          : [...prev.preferredFeePercentage, fee],
+                      }))}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+                    />
+                    {fee}%
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">Select all rates you work at — actual fee agreed on engagement.</p>
             </div>
           </div>
         </SectionCard>
