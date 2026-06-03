@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 export default function HomePage() {
   return (
@@ -7,9 +8,7 @@ export default function HomePage() {
       {/* Nav */}
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-xl font-bold text-white tracking-tight">
-            Talent<span className="text-primary-400">Desk</span>
-          </span>
+          <Logo dark />
           <div className="flex items-center gap-4">
             <Link to="/how-it-works" className="text-sm text-slate-300 hover:text-white transition-colors">How it works</Link>
             <Link to="/login" className="btn-secondary text-sm">Sign in</Link>

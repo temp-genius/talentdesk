@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import Logo from '../layout/Logo'
 
 const STORAGE_PREFIX = {
   recruiter:      'talentdesk_onboarded_recruiter',
@@ -11,10 +12,10 @@ const STORAGE_PREFIX = {
 const RECRUITER_SLIDES = [
   {
     icon: '🤝',
-    title: 'Welcome to TalentDesk',
+    title: 'Welcome to Vetted TA',
     body: (
       <p className="text-gray-600 leading-relaxed">
-        TalentDesk connects you with hiring companies looking for specialist independent recruiters.
+        Vetted TA connects you with hiring companies looking for specialist independent recruiters.
         You work the role your way — your tools, your network, your pace. We handle the commercial side.
       </p>
     ),
@@ -54,7 +55,7 @@ const RECRUITER_SLIDES = [
     body: (
       <div className="space-y-1">
         <p className="text-sm text-gray-600 leading-relaxed mb-3">
-          Three things must be logged on the TalentDesk platform to release your payments.
+          Three things must be logged on the Vetted TA platform to release your payments.
         </p>
         <ul className="space-y-3">
           {[
@@ -104,10 +105,10 @@ const RECRUITER_SLIDES = [
 const HM_SLIDES = [
   {
     icon: '🔍',
-    title: 'Welcome to TalentDesk',
+    title: 'Welcome to Vetted TA',
     body: (
       <p className="text-gray-600 leading-relaxed">
-        TalentDesk gives you access to vetted independent recruiters who specialise in your sector.
+        Vetted TA gives you access to vetted independent recruiters who specialise in your sector.
         Lower fees than traditional agencies. Paid in stages as work is delivered.
         One recruiter exclusively focused on your role.
       </p>
@@ -210,9 +211,7 @@ export default function OnboardingModal({ userType }) {
 
         {/* Header */}
         <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-white tracking-tight">
-            Talent<span className="text-primary-400">Desk</span>
-          </span>
+          <Logo dark />
           <button
             onClick={dismiss}
             className="text-slate-400 hover:text-white transition-colors"

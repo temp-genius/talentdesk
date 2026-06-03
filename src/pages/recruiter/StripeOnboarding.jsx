@@ -126,9 +126,9 @@ export default function StripeOnboarding() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <h3 className="text-sm font-semibold text-blue-900 mb-2">How it works</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Milestone payments are held securely in escrow by TalentDesk</li>
+              <li>• Milestone payments are held securely in escrow by Vetted TA</li>
               <li>• When a milestone is released, funds transfer directly to your bank</li>
-              <li>• TalentDesk retains a 15% platform fee on each milestone</li>
+              <li>• Vetted TA retains a 15% platform fee on each milestone</li>
               <li>• Payments typically arrive within 2 business days</li>
             </ul>
           </div>

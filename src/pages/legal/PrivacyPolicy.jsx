@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 const SECTIONS = [
   {
     title: '1. Who We Are',
-    body: 'TalentDesk is operated by TalentDesk (Ireland). We are the data controller for personal data collected through the TalentDesk platform. Contact us at privacy@talentdesk.io for any privacy-related enquiries.',
+    body: 'Vetted TA is operated by Vetted TA (Ireland). We are the data controller for personal data collected through the Vetted TA platform. Contact us at privacy@vettedta.com for any privacy-related enquiries.',
   },
   {
     title: '2. What Data We Collect',
@@ -12,7 +13,7 @@ const SECTIONS = [
   },
   {
     title: '3. What We Do Not Collect or Store',
-    body: 'We do not store candidate CVs. CVs are transmitted directly between recruiters and hiring managers via email and are never stored on TalentDesk infrastructure. Recruiters are the data controllers for all candidate personal data they collect and process.',
+    body: 'We do not store candidate CVs. CVs are transmitted directly between recruiters and hiring managers via email and are never stored on Vetted TA infrastructure. Recruiters are the data controllers for all candidate personal data they collect and process.',
   },
   {
     title: '4. How We Use Your Data',
@@ -28,11 +29,11 @@ const SECTIONS = [
   },
   {
     title: '7. Your Rights Under GDPR',
-    body: 'As a data subject you have the following rights. The right to access your personal data. The right to correct inaccurate data. The right to request deletion of your data. The right to restrict processing. The right to data portability. The right to object to processing. To exercise any of these rights contact privacy@talentdesk.io. We will respond within 30 days.',
+    body: 'As a data subject you have the following rights. The right to access your personal data. The right to correct inaccurate data. The right to request deletion of your data. The right to restrict processing. The right to data portability. The right to object to processing. To exercise any of these rights contact privacy@vettedta.com. We will respond within 30 days.',
   },
   {
     title: '8. Cookies',
-    body: 'TalentDesk uses essential cookies only. These are necessary for the platform to function and cannot be disabled. We do not use advertising or tracking cookies. We do not share cookie data with third parties.',
+    body: 'Vetted TA uses essential cookies only. These are necessary for the platform to function and cannot be disabled. We do not use advertising or tracking cookies. We do not share cookie data with third parties.',
   },
   {
     title: '9. Data Breaches',
@@ -40,7 +41,7 @@ const SECTIONS = [
   },
   {
     title: '10. Contact',
-    body: 'For privacy-related enquiries contact privacy@talentdesk.io. To make a complaint contact the Irish Data Protection Commission at dataprotection.ie.',
+    body: 'For privacy-related enquiries contact privacy@vettedta.com. To make a complaint contact the Irish Data Protection Commission at dataprotection.ie.',
   },
 ]
 
@@ -49,8 +50,8 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-white tracking-tight">
-            Talent<span className="text-primary-400">Desk</span>
+          <Link to="/">
+            <Logo dark />
           </Link>
           <Link to="/login" className="text-sm text-slate-300 hover:text-white transition-colors">Sign in</Link>
         </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 /* ── Shared ── */
 function StepCard({ number, icon, title, description }) {
@@ -80,15 +81,15 @@ const RECRUITER_FAQS = [
   },
   {
     q: 'How does payment work?',
-    a: 'Payments are held in escrow and released at three milestones — shortlist approval, interview confirmation, and offer acceptance. TalentDesk deducts a 15 percent platform fee from each release. The remainder transfers to your connected bank account within two business days.',
+    a: 'Payments are held in escrow and released at three milestones — shortlist approval, interview confirmation, and offer acceptance. Vetted TA deducts a 15 percent platform fee from each release. The remainder transfers to your connected bank account within two business days.',
   },
   {
     q: 'Do I need to connect my bank account before starting work?',
     a: 'You can start work without connecting your bank but no payments can be released until you connect through Stripe. We recommend connecting during your first active role.',
   },
   {
-    q: 'What is the TalentDesk email for?',
-    a: 'When you win your first role we create a professional TalentDesk email address for you — yourname@talentdesk.io. Use this to send CVs to hiring managers. It keeps your communications professional and provides an audit trail.',
+    q: 'What is the Vetted TA email for?',
+    a: 'When you win your first role we create a professional Vetted TA email address for you. Use this to send CVs to hiring managers. It keeps your communications professional and provides an audit trail.',
   },
   {
     q: 'Can I work multiple roles at once?',
@@ -121,12 +122,12 @@ const HM_STEPS = [
 
 const HM_FAQS = [
   {
-    q: 'How is TalentDesk different from a recruitment agency?',
-    a: 'TalentDesk connects you directly with independent specialist recruiters. You choose who you work with based on their track record and specialisms. Fees are typically 6 to 10 percent versus 15 to 20 percent at traditional agencies. You pay as work is delivered not as one lump sum on placement.',
+    q: 'How is Vetted TA different from a recruitment agency?',
+    a: 'Vetted TA connects you directly with independent specialist recruiters. You choose who you work with based on their track record and specialisms. Fees are typically 6 to 10 percent versus 15 to 20 percent at traditional agencies. You pay as work is delivered not as one lump sum on placement.',
   },
   {
     q: 'How do I know the recruiters are legitimate?',
-    a: 'Every recruiter on TalentDesk is manually vetted. We review their LinkedIn profile, verify their market experience, and check their stated track record before approving their profile. Platform ratings and reviews from other hiring managers provide ongoing quality assurance.',
+    a: 'Every recruiter on Vetted TA is manually vetted. We review their LinkedIn profile, verify their market experience, and check their stated track record before approving their profile. Platform ratings and reviews from other hiring managers provide ongoing quality assurance.',
   },
   {
     q: 'What if I am not happy with the shortlist?',
@@ -134,15 +135,15 @@ const HM_FAQS = [
   },
   {
     q: 'Can I use the same recruiter again?',
-    a: 'Yes. There is no restriction on re-engaging a recruiter you have worked with through TalentDesk. Subsequent engagements go through the platform to maintain the payment protection and audit trail for both sides.',
+    a: 'Yes. There is no restriction on re-engaging a recruiter you have worked with through Vetted TA. Subsequent engagements go through the platform to maintain the payment protection and audit trail for both sides.',
   },
   {
     q: 'What happens if the candidate does not start?',
-    a: 'TalentDesk operates a no-rebate policy. The recruiter\'s obligation ends at offer acceptance and candidate confirmation. If a candidate subsequently pulls out this is outside the recruiter\'s control. We recommend this is factored into your hiring process.',
+    a: 'Vetted TA operates a no-rebate policy. The recruiter\'s obligation ends at offer acceptance and candidate confirmation. If a candidate subsequently pulls out this is outside the recruiter\'s control. We recommend this is factored into your hiring process.',
   },
   {
     q: 'Is my payment information secure?',
-    a: 'All payments are processed through Stripe which is PCI DSS Level 1 compliant — the highest security standard. TalentDesk never stores your card details directly.',
+    a: 'All payments are processed through Stripe which is PCI DSS Level 1 compliant — the highest security standard. Vetted TA never stores your card details directly.',
   },
 ]
 
@@ -177,7 +178,7 @@ function RecruiterFeeTable() {
       </div>
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <p className="text-sm text-amber-800">
-          <span className="font-semibold">Platform fee:</span> TalentDesk deducts 15% from each milestone release.
+          <span className="font-semibold">Platform fee:</span> Vetted TA deducts 15% from each milestone release.
           You receive 85% of each milestone payment, transferred to your bank within two business days.
         </p>
       </div>
@@ -235,8 +236,8 @@ export default function HowItWorks() {
       {/* Nav */}
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-white tracking-tight">
-            Talent<span className="text-primary-400">Desk</span>
+          <Link to="/">
+            <Logo dark />
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-sm text-slate-300 hover:text-white transition-colors">Sign in</Link>
@@ -249,7 +250,7 @@ export default function HowItWorks() {
       <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900 text-white py-16 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
-            How TalentDesk Works
+            How Vetted TA Works
           </h1>
           <p className="text-lg text-blue-200 max-w-xl mx-auto">
             A transparent retained recruitment marketplace for both sides.

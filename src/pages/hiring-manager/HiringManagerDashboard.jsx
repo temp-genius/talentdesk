@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import OnboardingModal from '../../components/onboarding/OnboardingModal'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 const MS_STATUS_LABELS = {
   pending:       'Shortlist Pending',
@@ -67,9 +68,7 @@ export default function HiringManagerDashboard() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
-          </span>
+          <Logo />
           <div className="flex items-center gap-4">
             <Link to="/jobs"     className="text-sm text-gray-500 hover:text-gray-900 transition-colors">My Jobs</Link>
             <Link to="/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Messages</Link>

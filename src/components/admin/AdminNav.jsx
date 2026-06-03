@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import Logo from '../layout/Logo'
 
 export default function AdminNav() {
   const { user, logout } = useAuth()
@@ -39,12 +40,12 @@ export default function AdminNav() {
     <header className="bg-white border-b border-gray-200 flex-shrink-0">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <span className="text-lg font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <div className="flex items-center gap-2">
+            <Logo />
             <span className="ml-2 text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded-sm">
               Admin
             </span>
-          </span>
+          </div>
           <nav className="flex items-center gap-1">
             {navLink('/admin/dashboard', 'Dashboard', 0)}
             {navLink('/admin/vetting', 'Vetting Panel', pendingCount)}

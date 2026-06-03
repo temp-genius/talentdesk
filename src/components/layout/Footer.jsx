@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Logo from './Logo'
 
 export default function Footer() {
   return (
@@ -7,9 +8,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-10 mb-10">
           {/* Left — brand */}
           <div>
-            <span className="text-lg font-bold text-white tracking-tight">
-              Talent<span className="text-primary-400">Desk</span>
-            </span>
+            <Logo dark />
             <p className="text-sm text-slate-500 mt-2 leading-relaxed">
               The retained recruitment marketplace.
             </p>
@@ -57,7 +56,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:support@talentdesk.io" className="hover:text-white transition-colors">
+                <a href="mailto:hello@vettedta.com" className="hover:text-white transition-colors">
                   Support
                 </a>
               </li>
@@ -66,7 +65,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-800 pt-6 text-center text-xs text-slate-600">
-          &copy; 2026 TalentDesk. All rights reserved. Operated in Ireland.
+          &copy; 2026 Vetted TA. All rights reserved. Operated in Ireland.
         </div>
       </div>
     </footer>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import Logo from '../../components/layout/Logo'
 
 /* ── Shared UI helpers ── */
 function Stars({ rating }) {
@@ -345,8 +346,8 @@ export default function RecruiterPublicProfile() {
       {/* Nav */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <Link to="/">
+            <Logo />
           </Link>
           {isHM && (
             <Link to="/browse-recruiters" className="btn-secondary text-sm">← Browse Recruiters</Link>
@@ -566,7 +567,7 @@ export default function RecruiterPublicProfile() {
               <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
                 <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Standard rate</p>
                 <p className="text-4xl font-extrabold text-primary-600">{feeDisplay(profile.preferred_fee_percentage)}</p>
-                <p className="text-xs text-gray-400 mt-1">Actual fee agreed on engagement — within the TalentDesk 6 to 10 percent range.</p>
+                <p className="text-xs text-gray-400 mt-1">Actual fee agreed on engagement — within the Vetted TA 6 to 10 percent range.</p>
               </div>
             )}
 

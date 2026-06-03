@@ -5,10 +5,11 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { stripePromise } from '../../lib/stripe'
 import { sendJobStartedNotification } from '../../lib/emailService'
+import Logo from '../../components/layout/Logo'
 
 const TERMS = [
   'This is a retained engagement — fees are paid at each milestone stage, not outcome-only.',
-  'All CVs will be submitted exclusively through TalentDesk.',
+  'All CVs will be submitted exclusively through Vetted TA.',
   'This role is exclusive: one recruiter only, for the duration of the assignment.',
   'If the role is cancelled, the recruiter keeps all payments earned to that point.',
 ]
@@ -204,8 +205,8 @@ function StartJobInner() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-6 py-4">
-          <Link to="/hiring-manager/dashboard" className="text-lg font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <Link to="/hiring-manager/dashboard">
+            <Logo />
           </Link>
         </div>
       </header>
@@ -395,8 +396,8 @@ function StartJobInner() {
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-3xl mx-auto px-6 py-4">
-            <Link to="/hiring-manager/dashboard" className="text-lg font-bold text-slate-900 tracking-tight">
-              Talent<span className="text-primary-600">Desk</span>
+            <Link to="/hiring-manager/dashboard">
+              <Logo />
             </Link>
           </div>
         </header>
@@ -461,8 +462,8 @@ function StartJobInner() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/hiring-manager/dashboard" className="text-lg font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <Link to="/hiring-manager/dashboard">
+            <Logo />
           </Link>
           <Link to="/browse-recruiters" className="btn-secondary text-sm">← Back</Link>
         </div>
@@ -556,7 +557,7 @@ function StartJobInner() {
             </div>
           </div>
           <p className="text-xs text-gray-400 mt-3">
-            All TalentDesk engagements are priced between 6 and 10 percent of the agreed annual salary. This is enforced by the platform.
+            All Vetted TA engagements are priced between 6 and 10 percent of the agreed annual salary. This is enforced by the platform.
           </p>
         </div>
 

@@ -124,7 +124,7 @@ export default function HMLeaveReview() {
         </div>
         <h1 className="text-xl font-bold text-gray-900 mb-2">Thank you for your review!</h1>
         <p className="text-gray-500 text-sm mb-6">
-          Your feedback helps other companies find great recruiters on TalentDesk.
+          Your feedback helps other companies find great recruiters on Vetted TA.
         </p>
         <Link to="/hiring-manager/dashboard" className="btn-primary w-full block text-center">
           Back to Dashboard

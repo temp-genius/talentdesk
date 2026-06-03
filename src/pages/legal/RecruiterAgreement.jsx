@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 const SECTIONS = [
   {
     title: '1. Independent Contractor Status',
-    body: 'By registering as a recruiter on TalentDesk you confirm that you are operating as an independent contractor and not as an employee of TalentDesk. You are responsible for your own tax obligations, insurance, and compliance with applicable employment laws in your jurisdiction.',
+    body: 'By registering as a recruiter on Vetted TA you confirm that you are operating as an independent contractor and not as an employee of Vetted TA. You are responsible for your own tax obligations, insurance, and compliance with applicable employment laws in your jurisdiction.',
   },
   {
     title: '2. Market Representation',
@@ -12,7 +13,7 @@ const SECTIONS = [
   },
   {
     title: '3. Data Controller Obligations',
-    body: 'You are the data controller for all candidate personal data you collect and process in connection with roles worked through TalentDesk. You confirm that you have a lawful basis for processing candidate data, that you will respond to candidate data subject requests within 30 days, and that you will handle candidate data in compliance with GDPR and applicable data protection law. TalentDesk is a data processor only for candidate profile information you log on the platform.',
+    body: 'You are the data controller for all candidate personal data you collect and process in connection with roles worked through Vetted TA. You confirm that you have a lawful basis for processing candidate data, that you will respond to candidate data subject requests within 30 days, and that you will handle candidate data in compliance with GDPR and applicable data protection law. Vetted TA is a data processor only for candidate profile information you log on the platform.',
   },
   {
     title: '4. Professional Conduct',
@@ -20,15 +21,15 @@ const SECTIONS = [
   },
   {
     title: '5. Platform Fee',
-    body: 'You accept that TalentDesk deducts a platform fee of 15 percent from all milestone payments before releasing funds to your connected account. This fee is non-negotiable and applies to every placement made through the platform regardless of circumstances.',
+    body: 'You accept that Vetted TA deducts a platform fee of 15 percent from all milestone payments before releasing funds to your connected account. This fee is non-negotiable and applies to every placement made through the platform regardless of circumstances.',
   },
   {
     title: '6. Non-Circumvention',
-    body: 'You agree to the non-circumvention terms set out in the TalentDesk Terms of Service. You will not accept direct payment from any hiring company introduced through TalentDesk within 24 months of that introduction. Breach of this obligation entitles TalentDesk to pursue the full placement fee plus damages.',
+    body: 'You agree to the non-circumvention terms set out in the Vetted TA Terms of Service. You will not accept direct payment from any hiring company introduced through Vetted TA within 24 months of that introduction. Breach of this obligation entitles Vetted TA to pursue the full placement fee plus damages.',
   },
   {
     title: '7. Account Suspension',
-    body: 'TalentDesk reserves the right to suspend or permanently remove your account for breach of this agreement, for poor platform conduct including unjustified disputes or fraudulent submissions, or for withdrawing from roles without valid reason on more than two occasions. Suspended accounts forfeit any pending milestone payments under dispute.',
+    body: 'Vetted TA reserves the right to suspend or permanently remove your account for breach of this agreement, for poor platform conduct including unjustified disputes or fraudulent submissions, or for withdrawing from roles without valid reason on more than two occasions. Suspended accounts forfeit any pending milestone payments under dispute.',
   },
 ]
 
@@ -37,8 +38,8 @@ export default function RecruiterAgreement() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-white tracking-tight">
-            Talent<span className="text-primary-400">Desk</span>
+          <Link to="/">
+            <Logo dark />
           </Link>
           <Link to="/login" className="text-sm text-slate-300 hover:text-white transition-colors">Sign in</Link>
         </div>

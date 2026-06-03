@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import Logo from '../../components/layout/Logo'
 
 const MS_STATUS_LABELS = {
   pending:       'Shortlist Pending',
@@ -89,9 +90,7 @@ export default function ActiveJobList() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="text-lg font-bold text-slate-900 tracking-tight">
-              Talent<span className="text-primary-600">Desk</span>
-            </span>
+            <Logo />
           </div>
           <div className="flex items-center gap-4">
             <Link to="/hiring-manager/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">

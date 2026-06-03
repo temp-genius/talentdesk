@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import Logo from '../../components/layout/Logo'
 
 const STEPS = [
   {
@@ -23,8 +24,8 @@ export default function RecruiterProfileSetup() {
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="max-w-lg w-full">
         <div className="text-center mb-8">
-          <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <Link to="/">
+            <Logo />
           </Link>
         </div>
 

@@ -38,7 +38,7 @@ const CLIENT_TYPE_LABELS = {
 }
 
 const DEFAULT_INFO_MESSAGE =
-  'Thank you for applying to TalentDesk. Before we can complete our review we need a little more information. Please update your profile with the following and resubmit for review:'
+  'Thank you for applying to Vetted TA. Before we can complete our review we need a little more information. Please update your profile with the following and resubmit for review:'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -316,11 +316,11 @@ export default function VettingPanel() {
 
     await sendEmail(
       email,
-      'Your TalentDesk application has been approved',
+      'Your Vetted TA application has been approved',
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
         <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">Congratulations, ${firstName}!</h1>
         <p style="font-size:15px;line-height:1.7;margin-bottom:16px">
-          Your application to join TalentDesk as an independent recruiter has been approved.
+          Your application to join Vetted TA as an independent recruiter has been approved.
         </p>
         <p style="font-size:15px;line-height:1.7;margin-bottom:28px">
           You can now log in and start building your profile, connecting your bank account, and browsing available roles.
@@ -330,7 +330,7 @@ export default function VettingPanel() {
                   border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
           Go to your Dashboard →
         </a>
-        <p style="margin-top:40px;font-size:13px;color:#6b7280">The TalentDesk Team</p>
+        <p style="margin-top:40px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
       </div>`
     )
 
@@ -359,11 +359,11 @@ export default function VettingPanel() {
 
     await sendEmail(
       email,
-      'Your TalentDesk application was not successful',
+      'Your Vetted TA application was not successful',
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
         <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">Thank you for applying, ${firstName}</h1>
         <p style="font-size:15px;line-height:1.7;margin-bottom:16px">
-          Thank you for applying to join TalentDesk. After reviewing your application, we are unable
+          Thank you for applying to join Vetted TA. After reviewing your application, we are unable
           to approve your account at this time.
         </p>
         <p style="font-size:15px;line-height:1.7;margin-bottom:8px">
@@ -373,7 +373,7 @@ export default function VettingPanel() {
         <p style="font-size:15px;line-height:1.7;margin-bottom:40px">
           You are welcome to reapply in 6 months if your circumstances change.
         </p>
-        <p style="font-size:13px;color:#6b7280">The TalentDesk Team</p>
+        <p style="font-size:13px;color:#6b7280">The Vetted TA Team</p>
       </div>`
     )
 
@@ -402,7 +402,7 @@ export default function VettingPanel() {
 
     await sendEmail(
       email,
-      'TalentDesk — Additional information needed for your application',
+      'Vetted TA — Additional information needed for your application',
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
         <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">We need a little more information</h1>
         <p style="font-size:15px;line-height:1.7;margin-bottom:16px">Dear ${firstName},</p>
@@ -412,7 +412,7 @@ export default function VettingPanel() {
                   border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
           Update your profile →
         </a>
-        <p style="margin-top:40px;font-size:13px;color:#6b7280">The TalentDesk Team</p>
+        <p style="margin-top:40px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
       </div>`
     )
 

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 const MARKETS = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
 const TOTAL_STEPS = 3
@@ -187,8 +188,8 @@ export default function RecruiterSignup() {
     <main className="flex-1 py-12 px-4">
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
-          <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <Link to="/">
+            <Logo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 mt-4">Create your recruiter profile</h1>
           <p className="text-sm text-gray-500 mt-1">Step {step} of {TOTAL_STEPS}</p>
@@ -357,7 +358,7 @@ export default function RecruiterSignup() {
                     ))}
                   </div>
                   <p className="text-xs text-gray-500 mt-1.5">
-                    TalentDesk recruiters work within the 6 to 10 percent range. Select all rates you work at — the actual fee is agreed on the discovery call.
+                    Vetted TA recruiters work within the 6 to 10 percent range. Select all rates you work at — the actual fee is agreed on the discovery call.
                   </p>
                 </div>
 
@@ -415,7 +416,7 @@ export default function RecruiterSignup() {
                       className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
                     />
                     <span className="text-sm text-gray-700">
-                      I understand that TalentDesk will review my LinkedIn profile and application details before approving my account
+                      I understand that Vetted TA will review my LinkedIn profile and application details before approving my account
                     </span>
                   </label>
                 </div>

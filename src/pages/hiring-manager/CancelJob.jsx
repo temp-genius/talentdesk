@@ -20,7 +20,7 @@ function fmtCurrency(amount, currency = 'EUR') {
 function paymentImplication(milestones, currency) {
   const released = milestones.filter(m => m.status === 'released')
   if (released.length === 0) {
-    return 'No milestones have been released. Your full escrow deposit will be refunded minus the TalentDesk platform fee.'
+    return 'No milestones have been released. Your full escrow deposit will be refunded minus the Vetted TA platform fee.'
   }
   if (released.length === 1) {
     const amt = fmtCurrency(milestones[0].amount, currency)

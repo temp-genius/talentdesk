@@ -217,7 +217,7 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
                   Last mandate delivered: <span className="font-medium text-gray-700">{lastPlacement}</span>
                 </p>
               ) : (
-                <p className="text-xs text-gray-400 italic">New to TalentDesk</p>
+                <p className="text-xs text-gray-400 italic">New to Vetted TA</p>
               )}
             </div>
           </div>

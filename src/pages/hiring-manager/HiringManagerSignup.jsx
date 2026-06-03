@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { BLOCKED_EMAIL_DOMAINS } from '../../utils/emailValidation'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 const INDUSTRIES = [
   'Technology', 'Finance & Banking', 'Legal', 'Consulting', 'Healthcare',
@@ -153,8 +154,8 @@ export default function HiringManagerSignup() {
     <main className="flex-1 py-12 px-4">
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
-          <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <Link to="/">
+            <Logo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 mt-4">Find specialist recruiters</h1>
           <p className="text-sm text-gray-500 mt-1">Step {step} of {TOTAL_STEPS}</p>

@@ -109,7 +109,7 @@ export default function RecruiterLeaveReview() {
         </div>
         <h1 className="text-xl font-bold text-gray-900 mb-2">Thank you for your review!</h1>
         <p className="text-gray-500 text-sm mb-6">
-          Your feedback helps great hiring companies stand out on TalentDesk.
+          Your feedback helps great hiring companies stand out on Vetted TA.
         </p>
         <Link to="/recruiter/dashboard" className="btn-primary w-full block text-center">
           Back to Dashboard

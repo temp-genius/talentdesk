@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import Logo from '../../components/layout/Logo'
 
 function fmtCurrency(amount, currency = 'EUR') {
   return new Intl.NumberFormat('en-IE', {
@@ -130,7 +131,7 @@ export default function OfferAcceptance() {
         {/* Header */}
         <div className="text-center">
           <p className="text-lg font-bold text-slate-900 tracking-tight mb-2">
-            Talent<span className="text-primary-600">Desk</span>
+            <Logo />
           </p>
           <h1 className="text-2xl font-bold text-gray-900">You've received a job offer</h1>
           <p className="text-gray-500 text-sm mt-1">Please review the details below and accept or decline.</p>

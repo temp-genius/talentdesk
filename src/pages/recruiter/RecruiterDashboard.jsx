@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 import OnboardingModal from '../../components/onboarding/OnboardingModal'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 const STATUS_STYLES = {
   pending:  'bg-yellow-100 text-yellow-800',
@@ -188,9 +189,7 @@ export default function RecruiterDashboard() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
-          </span>
+          <Logo />
           <div className="flex items-center gap-4">
             <Link to="/recruiter/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
               Messages
