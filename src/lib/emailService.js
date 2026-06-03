@@ -40,7 +40,7 @@ function header() {
     <tr>
       <td style="background-color:#0f2d5e;border-radius:12px 12px 0 0;padding:28px 32px;">
         <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">
-          Talent<span style="color:#93c5fd;">Desk</span>
+          Vetted TA
         </p>
       </td>
     </tr>`
@@ -50,7 +50,7 @@ function footer() {
   return `
     <tr>
       <td style="background-color:#f9fafb;border-radius:0 0 12px 12px;padding:20px 32px;border-top:1px solid #e5e7eb;">
-        <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#374151;">TalentDesk</p>
+        <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#374151;">Vetted TA</p>
         <p style="margin:0;font-size:12px;color:#9ca3af;">
           The retained recruitment platform. This is an automated message — please do not reply directly to this email.
         </p>
@@ -197,7 +197,7 @@ export function sendMilestoneNotification(recruiterEmail, milestoneNumber, jobTi
           </td></tr>
         </table>
         <p style="margin:0;font-size:14px;color:#6b7280;">
-          Log in to TalentDesk to view your payment history and assignment status.
+          Log in to Vetted TA to view your payment history and assignment status.
         </p>
       </td>
     </tr>`)
@@ -271,7 +271,7 @@ export function sendJobStartedNotification(recruiterEmail, jobTitle, companyName
           New job assignment
         </h1>
         <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
-          A hiring company has started a new retained engagement with you on TalentDesk.
+          A hiring company has started a new retained engagement with you on Vetted TA.
         </p>
         <table width="100%" cellpadding="0" cellspacing="0"
                style="background-color:#eff6ff;border-radius:8px;
@@ -287,7 +287,7 @@ export function sendJobStartedNotification(recruiterEmail, jobTitle, companyName
           </td></tr>
         </table>
         <p style="margin:0 0 20px;font-size:14px;color:#374151;">
-          Log in to TalentDesk to view your assignment and start adding candidates to the shortlist.
+          Log in to Vetted TA to view your assignment and start adding candidates to the shortlist.
         </p>
         <a href="${dashboardUrl}"
            style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
@@ -334,7 +334,7 @@ export function sendShortlistApprovedNotification(recruiterEmail, jobTitle) {
           </td></tr>
         </table>
         <p style="margin:0 0 20px;font-size:14px;color:#374151;">
-          The interview stage is now underway. Log in to TalentDesk to track candidate progress.
+          The interview stage is now underway. Log in to Vetted TA to track candidate progress.
         </p>
         <a href="${dashboardUrl}"
            style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
@@ -376,7 +376,7 @@ export function sendJobCancelledByHMNotification(recruiterEmail, jobTitle, reaso
           </td></tr>
         </table>
         <p style="margin:0;font-size:14px;color:#6b7280;">
-          Any unreleased milestone escrow will be refunded to the hiring company. Please log in to TalentDesk to view your assignment history.
+          Any unreleased milestone escrow will be refunded to the hiring company. Please log in to Vetted TA to view your assignment history.
         </p>
       </td>
     </tr>`)
@@ -412,7 +412,7 @@ export function sendJobWithdrawnByRecruiterNotification(hmEmail, jobTitle, recru
           </td></tr>
         </table>
         <p style="margin:0;font-size:14px;color:#6b7280;">
-          Unreleased milestone escrow will be refunded. Log in to TalentDesk to review your options for this role.
+          Unreleased milestone escrow will be refunded. Log in to Vetted TA to review your options for this role.
         </p>
       </td>
     </tr>`)
@@ -453,7 +453,7 @@ export function sendShortlistSubmittedNotification(hmEmail, recruiterName, jobTi
           </td></tr>
         </table>
         <p style="margin:0 0 20px;font-size:14px;color:#374151;">
-          Please log in to TalentDesk to review the candidates and approve the shortlist
+          Please log in to Vetted TA to review the candidates and approve the shortlist
           to release Milestone 1 payment.
         </p>
         <a href="${reviewUrl}"

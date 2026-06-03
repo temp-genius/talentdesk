@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Footer from '../../components/layout/Footer'
+import Logo from '../../components/layout/Logo'
 
 const DASHBOARD_BY_TYPE = {
   recruiter:       '/recruiter/dashboard',
@@ -60,8 +61,8 @@ export default function Login() {
     <main className="flex-1 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight">
-            Talent<span className="text-primary-600">Desk</span>
+          <Link to="/">
+            <Logo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 mt-4">Sign in to your account</h1>
         </div>
