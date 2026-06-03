@@ -232,13 +232,13 @@ export default function HomePage() {
               style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '220px 220px', gap: 12 }}
             >
               <div style={{ gridColumn: '1 / 2', gridRow: '1 / 2', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', background: 'rgba(59,130,246,0.2)' }}>
-                <img src="/images/sarah-c.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
+                <img src="/images/hero-1.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
               </div>
               <div style={{ gridColumn: '2 / 3', gridRow: '1 / 3', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', marginTop: 32, background: 'rgba(59,130,246,0.15)' }}>
-                <img src="/images/mark-r.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
+                <img src="/images/hero-2.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
               </div>
               <div style={{ gridColumn: '1 / 2', gridRow: '2 / 3', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', background: 'rgba(59,130,246,0.2)' }}>
-                <img src="/images/lifestyle.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+                <img src="/images/hero-3.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
               </div>
             </div>
           </div>
