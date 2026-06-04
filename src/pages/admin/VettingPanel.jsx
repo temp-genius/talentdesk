@@ -272,7 +272,6 @@ export default function VettingPanel() {
         .select('email')
         .eq('id', data.user_id)
         .maybeSingle()
-      console.log('email lookup — user_id:', data.user_id, 'userRow:', userRow, 'error:', userErr)
       data.email = userRow?.email ?? null
     }
 
@@ -291,7 +290,6 @@ export default function VettingPanel() {
 
   async function sendEmail(to, subject, html) {
     try {
-      console.log('sendEmail called with:', { to, subjectLength: subject?.length, htmlLength: html?.length })
       const { error } = await supabase.functions.invoke('send-email', { body: { to, subject, html } })
       if (error) {
         console.error('send-email error:', error)
@@ -368,9 +366,6 @@ export default function VettingPanel() {
         </a>
         <p style="margin-top:40px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
       </div>`
-    console.log('Sending approval email to:', email)
-    console.log('Subject:', approvalSubject)
-    console.log('HTML length:', approvalHtml.length)
     const emailOk = await sendEmail(
       email,
       approvalSubject,
