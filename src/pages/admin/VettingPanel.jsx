@@ -271,7 +271,7 @@ export default function VettingPanel() {
         .from('users')
         .select('email')
         .eq('id', data.user_id)
-        .single()
+        .maybeSingle()
       data.email = userData?.email ?? null
     }
 
