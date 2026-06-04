@@ -192,8 +192,9 @@ export default function VettingPanel() {
   const [actioning,    setActioning]    = useState(false)
   const [actionError,  setActionError]  = useState('')
   const [emailWarning, setEmailWarning] = useState('')
-  const [testingEmail, setTestingEmail] = useState(false)
-  const [testEmailMsg, setTestEmailMsg] = useState('')
+  const [testingEmail,  setTestingEmail]  = useState(false)
+  const [testEmailMsg,  setTestEmailMsg]  = useState('')
+  const [testEmailAddr, setTestEmailAddr] = useState('')
 
   // ── Data loading ─────────────────────────────────────────────────────────
 
@@ -242,6 +243,7 @@ export default function VettingPanel() {
   }, [])
 
   useEffect(() => { loadQueue() }, [loadQueue])
+  useEffect(() => { if (user?.email && !testEmailAddr) setTestEmailAddr(user.email) }, [user])
 
   async function loadDetail(id) {
     setSelectedId(id)
@@ -293,18 +295,18 @@ export default function VettingPanel() {
   }
 
   async function handleTestEmail() {
-    if (!user?.email) return
+    if (!testEmailAddr.trim()) return
     setTestingEmail(true)
     setTestEmailMsg('')
     const ok = await sendEmail(
-      user.email,
+      testEmailAddr.trim(),
       'Vetted TA — Email system test',
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
         <p style="font-size:15px;line-height:1.7">If you received this email, the Vetted TA email system is working correctly.</p>
         <p style="margin-top:24px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
       </div>`
     )
-    setTestEmailMsg(ok ? `Test email sent to ${user.email}` : 'Test email failed — check Edge Function logs')
+    setTestEmailMsg(ok ? `Test email sent to ${testEmailAddr.trim()}` : 'Test email failed — check Edge Function logs')
     setTestingEmail(false)
   }
 
@@ -531,16 +533,25 @@ export default function VettingPanel() {
               <span className="text-gray-500">Rejected this week</span>
               <span className="font-bold text-red-600">{counts.rejectedThisWeek}</span>
             </div>
-            <div className="pt-2 border-t border-gray-100">
-              <button
-                onClick={handleTestEmail}
-                disabled={testingEmail}
-                className="w-full text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
-              >
-                {testingEmail ? 'Sending…' : 'Test email'}
-              </button>
+            <div className="pt-2 border-t border-gray-100 space-y-1.5">
+              <div className="flex gap-1">
+                <input
+                  type="email"
+                  value={testEmailAddr}
+                  onChange={e => { setTestEmailAddr(e.target.value); setTestEmailMsg('') }}
+                  placeholder="email@example.com"
+                  className="flex-1 min-w-0 text-xs border border-gray-200 rounded px-2 py-1.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-gray-400"
+                />
+                <button
+                  onClick={handleTestEmail}
+                  disabled={testingEmail || !testEmailAddr.trim()}
+                  className="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded px-2 py-1.5 transition-colors disabled:opacity-50 flex-shrink-0"
+                >
+                  {testingEmail ? '…' : 'Send'}
+                </button>
+              </div>
               {testEmailMsg && (
-                <p className={`text-xs mt-1.5 text-center ${testEmailMsg.includes('failed') ? 'text-red-500' : 'text-green-600'}`}>
+                <p className={`text-xs text-center ${testEmailMsg.includes('failed') ? 'text-red-500' : 'text-green-600'}`}>
                   {testEmailMsg}
                 </p>
               )}
