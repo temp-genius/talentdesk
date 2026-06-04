@@ -267,12 +267,13 @@ export default function VettingPanel() {
       .single()
 
     if (data?.user_id) {
-      const { data: userData } = await supabase
+      const { data: userRow, error: userErr } = await supabase
         .from('users')
         .select('email')
         .eq('id', data.user_id)
         .maybeSingle()
-      data.email = userData?.email ?? null
+      console.log('email lookup — user_id:', data.user_id, 'userRow:', userRow, 'error:', userErr)
+      data.email = userRow?.email ?? null
     }
 
     setDetail(data ?? null)
