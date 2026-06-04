@@ -325,7 +325,7 @@ export default function VettingPanel() {
         <p style="font-size:15px;line-height:1.7;margin-bottom:28px">
           You can now log in and start building your profile, connecting your bank account, and browsing available roles.
         </p>
-        <a href="https://talentdesk-x8hy.vercel.app/recruiter/dashboard"
+        <a href="https://www.vettedta.com/recruiter/dashboard"
            style="display:inline-block;background:#4f46e5;color:#ffffff;padding:13px 26px;
                   border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
           Go to your Dashboard →
@@ -407,7 +407,7 @@ export default function VettingPanel() {
         <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">We need a little more information</h1>
         <p style="font-size:15px;line-height:1.7;margin-bottom:16px">Dear ${firstName},</p>
         <p style="font-size:15px;line-height:1.7;margin-bottom:28px;white-space:pre-line">${message}</p>
-        <a href="https://talentdesk-x8hy.vercel.app/recruiter/profile/edit"
+        <a href="https://www.vettedta.com/recruiter/profile/edit"
            style="display:inline-block;background:#4f46e5;color:#ffffff;padding:13px 26px;
                   border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
           Update your profile →
