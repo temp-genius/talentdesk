@@ -31,12 +31,15 @@ Deno.serve(async (req: Request) => {
   try {
     const { user_id, return_url, refresh_url } = await req.json()
 
-    if (!user_id || !return_url || !refresh_url) {
+    if (!user_id) {
       return new Response(
-        JSON.stringify({ error: 'user_id, return_url, and refresh_url are required' }),
+        JSON.stringify({ error: 'user_id is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    const resolvedReturnUrl = return_url ?? 'https://www.vettedta.com/recruiter/stripe-onboarding?status=complete'
+    const resolvedRefreshUrl = refresh_url ?? 'https://www.vettedta.com/recruiter/stripe-onboarding?status=refresh'
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -71,8 +74,8 @@ Deno.serve(async (req: Request) => {
     // Create an account link for onboarding
     const accountLink = await stripePost('account_links', {
       account: accountId,
-      refresh_url,
-      return_url,
+      refresh_url: resolvedRefreshUrl,
+      return_url: resolvedReturnUrl,
       type: 'account_onboarding',
     })
 

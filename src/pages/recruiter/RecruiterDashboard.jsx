@@ -170,7 +170,12 @@ export default function RecruiterDashboard() {
     setConnectingStripe(true)
     setStripeError('')
     const { data, error: fnErr } = await supabase.functions.invoke('stripe-connect-onboard', {
-      body: { user_id: user.id, recruiter_profile_id: profile.id },
+      body: {
+        user_id: user.id,
+        recruiter_profile_id: profile.id,
+        return_url: 'https://www.vettedta.com/recruiter/stripe-onboarding?status=complete',
+        refresh_url: 'https://www.vettedta.com/recruiter/stripe-onboarding?status=refresh',
+      },
     })
     setConnectingStripe(false)
     if (fnErr || data?.error) {

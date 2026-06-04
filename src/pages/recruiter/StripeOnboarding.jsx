@@ -28,7 +28,12 @@ export default function StripeOnboarding() {
     setError('')
 
     const { data, error: fnErr } = await supabase.functions.invoke('stripe-connect-onboard', {
-      body: { user_id: user.id, recruiter_profile_id: profileId },
+      body: {
+        user_id: user.id,
+        recruiter_profile_id: profileId,
+        return_url: 'https://www.vettedta.com/recruiter/stripe-onboarding?status=complete',
+        refresh_url: 'https://www.vettedta.com/recruiter/stripe-onboarding?status=refresh',
+      },
     })
 
     setConnecting(false)
