@@ -282,6 +282,7 @@ export default function VettingPanel() {
 
   async function sendEmail(to, subject, html) {
     try {
+      console.log('sendEmail called with:', { to, subjectLength: subject?.length, htmlLength: html?.length })
       const { error } = await supabase.functions.invoke('send-email', { body: { to, subject, html } })
       if (error) {
         console.error('send-email error:', error)
@@ -342,9 +343,28 @@ export default function VettingPanel() {
     const firstName = detail.first_name ?? 'Recruiter'
     const fullName  = [detail.first_name, detail.last_name].filter(Boolean).join(' ')
 
+    const approvalSubject = 'Your Vetted TA application has been approved'
+    const approvalHtml = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
+        <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">Congratulations, ${firstName}!</h1>
+        <p style="font-size:15px;line-height:1.7;margin-bottom:16px">
+          Your application to join Vetted TA as an independent recruiter has been approved.
+        </p>
+        <p style="font-size:15px;line-height:1.7;margin-bottom:28px">
+          You can now log in and start building your profile, connecting your bank account, and browsing available roles.
+        </p>
+        <a href="https://www.vettedta.com/recruiter/dashboard"
+           style="display:inline-block;background:#4f46e5;color:#ffffff;padding:13px 26px;
+                  border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
+          Go to your Dashboard →
+        </a>
+        <p style="margin-top:40px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
+      </div>`
+    console.log('Sending approval email to:', email)
+    console.log('Subject:', approvalSubject)
+    console.log('HTML length:', approvalHtml.length)
     const emailOk = await sendEmail(
       email,
-      'Your Vetted TA application has been approved',
+      approvalSubject,
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
         <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">Congratulations, ${firstName}!</h1>
         <p style="font-size:15px;line-height:1.7;margin-bottom:16px">
