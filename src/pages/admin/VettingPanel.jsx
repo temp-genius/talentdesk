@@ -188,9 +188,12 @@ export default function VettingPanel() {
   const [detail,         setDetail]         = useState(null)
   const [loadingDetail,  setLoadingDetail]  = useState(false)
 
-  const [modal,       setModal]       = useState(null) // 'approve' | 'reject' | 'info'
-  const [actioning,   setActioning]   = useState(false)
-  const [actionError, setActionError] = useState('')
+  const [modal,        setModal]        = useState(null) // 'approve' | 'reject' | 'info'
+  const [actioning,    setActioning]    = useState(false)
+  const [actionError,  setActionError]  = useState('')
+  const [emailWarning, setEmailWarning] = useState('')
+  const [testingEmail, setTestingEmail] = useState(false)
+  const [testEmailMsg, setTestEmailMsg] = useState('')
 
   // ── Data loading ─────────────────────────────────────────────────────────
 
@@ -277,10 +280,32 @@ export default function VettingPanel() {
 
   async function sendEmail(to, subject, html) {
     try {
-      await supabase.functions.invoke('send-email', { body: { to, subject, html } })
+      const { error } = await supabase.functions.invoke('send-email', { body: { to, subject, html } })
+      if (error) {
+        console.error('send-email error:', error)
+        return false
+      }
+      return true
     } catch (e) {
-      console.warn('send-email failed:', e)
+      console.error('send-email exception:', e)
+      return false
     }
+  }
+
+  async function handleTestEmail() {
+    if (!user?.email) return
+    setTestingEmail(true)
+    setTestEmailMsg('')
+    const ok = await sendEmail(
+      user.email,
+      'Vetted TA — Email system test',
+      `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
+        <p style="font-size:15px;line-height:1.7">If you received this email, the Vetted TA email system is working correctly.</p>
+        <p style="margin-top:24px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
+      </div>`
+    )
+    setTestEmailMsg(ok ? `Test email sent to ${user.email}` : 'Test email failed — check Edge Function logs')
+    setTestingEmail(false)
   }
 
   async function logAction(action, note) {
@@ -302,6 +327,7 @@ export default function VettingPanel() {
     if (!detail) return
     setActioning(true)
     setActionError('')
+    setEmailWarning('')
 
     const { error } = await supabase
       .from('recruiter_profiles')
@@ -314,7 +340,7 @@ export default function VettingPanel() {
     const firstName = detail.first_name ?? 'Recruiter'
     const fullName  = [detail.first_name, detail.last_name].filter(Boolean).join(' ')
 
-    await sendEmail(
+    const emailOk = await sendEmail(
       email,
       'Your Vetted TA application has been approved',
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
@@ -334,6 +360,10 @@ export default function VettingPanel() {
       </div>`
     )
 
+    if (!emailOk) {
+      setEmailWarning(`Recruiter approved successfully but the notification email failed to send. Please notify them manually at ${email}.`)
+    }
+
     await logAction('approve', `Approved ${fullName}`)
 
     const doneId = detail.id
@@ -346,6 +376,7 @@ export default function VettingPanel() {
     if (!detail) return
     setActioning(true)
     setActionError('')
+    setEmailWarning('')
 
     const { error } = await supabase
       .from('recruiter_profiles')
@@ -357,7 +388,7 @@ export default function VettingPanel() {
     const email     = detail.users?.email
     const firstName = detail.first_name ?? 'Recruiter'
 
-    await sendEmail(
+    const emailOk = await sendEmail(
       email,
       'Your Vetted TA application was not successful',
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
@@ -377,6 +408,10 @@ export default function VettingPanel() {
       </div>`
     )
 
+    if (!emailOk) {
+      setEmailWarning(`Recruiter rejected successfully but the notification email failed to send. Please notify them manually at ${email}.`)
+    }
+
     await logAction('reject', `Rejected — ${reason}${notes ? `: ${notes}` : ''}`)
 
     const doneId = detail.id
@@ -389,6 +424,7 @@ export default function VettingPanel() {
     if (!detail) return
     setActioning(true)
     setActionError('')
+    setEmailWarning('')
 
     const { error } = await supabase
       .from('recruiter_profiles')
@@ -400,7 +436,7 @@ export default function VettingPanel() {
     const email     = detail.users?.email
     const firstName = detail.first_name ?? 'Recruiter'
 
-    await sendEmail(
+    const emailOk = await sendEmail(
       email,
       'Vetted TA — Additional information needed for your application',
       `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
@@ -415,6 +451,10 @@ export default function VettingPanel() {
         <p style="margin-top:40px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
       </div>`
     )
+
+    if (!emailOk) {
+      setEmailWarning(`Info request sent successfully but the notification email failed to send. Please notify them manually at ${email}.`)
+    }
 
     await logAction('request_info', message)
 
@@ -490,6 +530,20 @@ export default function VettingPanel() {
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Rejected this week</span>
               <span className="font-bold text-red-600">{counts.rejectedThisWeek}</span>
+            </div>
+            <div className="pt-2 border-t border-gray-100">
+              <button
+                onClick={handleTestEmail}
+                disabled={testingEmail}
+                className="w-full text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
+              >
+                {testingEmail ? 'Sending…' : 'Test email'}
+              </button>
+              {testEmailMsg && (
+                <p className={`text-xs mt-1.5 text-center ${testEmailMsg.includes('failed') ? 'text-red-500' : 'text-green-600'}`}>
+                  {testEmailMsg}
+                </p>
+              )}
             </div>
           </div>
 
@@ -575,6 +629,13 @@ export default function VettingPanel() {
               {actionError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
                   {actionError}
+                </div>
+              )}
+
+              {emailWarning && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
+                  <span className="flex-shrink-0 mt-0.5">⚠️</span>
+                  <span>{emailWarning}</span>
                 </div>
               )}
 
