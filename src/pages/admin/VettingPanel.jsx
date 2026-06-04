@@ -257,7 +257,6 @@ export default function VettingPanel() {
         id, user_id, first_name, last_name, bio, linkedin_url, years_experience,
         availability_status, preferred_fee_percentage, career_dna, capacity_status,
         previous_employers, previous_client_types, created_at, status,
-        users(email),
         recruiter_specialisms!left(
           specialism_category_id,
           specialism_categories(sector, specialism_name)
@@ -266,6 +265,15 @@ export default function VettingPanel() {
       `)
       .eq('id', id)
       .single()
+
+    if (data?.user_id) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', data.user_id)
+        .single()
+      data.email = userData?.email ?? null
+    }
 
     setDetail(data ?? null)
     setLoadingDetail(false)
@@ -339,7 +347,7 @@ export default function VettingPanel() {
 
     if (error) { setActionError(error.message); setActioning(false); return }
 
-    const email     = detail.users?.email
+    const email     = detail.email
     const firstName = detail.first_name ?? 'Recruiter'
     const fullName  = [detail.first_name, detail.last_name].filter(Boolean).join(' ')
 
@@ -407,7 +415,7 @@ export default function VettingPanel() {
 
     if (error) { setActionError(error.message); setActioning(false); return }
 
-    const email     = detail.users?.email
+    const email     = detail.email
     const firstName = detail.first_name ?? 'Recruiter'
 
     const emailOk = await sendEmail(
@@ -455,7 +463,7 @@ export default function VettingPanel() {
 
     if (error) { setActionError(error.message); setActioning(false); return }
 
-    const email     = detail.users?.email
+    const email     = detail.email
     const firstName = detail.first_name ?? 'Recruiter'
 
     const emailOk = await sendEmail(
@@ -651,7 +659,7 @@ export default function VettingPanel() {
                   </h1>
                   <p className="text-sm text-gray-500 mt-0.5">
                     Applied {daysAgo(detail.created_at)}
-                    {detail.users?.email && ` · ${detail.users.email}`}
+                    {detail.email && ` · ${detail.email}`}
                   </p>
                 </div>
                 <ActionButtons />
@@ -714,7 +722,7 @@ export default function VettingPanel() {
                   </div>
                   <div>
                     <dt className="text-xs text-gray-500 mb-0.5">Email</dt>
-                    <dd className="font-medium text-gray-900">{detail.users?.email ?? '—'}</dd>
+                    <dd className="font-medium text-gray-900">{detail.email ?? '—'}</dd>
                   </div>
                   <div>
                     <dt className="text-xs text-gray-500 mb-0.5">Date applied</dt>
