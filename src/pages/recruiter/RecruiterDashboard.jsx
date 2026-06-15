@@ -41,8 +41,9 @@ export default function RecruiterDashboard() {
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [assignments,    setAssignments]   = useState([])
   const [loadingJobs,    setLoadingJobs]   = useState(false)
-  const [connectingStripe, setConnectingStripe] = useState(false)
-  const [stripeError,      setStripeError]      = useState('')
+  const [connectingStripe,    setConnectingStripe]    = useState(false)
+  const [stripeError,         setStripeError]         = useState('')
+  const [showApprovalModal,   setShowApprovalModal]   = useState(false)
 
   // Specialism editing
   const [allCategories,      setAllCategories]      = useState([])
@@ -62,7 +63,7 @@ export default function RecruiterDashboard() {
         try {
           const { data, error } = await supabase
             .from('recruiter_profiles')
-            .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements, stripe_account_id')
+            .select('id, first_name, last_name, bio, headline, status, availability_status, total_placements, stripe_account_id, has_seen_approval_modal')
             .eq('user_id', user.id)
             .maybeSingle()
 
@@ -78,6 +79,9 @@ export default function RecruiterDashboard() {
           if (data) {
             setProfile(data)
             setLoadingProfile(false)
+            if (data.status === 'approved' && data.has_seen_approval_modal === false) {
+              setShowApprovalModal(true)
+            }
             return
           }
 
@@ -183,6 +187,16 @@ export default function RecruiterDashboard() {
       return
     }
     if (data?.url) window.location.href = data.url
+  }
+
+  async function dismissApprovalModal() {
+    setShowApprovalModal(false)
+    if (profile?.id) {
+      await supabase
+        .from('recruiter_profiles')
+        .update({ has_seen_approval_modal: true })
+        .eq('id', profile.id)
+    }
   }
 
   const displayName = profile?.first_name
@@ -484,6 +498,47 @@ export default function RecruiterDashboard() {
       </div>
       <Footer />
       <OnboardingModal userType="recruiter" />
+
+      {showApprovalModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">
+              You're a Vetted TA Founding Member 🎉
+            </h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-5">
+              As one of our first recruiter members, we have an exclusive offer for you. Post on LinkedIn
+              this week announcing you've joined Vetted TA, tag @VettedTA, and send us the link — and
+              we'll give you <strong className="text-gray-900">50% off your platform fee on your first
+              placement</strong>.
+            </p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-5">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Copy &amp; paste for LinkedIn
+              </p>
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed select-all">{`I've just joined @VettedTA as a Founding Member.
+
+VettedTA is a retained recruitment marketplace. Hiring managers get access to top level recruiters, every role is exclusive, payment is held in escrow and releases in milestones.
+
+If you're a hiring manager or business owner who needs experienced recruitment support, go have a look.
+
+👉 www.vettedta.com`}</pre>
+            </div>
+            <div className="flex flex-col gap-3">
+              <a
+                href="https://www.linkedin.com"
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primary text-center"
+              >
+                Post on LinkedIn
+              </a>
+              <button onClick={dismissApprovalModal} className="btn-secondary text-sm">
+                I'll do this later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
