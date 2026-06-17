@@ -272,6 +272,9 @@ export default function VettingPanel() {
         .select('email')
         .eq('id', data.user_id)
         .maybeSingle()
+      if (userErr) {
+        console.error('Failed to fetch recruiter email from users table:', userErr)
+      }
       data.email = userRow?.email ?? null
     }
 
@@ -376,6 +379,12 @@ If you're a hiring manager or business owner who needs experienced recruitment s
         </a>
         <p style="margin-top:40px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
       </div>`
+    if (!email) {
+      console.error('Approval email not sent — detail.email is null for user_id:', detail.user_id)
+      setEmailWarning('Recruiter approved but email could not be sent — email address missing.')
+      setActioning(false)
+      return
+    }
     const emailOk = await sendEmail(email, approvalSubject, approvalHtml)
 
     if (!emailOk) {
