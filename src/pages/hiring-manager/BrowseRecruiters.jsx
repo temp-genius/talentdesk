@@ -4,8 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import RecruiterCard from '../../components/recruiter/RecruiterCard'
 import Logo from '../../components/layout/Logo'
-
-const FILTER_COUNTRIES = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
+import { MARKETS } from '../../lib/constants'
 const FILTER_FEES      = [{ label: '6%', value: '6' }, { label: '8%', value: '8' }, { label: '10%', value: '10' }]
 const FILTER_AVAIL     = [{ label: 'Available now', value: 'available' }, { label: 'Limited', value: 'limited' }]
 const FILTER_CAREER_DNA = [
@@ -489,7 +488,7 @@ export default function BrowseRecruiters() {
 
             <FilterSection title="Country">
               <div className="space-y-1">
-                {FILTER_COUNTRIES.map(c => (
+                {MARKETS.map(c => (
                   <FilterCheckbox key={c} label={c}
                     checked={filters.countries.includes(c)}
                     onChange={() => toggle('countries', c)} />

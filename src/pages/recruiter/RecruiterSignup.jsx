@@ -5,8 +5,7 @@ import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
-
-const MARKETS = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
+import { MARKETS } from '../../lib/constants'
 const TOTAL_STEPS = 3
 
 function StepIndicator({ current }) {

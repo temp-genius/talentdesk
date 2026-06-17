@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
-
-const MARKETS  = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
+import { MARKETS } from '../../lib/constants'
 const BIO_MAX  = 600
 const CLIENT_TYPES = [
   { value: 'startup',      label: 'Startups' },
