@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import AdminNav from '../../components/admin/AdminNav'
+import { approveRecruiter } from '../../lib/recruiterActions'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -337,63 +338,20 @@ export default function VettingPanel() {
   // ── Actions ───────────────────────────────────────────────────────────────
 
   async function handleApprove() {
-    console.log('Approve button clicked')
     if (!detail) return
     setActioning(true)
     setActionError('')
     setEmailWarning('')
 
-    const { error } = await supabase
-      .from('recruiter_profiles')
-      .update({ status: 'approved' })
-      .eq('id', detail.id)
+    const result = await approveRecruiter(detail, user.id)
 
-    if (error) { setActionError(error.message); setActioning(false); return }
-
-    const email     = detail.email
-    const firstName = detail.first_name ?? 'Recruiter'
-    const fullName  = [detail.first_name, detail.last_name].filter(Boolean).join(' ')
-
-    const approvalSubject = `You're in — Welcome to Vetted TA, ${firstName} 🎉`
-    const approvalHtml = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
-        <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">You're in, ${firstName}! 🎉</h1>
-        <p style="font-size:15px;line-height:1.7;margin-bottom:16px">
-          Congratulations — you are now live on the Vetted TA platform as a <strong>Founding Member</strong>.
-        </p>
-        <p style="font-size:15px;line-height:1.7;margin-bottom:28px">
-          As a Founding Member, we want to make your first placement on Vetted TA as rewarding as possible. Announce your membership on LinkedIn this week, tag @VettedTA, and reply to this email with the link — and we'll give you <strong>50% off your platform fee on your first placement</strong>. That's our way of saying thank you for being one of the first.
-        </p>
-        <div style="background:#f3f4f6;border-radius:8px;padding:20px;margin-bottom:28px">
-          <p style="font-size:12px;font-weight:600;color:#6b7280;margin:0 0 12px;text-transform:uppercase;letter-spacing:0.05em">Copy &amp; paste for LinkedIn</p>
-          <p style="font-size:14px;line-height:1.7;color:#111827;margin:0;white-space:pre-line">I've just joined @VettedTA as a Founding Member.
-
-VettedTA is a retained recruitment marketplace. Hiring managers get access to top level recruiters, every role is exclusive, payment is held in escrow and releases in milestones.
-
-If you're a hiring manager or business owner who needs experienced recruitment support, go have a look.
-
-👉 www.vettedta.com</p>
-        </div>
-        <a href="https://www.vettedta.com/recruiter/dashboard"
-           style="display:inline-block;background:#4f46e5;color:#ffffff;padding:13px 26px;
-                  border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
-          Go to your Dashboard →
-        </a>
-        <p style="margin-top:40px;font-size:13px;color:#6b7280">The Vetted TA Team</p>
-      </div>`
-    if (!email) {
-      console.error('Approval email not sent — detail.email is null for user_id:', detail.user_id)
-      setEmailWarning('Recruiter approved but email could not be sent — email address missing.')
+    if (!result.success) {
+      setActionError(result.error)
       setActioning(false)
       return
     }
-    console.log('About to call sendEmail with:', email)
-    const emailOk = await sendEmail(email, approvalSubject, approvalHtml)
 
-    if (!emailOk) {
-      setEmailWarning(`Recruiter approved successfully but the notification email failed to send. Please notify them manually at ${email}.`)
-    }
-
-    await logAction('approve', `Approved ${fullName}`)
+    if (result.warning) setEmailWarning(result.warning)
 
     const doneId = detail.id
     setModal(null)

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import AdminNav from '../../components/admin/AdminNav'
+import { approveRecruiter as runApprovalFlow } from '../../lib/recruiterActions'
 
 // ── helpers ──────────────────────────────────────────────────────────
 function fmtCurrency(n, currency = 'EUR') {
@@ -29,12 +30,14 @@ const STATUS_BADGE = {
 
 // ── Action Required tab ───────────────────────────────────────────────
 function ActionRequired() {
-  const [pending,    setPending]    = useState([])
-  const [disputes,   setDisputes]   = useState({ count: 0 })
-  const [payments,   setPayments]   = useState({ count: 0 })
-  const [newStarts,  setNewStarts]  = useState([])
-  const [loading,    setLoading]    = useState(true)
-  const [noteInputs, setNoteInputs] = useState({})
+  const { user } = useAuth()
+  const [pending,       setPending]       = useState([])
+  const [disputes,      setDisputes]      = useState({ count: 0 })
+  const [payments,      setPayments]      = useState({ count: 0 })
+  const [newStarts,     setNewStarts]     = useState([])
+  const [loading,       setLoading]       = useState(true)
+  const [noteInputs,    setNoteInputs]    = useState({})
+  const [emailWarning,  setEmailWarning]  = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,8 +70,10 @@ function ActionRequired() {
 
   useEffect(() => { load() }, [load])
 
-  async function approveRecruiter(id) {
-    await supabase.from('recruiter_profiles').update({ status: 'approved' }).eq('id', id)
+  async function approveRecruiter(profile) {
+    setEmailWarning('')
+    const result = await runApprovalFlow(profile, user?.id)
+    if (result.warning) setEmailWarning(result.warning)
     load()
   }
 
@@ -90,6 +95,13 @@ function ActionRequired() {
 
   return (
     <div className="space-y-6">
+      {emailWarning && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
+          <span className="flex-shrink-0 mt-0.5">⚠️</span>
+          <span>{emailWarning}</span>
+        </div>
+      )}
+
       {totalActions === 0 && newStarts.length === 0 && (
         <div className="card text-center py-10">
           <p className="text-gray-500 font-medium">No actions required right now.</p>
@@ -146,7 +158,7 @@ function ActionRequired() {
                     </div>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => approveRecruiter(r.id)} className="btn-primary text-sm">
+                    <button onClick={() => approveRecruiter(r)} className="btn-primary text-sm">
                       Approve
                     </button>
                     <button
@@ -300,9 +312,11 @@ function Platform() {
 
 // ── Recruiters tab ────────────────────────────────────────────────────
 function RecruitersTab() {
-  const [rows,    setRows]    = useState([])
-  const [search,  setSearch]  = useState('')
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+  const [rows,         setRows]         = useState([])
+  const [search,       setSearch]       = useState('')
+  const [loading,      setLoading]      = useState(true)
+  const [emailWarning, setEmailWarning] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -322,7 +336,14 @@ function RecruitersTab() {
   useEffect(() => { load() }, [load])
 
   async function setStatus(id, status) {
-    await supabase.from('recruiter_profiles').update({ status }).eq('id', id)
+    setEmailWarning('')
+    if (status === 'approved') {
+      const profile = rows.find(r => r.id === id)
+      const result  = await runApprovalFlow(profile, user?.id)
+      if (result.warning) setEmailWarning(result.warning)
+    } else {
+      await supabase.from('recruiter_profiles').update({ status }).eq('id', id)
+    }
     load()
   }
 
@@ -337,6 +358,12 @@ function RecruitersTab() {
 
   return (
     <div className="space-y-4">
+      {emailWarning && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
+          <span className="flex-shrink-0 mt-0.5">⚠️</span>
+          <span>{emailWarning}</span>
+        </div>
+      )}
       <input
         className="input max-w-xs"
         placeholder="Search recruiters…"
