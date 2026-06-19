@@ -337,6 +337,7 @@ export default function VettingPanel() {
   // ── Actions ───────────────────────────────────────────────────────────────
 
   async function handleApprove() {
+    console.log('Approve button clicked')
     if (!detail) return
     setActioning(true)
     setActionError('')
@@ -385,6 +386,7 @@ If you're a hiring manager or business owner who needs experienced recruitment s
       setActioning(false)
       return
     }
+    console.log('About to call sendEmail with:', email)
     const emailOk = await sendEmail(email, approvalSubject, approvalHtml)
 
     if (!emailOk) {
