@@ -173,6 +173,43 @@ export function AuthProvider({ children }) {
             )
             if (spErr) console.error('[AuthContext] recruiter_specialisms insert failed:', spErr)
           }
+          try {
+            await supabase.functions.invoke('send-email', {
+              body: {
+                to:      'notifications@vettedta.com',
+                subject: `New recruiter application: ${firstName ?? ''} ${lastName ?? ''}`.trim(),
+                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
+                  <h1 style="font-size:20px;font-weight:700;margin-bottom:24px">New recruiter application</h1>
+                  <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;width:140px;vertical-align:top">Name</td>
+                      <td style="font-size:14px;font-weight:600;color:#111827;padding:8px 0">${firstName ?? ''} ${lastName ?? ''}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">Email</td>
+                      <td style="font-size:14px;font-weight:600;color:#111827;padding:8px 0">${email}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">LinkedIn</td>
+                      <td style="font-size:14px;color:#111827;padding:8px 0">${rest.linkedin_url ?? '—'}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">Years experience</td>
+                      <td style="font-size:14px;color:#111827;padding:8px 0">${rest.years_experience ?? '—'}</td>
+                    </tr>
+                  </table>
+                  <a href="https://www.vettedta.com/admin/vetting"
+                     style="display:inline-block;background:#4f46e5;color:#ffffff;padding:13px 26px;
+                            border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
+                    Review in Vetting Panel →
+                  </a>
+                  <p style="margin-top:40px;font-size:13px;color:#6b7280">Vetted TA</p>
+                </div>`,
+              },
+            })
+          } catch (e) {
+            console.error('[AuthContext] recruiter admin notification email failed:', e)
+          }
         }
       } catch (e) {
         console.error('[AuthContext] recruiter profile creation error:', e)
@@ -189,7 +226,46 @@ export function AuthProvider({ children }) {
           country:        rest.country ?? null,
           trust_tier:     'new',
         })
-        if (hcpError) console.error('[AuthContext] hiring_company_profiles insert failed:', hcpError)
+        if (hcpError) {
+          console.error('[AuthContext] hiring_company_profiles insert failed:', hcpError)
+        } else {
+          try {
+            await supabase.functions.invoke('send-email', {
+              body: {
+                to:      'notifications@vettedta.com',
+                subject: `New hiring company signup: ${rest.companyName ?? ''}`.trim(),
+                html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
+                  <h1 style="font-size:20px;font-weight:700;margin-bottom:24px">New hiring company signup</h1>
+                  <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;width:140px;vertical-align:top">Company</td>
+                      <td style="font-size:14px;font-weight:600;color:#111827;padding:8px 0">${rest.companyName ?? '—'}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">Email</td>
+                      <td style="font-size:14px;font-weight:600;color:#111827;padding:8px 0">${email}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">Domain</td>
+                      <td style="font-size:14px;color:#111827;padding:8px 0">${rest.companyDomain ?? '—'}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">Industry</td>
+                      <td style="font-size:14px;color:#111827;padding:8px 0">${rest.industry ?? '—'}</td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">Country</td>
+                      <td style="font-size:14px;color:#111827;padding:8px 0">${rest.country ?? '—'}</td>
+                    </tr>
+                  </table>
+                  <p style="margin-top:40px;font-size:13px;color:#6b7280">Vetted TA</p>
+                </div>`,
+              },
+            })
+          } catch (e) {
+            console.error('[AuthContext] hiring manager admin notification email failed:', e)
+          }
+        }
       } catch (e) {
         console.error('[AuthContext] hiring company profile creation error:', e)
       }
