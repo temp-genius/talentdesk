@@ -56,9 +56,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:hello@vettedta.com" className="hover:text-white transition-colors">
+                <Link to="/contact" className="hover:text-white transition-colors">
                   Support
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

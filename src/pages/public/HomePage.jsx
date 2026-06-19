@@ -558,9 +558,9 @@ export default function HomePage() {
                   </li>
                 ))}
                 <li>
-                  <a href="mailto:hello@vettedta.com" className="hp-nav-link" style={{ ...S.sans, fontSize: 13, textDecoration: 'none', color: 'rgba(255,255,255,0.5)', transition: 'color 0.15s' }}>
+                  <Link to="/contact" className="hp-nav-link" style={{ ...S.sans, fontSize: 13, textDecoration: 'none', color: 'rgba(255,255,255,0.5)', transition: 'color 0.15s' }}>
                     Contact us
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
