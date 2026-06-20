@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { sendNewMessageNotification } from '../../lib/emailService'
 
 function formatTime(ts) {
   const date = new Date(ts)
@@ -68,21 +69,39 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
     e.preventDefault()
     if (!body.trim()) return
     setSending(true)
-    const { error } = await supabase.from('messages').insert({
+    const trimmedBody = body.trim()
+    const { data: inserted, error } = await supabase.from('messages').insert({
       job_id: jobId,
       sender_user_id: user.id,
       recipient_user_id: otherUserId,
-      message_body: body.trim(),
-    })
+      message_body: trimmedBody,
+    }).select('id').single()
     if (!error) {
-      console.log('Email notification queued:', {
-        to: otherUserId,
-        from: user.id,
-        jobId,
-        subject: `New message about: ${jobTitle ?? 'a role'}`,
-        preview: body.trim().slice(0, 100),
-      })
       setBody('')
+      try {
+        const { data: recipientRow, error: recipientErr } = await supabase
+          .from('users')
+          .select('email, user_type')
+          .eq('id', otherUserId)
+          .maybeSingle()
+        if (recipientErr) console.error('[MessageThread] recipient lookup failed:', recipientErr)
+        const recipientEmail = recipientRow?.email ?? null
+        if (recipientEmail) {
+          const senderName = user.email
+          await sendNewMessageNotification(
+            recipientEmail,
+            senderName,
+            trimmedBody,
+            jobTitle ?? 'a role',
+            recipientRow?.user_type ?? null,
+          )
+          if (inserted?.id) {
+            await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)
+          }
+        }
+      } catch (e) {
+        console.error('[MessageThread] message notification email failed:', e)
+      }
     }
     setSending(false)
   }

@@ -211,10 +211,11 @@ export function sendMilestoneNotification(recruiterEmail, milestoneNumber, jobTi
 
 // ─── New message notification ─────────────────────────────────────────────────
 
-export function sendNewMessageNotification(recipientEmail, senderName, messagePreview, jobTitle) {
-  const origin      = window.location.origin
-  const messagesUrl = `${origin}/messages`
-  const preview     = messagePreview.length > 120
+export function sendNewMessageNotification(recipientEmail, senderName, messagePreview, jobTitle, recipientUserType) {
+  const origin       = window.location.origin
+  const messagesPath = recipientUserType === 'recruiter' ? '/recruiter/messages' : '/messages'
+  const messagesUrl  = `${origin}${messagesPath}`
+  const preview      = messagePreview.length > 120
     ? messagePreview.slice(0, 120) + '…'
     : messagePreview
 
