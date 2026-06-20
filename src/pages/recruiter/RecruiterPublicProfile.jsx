@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { sendNewMessageNotification } from '../../lib/emailService'
 import Logo from '../../components/layout/Logo'
 
 /* ── Shared UI helpers ── */
@@ -116,14 +117,38 @@ function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
     if (!selectedJob || !body.trim()) return
     setSending(true)
     setError('')
-    const { error: err } = await supabase.from('messages').insert({
+    const trimmedBody = body.trim()
+    const jobTitle = jobs.find(j => j.id === selectedJob)?.title ?? 'a role'
+    const { data: inserted, error: err } = await supabase.from('messages').insert({
       job_id:           selectedJob,
       sender_user_id:   user.id,
       recipient_user_id: recruiterUserId,
-      message_body:     body.trim(),
-    })
+      message_body:     trimmedBody,
+    }).select('id').single()
     if (err) { setError(err.message); setSending(false); return }
-    console.log('Email notification queued:', { to: recruiterUserId, from: user.id, jobId: selectedJob })
+    try {
+      const { data: recipientRow, error: recipientErr } = await supabase
+        .from('users')
+        .select('email, user_type')
+        .eq('id', recruiterUserId)
+        .maybeSingle()
+      if (recipientErr) console.error('[SendMessageModal] recipient lookup failed:', recipientErr)
+      const recipientEmail = recipientRow?.email ?? null
+      if (recipientEmail) {
+        await sendNewMessageNotification(
+          recipientEmail,
+          user.email,
+          trimmedBody,
+          jobTitle,
+          recipientRow?.user_type ?? null,
+        )
+        if (inserted?.id) {
+          await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)
+        }
+      }
+    } catch (e) {
+      console.error('[SendMessageModal] message notification email failed:', e)
+    }
     navigate('/messages')
   }
 
