@@ -124,7 +124,7 @@ function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
       sender_user_id:   user.id,
       recipient_user_id: recruiterUserId,
       message_body:     trimmedBody,
-    }).select('id').single()
+    }).select('id').maybeSingle()
     if (err) { setError(err.message); setSending(false); return }
     try {
       const { data: recipientRow, error: recipientErr } = await supabase
@@ -150,6 +150,8 @@ function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
         )
         if (inserted?.id) {
           await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)
+        } else {
+          console.warn('[SendMessageModal] email sent but email_notification_sent not recorded — insert returned no id')
         }
       }
     } catch (e) {

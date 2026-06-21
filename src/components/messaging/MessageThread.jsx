@@ -75,7 +75,7 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
       sender_user_id: user.id,
       recipient_user_id: otherUserId,
       message_body: trimmedBody,
-    }).select('id').single()
+    }).select('id').maybeSingle()
     if (!error) {
       setBody('')
       try {
@@ -103,6 +103,8 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
           )
           if (inserted?.id) {
             await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)
+          } else {
+            console.warn('[MessageThread] email sent but email_notification_sent not recorded — insert returned no id')
           }
         }
       } catch (e) {
