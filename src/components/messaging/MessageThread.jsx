@@ -79,17 +79,18 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
     if (!error) {
       setBody('')
       try {
-        const { data: recipientRow, error: recipientErr } = await supabase
-          .from('users')
-          .select('email, user_type')
-          .eq('id', otherUserId)
-          .maybeSingle()
+        const { data: recipientInfo, error: recipientErr } = await supabase
+          .rpc('get_message_recipient_info', {
+            p_recipient_id: otherUserId,
+            p_job_id:       jobId,
+          })
         if (recipientErr) console.error('[MessageThread] recipient lookup failed:', recipientErr)
-        const recipientEmail = recipientRow?.email ?? null
+        const recipientEmail    = recipientInfo?.email     ?? null
+        const recipientUserType = recipientInfo?.user_type ?? null
         console.log('[MessageThread] DEBUG notification gate', {
           recipientEmail,
-          recipientUserType: recipientRow?.user_type ?? null,
-          recipientRow,
+          recipientUserType,
+          recipientInfo,
           otherUserId,
         })
         if (recipientEmail) {
@@ -99,7 +100,7 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
             senderName,
             trimmedBody,
             jobTitle ?? 'a role',
-            recipientRow?.user_type ?? null,
+            recipientUserType,
           )
           if (inserted?.id) {
             await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)

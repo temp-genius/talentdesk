@@ -127,17 +127,18 @@ function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
     }).select('id').maybeSingle()
     if (err) { setError(err.message); setSending(false); return }
     try {
-      const { data: recipientRow, error: recipientErr } = await supabase
-        .from('users')
-        .select('email, user_type')
-        .eq('id', recruiterUserId)
-        .maybeSingle()
+      const { data: recipientInfo, error: recipientErr } = await supabase
+        .rpc('get_message_recipient_info', {
+          p_recipient_id: recruiterUserId,
+          p_job_id:       selectedJob,
+        })
       if (recipientErr) console.error('[SendMessageModal] recipient lookup failed:', recipientErr)
-      const recipientEmail = recipientRow?.email ?? null
+      const recipientEmail    = recipientInfo?.email     ?? null
+      const recipientUserType = recipientInfo?.user_type ?? null
       console.log('[SendMessageModal] DEBUG notification gate', {
         recipientEmail,
-        recipientUserType: recipientRow?.user_type ?? null,
-        recipientRow,
+        recipientUserType,
+        recipientInfo,
         recruiterUserId,
       })
       if (recipientEmail) {
@@ -146,7 +147,7 @@ function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
           user.email,
           trimmedBody,
           jobTitle,
-          recipientRow?.user_type ?? null,
+          recipientUserType,
         )
         if (inserted?.id) {
           await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)
