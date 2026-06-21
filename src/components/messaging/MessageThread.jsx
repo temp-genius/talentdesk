@@ -103,7 +103,7 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
             recipientUserType,
           )
           if (inserted?.id) {
-            await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)
+            await supabase.rpc('mark_message_email_sent', { p_message_id: inserted.id })
           } else {
             console.warn('[MessageThread] email sent but email_notification_sent not recorded — insert returned no id')
           }

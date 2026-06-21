@@ -150,7 +150,7 @@ function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
           recipientUserType,
         )
         if (inserted?.id) {
-          await supabase.from('messages').update({ email_notification_sent: true }).eq('id', inserted.id)
+          await supabase.rpc('mark_message_email_sent', { p_message_id: inserted.id })
         } else {
           console.warn('[SendMessageModal] email sent but email_notification_sent not recorded — insert returned no id')
         }
