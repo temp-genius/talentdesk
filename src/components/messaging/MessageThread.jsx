@@ -86,6 +86,12 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
           .maybeSingle()
         if (recipientErr) console.error('[MessageThread] recipient lookup failed:', recipientErr)
         const recipientEmail = recipientRow?.email ?? null
+        console.log('[MessageThread] DEBUG notification gate', {
+          recipientEmail,
+          recipientUserType: recipientRow?.user_type ?? null,
+          recipientRow,
+          otherUserId,
+        })
         if (recipientEmail) {
           const senderName = user.email
           await sendNewMessageNotification(

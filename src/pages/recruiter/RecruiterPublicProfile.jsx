@@ -134,6 +134,12 @@ function SendMessageModal({ recruiterUserId, recruiterName, onClose }) {
         .maybeSingle()
       if (recipientErr) console.error('[SendMessageModal] recipient lookup failed:', recipientErr)
       const recipientEmail = recipientRow?.email ?? null
+      console.log('[SendMessageModal] DEBUG notification gate', {
+        recipientEmail,
+        recipientUserType: recipientRow?.user_type ?? null,
+        recipientRow,
+        recruiterUserId,
+      })
       if (recipientEmail) {
         await sendNewMessageNotification(
           recipientEmail,
