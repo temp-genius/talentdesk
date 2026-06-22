@@ -10,6 +10,7 @@ import RecruiterDashboard     from './pages/recruiter/RecruiterDashboard'
 import RecruiterProfileSetup  from './pages/recruiter/RecruiterProfileSetup'
 import RecruiterPublicProfile from './pages/recruiter/RecruiterPublicProfile'
 import RecruiterMessages      from './pages/recruiter/RecruiterMessages'
+import BrowseJobs             from './pages/recruiter/BrowseJobs'
 import HiringManagerSignup    from './pages/hiring-manager/HiringManagerSignup'
 import HiringManagerDashboard from './pages/hiring-manager/HiringManagerDashboard'
 import BrowseRecruiters       from './pages/hiring-manager/BrowseRecruiters'
@@ -85,6 +86,7 @@ export default function App() {
             <Route path="/recruiter/messages"         element={<RecruiterMessages />} />
             <Route path="/recruiter/profile/edit"     element={<EditProfile />} />
             <Route path="/recruiter/stripe-onboarding" element={<StripeOnboarding />} />
+            <Route path="/recruiter/browse-jobs"       element={<BrowseJobs />} />
           </Route>
 
           {/* Hiring manager — protected */}

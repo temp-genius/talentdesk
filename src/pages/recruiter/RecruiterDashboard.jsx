@@ -210,6 +210,9 @@ export default function RecruiterDashboard() {
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Logo />
           <div className="flex items-center gap-4">
+            <Link to="/recruiter/browse-jobs" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+              Browse Open Roles
+            </Link>
             <Link to="/recruiter/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
               Messages
             </Link>
