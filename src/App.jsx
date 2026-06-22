@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import { Analytics } from '@vercel/analytics/react'
+import CookieBanner from './components/CookieBanner'
+import { useState } from 'react'
 
 import HomePage               from './pages/public/HomePage'
 import Login                  from './pages/public/Login'
@@ -59,6 +61,14 @@ function PublicRoute({ children }) {
 }
 
 export default function App() {
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(
+    () => localStorage.getItem('cookie_consent') === 'accepted'
+  )
+
+  function handleConsent(value) {
+    setAnalyticsEnabled(value === 'accepted')
+  }
+
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -126,7 +136,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
-      <Analytics />
+      <CookieBanner onConsent={handleConsent} />
+      {analyticsEnabled && <Analytics />}
     </BrowserRouter>
   )
 }
