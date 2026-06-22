@@ -17,7 +17,10 @@ const SECTIONS = [
   },
   {
     title: '4. How We Use Your Data',
-    body: 'We use your data to operate the platform and facilitate connections between recruiters and hiring companies. To process payments through Stripe. To send transactional notifications about your account and active engagements. To verify recruiter applications and maintain platform quality. To comply with our legal obligations.',
+    body: [
+      'We use your data to operate the platform and facilitate connections between recruiters and hiring companies. To process payments through Stripe. To send transactional notifications about your account and active engagements. To verify recruiter applications and maintain platform quality. To comply with our legal obligations.',
+      'Our lawful basis for processing this data is primarily the performance of a contract with you — operating your account and facilitating the recruitment marketplace requires this processing. Where we process data to comply with legal obligations (such as tax record-keeping), our lawful basis is legal obligation. Where processing is not strictly necessary for the contract, such as optional analytics, our lawful basis is your consent, which you may withdraw at any time.',
+    ],
   },
   {
     title: '5. Data Retention',
@@ -69,7 +72,15 @@ export default function PrivacyPolicy() {
           {SECTIONS.map((s, i) => (
             <div key={i} className="px-8 py-6">
               <h2 className="text-base font-bold text-slate-900 mb-2">{s.title}</h2>
-              <p className="text-sm text-gray-600 leading-relaxed">{s.body}</p>
+              {Array.isArray(s.body) ? (
+                <div className="space-y-3">
+                  {s.body.map((para, j) => (
+                    <p key={j} className="text-sm text-gray-600 leading-relaxed">{para}</p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600 leading-relaxed">{s.body}</p>
+              )}
             </div>
           ))}
         </div>

@@ -60,6 +60,7 @@ export default function RecruiterSignup() {
   }, [])
 
   const [agreedTerms,    setAgreedTerms]    = useState(false)
+  const [agreedPrivacy,  setAgreedPrivacy]  = useState(false)
   const [agreedLinkedin, setAgreedLinkedin] = useState(false)
 
   const [form, setForm] = useState({
@@ -410,6 +411,18 @@ export default function RecruiterSignup() {
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
+                      checked={agreedPrivacy}
+                      onChange={e => setAgreedPrivacy(e.target.checked)}
+                      className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I have read and agree to the{' '}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">Privacy Policy</a>
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
                       checked={agreedLinkedin}
                       onChange={e => setAgreedLinkedin(e.target.checked)}
                       className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
@@ -425,7 +438,7 @@ export default function RecruiterSignup() {
                 <button
                   type="submit"
                   className="btn-primary"
-                  disabled={submitting || !agreedTerms || !agreedLinkedin}
+                  disabled={submitting || !agreedTerms || !agreedPrivacy || !agreedLinkedin}
                 >
                   {submitting ? 'Submitting…' : 'Submit Application'}
                 </button>
