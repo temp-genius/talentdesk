@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Logo from '../components/layout/Logo'
@@ -229,8 +229,10 @@ function ProposalForm({ jobId, recruiterId, onSubmitted }) {
 
 // ─── HM: single proposal card with shortlist/reject actions ──────────────────
 
-function ProposalCard({ proposal, onUpdate }) {
-  const [updating, setUpdating] = useState(false)
+function ProposalCard({ proposal, onUpdate, onAccept }) {
+  const [updating,     setUpdating]     = useState(false)
+  const [accepting,    setAccepting]    = useState(false)
+  const [acceptError,  setAcceptError]  = useState('')
   const recruiter = proposal.recruiter_profiles
   const name = recruiter
     ? `${recruiter.first_name ?? ''} ${recruiter.last_name ?? ''}`.trim() || 'Recruiter'
@@ -248,6 +250,17 @@ function ProposalCard({ proposal, onUpdate }) {
       .eq('id', proposal.id)
     setUpdating(false)
     if (!error) onUpdate(proposal.id, newStatus)
+  }
+
+  async function handleAcceptClick() {
+    setAccepting(true)
+    setAcceptError('')
+    const err = await onAccept(proposal.id, recruiter?.id)
+    if (err) {
+      setAcceptError(err)
+      setAccepting(false)
+    }
+    // on success onAccept navigates away — component unmounts, no cleanup needed
   }
 
   return (
@@ -294,16 +307,31 @@ function ProposalCard({ proposal, onUpdate }) {
             </>
           )}
           {proposal.status === 'shortlisted' && (
-            <button
-              onClick={() => update('rejected')}
-              disabled={updating}
-              className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-50"
-            >
-              Remove from shortlist
-            </button>
+            <>
+              <button
+                onClick={handleAcceptClick}
+                disabled={accepting || updating}
+                className="btn-primary text-sm px-3 py-1.5 disabled:opacity-50"
+              >
+                {accepting ? 'Accepting…' : 'Accept & Start Job'}
+              </button>
+              <button
+                onClick={() => update('rejected')}
+                disabled={updating || accepting}
+                className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-50"
+              >
+                Remove from shortlist
+              </button>
+            </>
           )}
         </div>
       </div>
+
+      {acceptError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
+          {acceptError}
+        </div>
+      )}
 
       <div>
         <p className="text-xs text-gray-500 mb-1">Pitch</p>
@@ -340,6 +368,7 @@ function PageShell({ children }) {
 export default function JobDetail() {
   const { id: jobId } = useParams()
   const { user, userType, logout } = useAuth()
+  const navigate = useNavigate()
 
   const [job,            setJob]            = useState(null)
   const [loading,        setLoading]        = useState(true)
@@ -445,6 +474,28 @@ export default function JobDetail() {
 
   function handleProposalUpdate(proposalId, newStatus) {
     setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: newStatus } : p))
+  }
+
+  async function handleAccept(proposalId, recruiterId) {
+    if (!recruiterId) return 'Recruiter profile not found — cannot start job.'
+
+    const { error } = await supabase
+      .from('job_proposals')
+      .update({ status: 'accepted', responded_at: new Date().toISOString() })
+      .eq('id', proposalId)
+
+    if (error) return error.message
+
+    // Reject all remaining submitted/shortlisted proposals on this job (non-blocking)
+    await supabase
+      .from('job_proposals')
+      .update({ status: 'rejected', responded_at: new Date().toISOString() })
+      .eq('job_id', jobId)
+      .neq('id', proposalId)
+      .in('status', ['submitted', 'shortlisted'])
+
+    navigate(`/start-job?recruiter_id=${recruiterId}&job_id=${jobId}`)
+    return null  // null = no error
   }
 
   if (loading) {
@@ -627,7 +678,7 @@ export default function JobDetail() {
                   </h3>
                   <div className="space-y-4">
                     {shortlisted.map(p => (
-                      <ProposalCard key={p.id} proposal={p} onUpdate={handleProposalUpdate} />
+                      <ProposalCard key={p.id} proposal={p} onUpdate={handleProposalUpdate} onAccept={handleAccept} />
                     ))}
                   </div>
                 </section>
@@ -640,7 +691,7 @@ export default function JobDetail() {
                   </h3>
                   <div className="space-y-4">
                     {newProps.map(p => (
-                      <ProposalCard key={p.id} proposal={p} onUpdate={handleProposalUpdate} />
+                      <ProposalCard key={p.id} proposal={p} onUpdate={handleProposalUpdate} onAccept={handleAccept} />
                     ))}
                   </div>
                 </section>
@@ -653,7 +704,7 @@ export default function JobDetail() {
                   </h3>
                   <div className="space-y-4">
                     {other.map(p => (
-                      <ProposalCard key={p.id} proposal={p} onUpdate={handleProposalUpdate} />
+                      <ProposalCard key={p.id} proposal={p} onUpdate={handleProposalUpdate} onAccept={handleAccept} />
                     ))}
                   </div>
                 </section>
