@@ -35,6 +35,7 @@ import PrivacyPolicy          from './pages/legal/PrivacyPolicy'
 import RecruiterAgreement     from './pages/legal/RecruiterAgreement'
 import AdminDashboard         from './pages/admin/AdminDashboard'
 import VettingPanel           from './pages/admin/VettingPanel'
+import JobDetail              from './pages/JobDetail'
 
 const DASHBOARD_BY_TYPE = {
   recruiter:      '/recruiter/dashboard',
@@ -108,6 +109,11 @@ export default function App() {
             <Route path="/recruiter/job/:assignmentId"          element={<RecruiterActiveJob />} />
             <Route path="/recruiter/review/:assignmentId"       element={<RecruiterLeaveReview />} />
             <Route path="/recruiter/job/:assignmentId/withdraw" element={<WithdrawJob />} />
+          </Route>
+
+          {/* Job detail — recruiter submits proposals, HM reviews them */}
+          <Route element={<ProtectedRoute allowedUserTypes={['recruiter', 'hiring_manager']} />}>
+            <Route path="/jobs/:id" element={<JobDetail />} />
           </Route>
 
           {/* Admin — protected */}
