@@ -26,6 +26,7 @@ export default function HiringManagerDashboard() {
   const [loadingProfile, setLoadingPro]  = useState(true)
   const [activeJobs,    setActiveJobs]   = useState([])
   const [loadingJobs,   setLoadingJobs]  = useState(false)
+  const [openJobs,      setOpenJobs]     = useState([])
   const [unreadCount,   setUnreadCount]  = useState(0)
 
   useEffect(() => {
@@ -51,6 +52,17 @@ export default function HiringManagerDashboard() {
         setLoadingPro(false)
       })
   }, [user])
+
+  // Load open roles with proposal counts once profile id is available
+  useEffect(() => {
+    if (!profile?.id) return
+    supabase
+      .from('jobs')
+      .select('id, title, job_proposals(status)')
+      .eq('hiring_company_id', profile.id)
+      .eq('status', 'open_for_proposals')
+      .then(({ data }) => { setOpenJobs(data ?? []) })
+  }, [profile])
 
   // Load active assignments once profile id is available
   useEffect(() => {
@@ -219,21 +231,60 @@ export default function HiringManagerDashboard() {
                 )}
               </div>
 
-              {/* Recent Activity */}
+              {/* Open Roles */}
               <div className="card lg:col-span-3">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-                  Recent Activity
-                </h3>
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                  </div>
-                  <p className="text-sm font-medium text-gray-600">No recent activity</p>
-                  <p className="text-xs text-gray-400 mt-1">Messages, CV submissions, and role updates will appear here</p>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                    Open Roles
+                  </h3>
+                  <Link to="/post-job" className="text-xs text-primary-600 hover:underline">+ Post a Role</Link>
                 </div>
+
+                {openJobs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-600">No open roles right now</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      <Link to="/post-job" className="text-primary-600 hover:underline">Post a role</Link>
+                      {' '}to start receiving proposals from recruiters
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {openJobs.map(job => {
+                      const total       = job.job_proposals?.length ?? 0
+                      const shortlisted = job.job_proposals?.filter(p => p.status === 'shortlisted').length ?? 0
+                      return (
+                        <Link
+                          key={job.id}
+                          to={`/jobs/${job.id}`}
+                          className="flex items-center justify-between p-3 rounded-lg bg-gray-50
+                                     hover:bg-gray-100 transition-colors no-underline"
+                        >
+                          <p className="text-sm font-medium text-gray-900 truncate min-w-0 mr-3">{job.title}</p>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                              {total} {total === 1 ? 'proposal' : 'proposals'}
+                            </span>
+                            {shortlisted > 0 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                {shortlisted} shortlisted
+                              </span>
+                            )}
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </>
