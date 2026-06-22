@@ -425,6 +425,151 @@ export function sendJobWithdrawnByRecruiterNotification(hmEmail, jobTitle, recru
   })
 }
 
+// ─── Proposal shortlisted (recruiter notification) ───────────────────────────
+
+export function sendProposalShortlistedNotification(recruiterEmail, jobTitle) {
+  const origin    = window.location.origin
+  const browseUrl = `${origin}/recruiter/browse-jobs`
+
+  const html = wrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          Good news — you've been shortlisted!
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          Your proposal for <strong>${jobTitle}</strong> has been shortlisted by the hiring manager.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="background-color:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:24px;">
+          <tr><td style="padding:16px 20px;">
+            <p style="margin:0;font-size:14px;color:#166534;line-height:1.6;">
+              Your pitch and fee stood out. The hiring manager is considering moving forward with you —
+              they may reach out shortly to start a formal engagement.
+            </p>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 20px;font-size:14px;color:#374151;">
+          Log in to Vetted TA to check your proposal status or browse other open roles.
+        </p>
+        <a href="${browseUrl}"
+           style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
+                  font-size:14px;font-weight:600;padding:12px 24px;
+                  border-radius:8px;text-decoration:none;">
+          Browse Open Roles
+        </a>
+      </td>
+    </tr>`)
+
+  return sendEmail({
+    to:      recruiterEmail,
+    subject: `Good news — your proposal for ${jobTitle} has been shortlisted`,
+    html,
+  })
+}
+
+// ─── Proposal rejected (recruiter notification) ───────────────────────────────
+
+export function sendProposalRejectedNotification(recruiterEmail, jobTitle) {
+  const origin    = window.location.origin
+  const browseUrl = `${origin}/recruiter/browse-jobs`
+
+  const html = wrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          Update on your proposal
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          Thank you for your interest in <strong>${jobTitle}</strong>. The hiring manager has decided
+          not to proceed with your proposal at this time.
+        </p>
+        <p style="margin:0 0 20px;font-size:14px;color:#374151;">
+          There are plenty more roles on Vetted TA — browse open roles and submit your next proposal.
+        </p>
+        <a href="${browseUrl}"
+           style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
+                  font-size:14px;font-weight:600;padding:12px 24px;
+                  border-radius:8px;text-decoration:none;">
+          Browse Open Roles
+        </a>
+      </td>
+    </tr>`)
+
+  return sendEmail({
+    to:      recruiterEmail,
+    subject: `Update on your proposal for ${jobTitle}`,
+    html,
+  })
+}
+
+// ─── Proposal accepted (recruiter notification) ───────────────────────────────
+
+export function sendProposalAcceptedNotification(recruiterEmail, jobTitle) {
+  const origin       = window.location.origin
+  const dashboardUrl = `${origin}/recruiter/dashboard`
+
+  const html = wrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          Your proposal was accepted!
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          Congratulations — the hiring manager has accepted your proposal for
+          <strong>${jobTitle}</strong>.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="background-color:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;margin-bottom:24px;">
+          <tr><td style="padding:20px 24px;">
+            <p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#1e40af;">What happens next</p>
+            <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">
+              The hiring manager is now setting up payment. Once complete, your assignment will go active
+              and you'll receive a separate notification to get started.
+            </p>
+          </td></tr>
+        </table>
+        <a href="${dashboardUrl}"
+           style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
+                  font-size:14px;font-weight:600;padding:12px 24px;
+                  border-radius:8px;text-decoration:none;">
+          Go to Dashboard
+        </a>
+      </td>
+    </tr>`)
+
+  return sendEmail({
+    to:      recruiterEmail,
+    subject: `Your proposal for ${jobTitle} was accepted! 🎉`,
+    html,
+  })
+}
+
+// ─── Proposal submitted — admin notification ──────────────────────────────────
+
+export function sendProposalSubmittedAdminNotification(recruiterName, jobTitle) {
+  const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#111827">
+    <h1 style="font-size:20px;font-weight:700;margin-bottom:24px">New proposal submitted</h1>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+      <tr>
+        <td style="font-size:13px;color:#6b7280;padding:8px 0;width:120px;vertical-align:top">Recruiter</td>
+        <td style="font-size:14px;font-weight:600;color:#111827;padding:8px 0">${recruiterName}</td>
+      </tr>
+      <tr>
+        <td style="font-size:13px;color:#6b7280;padding:8px 0;vertical-align:top">Role</td>
+        <td style="font-size:14px;font-weight:600;color:#111827;padding:8px 0">${jobTitle}</td>
+      </tr>
+    </table>
+    <p style="font-size:13px;color:#6b7280">Vetted TA</p>
+  </div>`
+
+  return sendEmail({
+    to:      'notifications@vettedta.com',
+    subject: `New proposal submitted: ${recruiterName} on ${jobTitle}`,
+    html,
+  })
+}
+
 // ─── Shortlist submitted (hiring manager notification) ────────────────────────
 
 export function sendShortlistSubmittedNotification(hmEmail, recruiterName, jobTitle, candidateCount) {

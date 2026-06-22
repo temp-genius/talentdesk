@@ -3,6 +3,12 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Logo from '../components/layout/Logo'
+import {
+  sendProposalShortlistedNotification,
+  sendProposalRejectedNotification,
+  sendProposalAcceptedNotification,
+  sendProposalSubmittedAdminNotification,
+} from '../lib/emailService'
 
 const SENIORITY_LABELS  = { junior: 'Junior', mid: 'Mid', senior: 'Senior', director: 'Director', c_suite: 'C-Suite' }
 const LOCATION_LABELS   = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' }
@@ -384,6 +390,7 @@ export default function JobDetail() {
 
   // recruiter-only
   const [myProfileId,    setMyProfileId]    = useState(null)
+  const [myProfileName,  setMyProfileName]  = useState(null)
   const [myProposal,     setMyProposal]     = useState(null)
   const [proposalLoaded, setProposalLoaded] = useState(false)
   const [withdrawing,    setWithdrawing]    = useState(false)
@@ -409,7 +416,7 @@ export default function JobDetail() {
           .single(),
         supabase
           .from('recruiter_profiles')
-          .select('id')
+          .select('id, first_name, last_name')
           .eq('user_id', user.id)
           .single(),
       ])
@@ -419,6 +426,7 @@ export default function JobDetail() {
 
       if (profile) {
         setMyProfileId(profile.id)
+        setMyProfileName([profile.first_name, profile.last_name].filter(Boolean).join(' ') || null)
         const { data: existing } = await supabase
           .from('job_proposals')
           .select('id, proposed_fee_percentage, pitch, relevant_experience, status, submitted_at')
@@ -478,10 +486,28 @@ export default function JobDetail() {
       .eq('recruiter_id', myProfileId)
       .maybeSingle()
     setMyProposal(data ?? null)
+    sendProposalSubmittedAdminNotification(myProfileName || user.email, job?.title ?? 'a role')
+      .catch(e => console.error('[JobDetail] admin proposal notification failed:', e))
   }
 
   function handleProposalUpdate(proposalId, newStatus) {
     setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: newStatus } : p))
+    if (newStatus === 'shortlisted' || newStatus === 'rejected') {
+      sendProposalStatusEmail(proposalId, newStatus)
+        .catch(e => console.error('[JobDetail] proposal status email failed:', e))
+    }
+  }
+
+  async function sendProposalStatusEmail(proposalId, newStatus) {
+    const { data: email } = await supabase.rpc('get_recruiter_email_for_proposal', {
+      p_proposal_id: proposalId,
+    })
+    if (!email) return
+    if (newStatus === 'shortlisted') {
+      sendProposalShortlistedNotification(email, job.title)
+    } else {
+      sendProposalRejectedNotification(email, job.title)
+    }
   }
 
   async function handleAccept(proposalId, recruiterId) {
@@ -494,6 +520,16 @@ export default function JobDetail() {
 
     if (error) return error.message
 
+    // Send acceptance email — awaited but non-blocking on failure
+    try {
+      const { data: email } = await supabase.rpc('get_recruiter_email_for_proposal', {
+        p_proposal_id: proposalId,
+      })
+      if (email) await sendProposalAcceptedNotification(email, job.title)
+    } catch (e) {
+      console.error('[JobDetail] accept email failed:', e)
+    }
+
     // Reject all remaining submitted/shortlisted proposals on this job (non-blocking)
     await supabase
       .from('job_proposals')
@@ -503,7 +539,7 @@ export default function JobDetail() {
       .in('status', ['submitted', 'shortlisted'])
 
     navigate(`/start-job?recruiter_id=${recruiterId}&job_id=${jobId}`)
-    return null  // null = no error
+    return null
   }
 
   if (loading) {
