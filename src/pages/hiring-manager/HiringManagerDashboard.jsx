@@ -26,6 +26,17 @@ export default function HiringManagerDashboard() {
   const [loadingProfile, setLoadingPro]  = useState(true)
   const [activeJobs,    setActiveJobs]   = useState([])
   const [loadingJobs,   setLoadingJobs]  = useState(false)
+  const [unreadCount,   setUnreadCount]  = useState(0)
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('recipient_user_id', user.id)
+      .is('read_at', null)
+      .then(({ count }) => { if (count != null) setUnreadCount(count) })
+  }, [user])
 
   // Load company profile (with id)
   useEffect(() => {
@@ -71,7 +82,12 @@ export default function HiringManagerDashboard() {
           <Logo />
           <div className="flex items-center gap-4">
             <Link to="/jobs"     className="text-sm text-gray-500 hover:text-gray-900 transition-colors">My Jobs</Link>
-            <Link to="/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Messages</Link>
+            <Link to="/messages" className="relative inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+              Messages
+              {unreadCount > 0 && (
+                <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
+              )}
+            </Link>
             <Link to="/browse-recruiters" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Browse</Link>
             <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
             <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>

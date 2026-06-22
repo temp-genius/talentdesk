@@ -44,6 +44,7 @@ export default function RecruiterDashboard() {
   const [connectingStripe,    setConnectingStripe]    = useState(false)
   const [stripeError,         setStripeError]         = useState('')
   const [showApprovalModal,   setShowApprovalModal]   = useState(false)
+  const [unreadCount,         setUnreadCount]         = useState(0)
 
   // Specialism editing
   const [allCategories,      setAllCategories]      = useState([])
@@ -51,6 +52,16 @@ export default function RecruiterDashboard() {
   const [editingSpecialisms, setEditingSpecialisms] = useState(false)
   const [draftSpecialisms,   setDraftSpecialisms]   = useState([])
   const [savingSpecialisms,  setSavingSpecialisms]  = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('recipient_user_id', user.id)
+      .is('read_at', null)
+      .then(({ count }) => { if (count != null) setUnreadCount(count) })
+  }, [user])
 
   // Load recruiter profile — retry up to 3 times with 1500ms gaps to allow DB trigger to complete
   useEffect(() => {
@@ -213,8 +224,11 @@ export default function RecruiterDashboard() {
             <Link to="/recruiter/browse-jobs" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
               Browse Open Roles
             </Link>
-            <Link to="/recruiter/messages" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+            <Link to="/recruiter/messages" className="relative inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
               Messages
+              {unreadCount > 0 && (
+                <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
+              )}
             </Link>
             <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
           </div>

@@ -39,6 +39,18 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
 
     fetchMessages()
 
+    async function markRead() {
+      try {
+        await supabase.rpc('mark_messages_read', {
+          p_job_id: jobId,
+          p_other_user_id: otherUserId,
+        })
+      } catch (e) {
+        console.error('[MessageThread] mark_messages_read failed:', e)
+      }
+    }
+    markRead()
+
     const channel = supabase
       .channel(`thread-${jobId}-${user.id}-${otherUserId}`)
       .on(
@@ -49,7 +61,10 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
           const relevant =
             (m.sender_user_id === user.id && m.recipient_user_id === otherUserId) ||
             (m.sender_user_id === otherUserId && m.recipient_user_id === user.id)
-          if (relevant) setMessages(prev => [...prev, m])
+          if (relevant) {
+            setMessages(prev => [...prev, m])
+            if (m.sender_user_id === otherUserId) markRead()
+          }
         }
       )
       .subscribe()
