@@ -30,6 +30,14 @@ export default function RecruiterMessages() {
 
     if (!msgs) { setLoading(false); return }
 
+    const { data: unreadRows } = await supabase
+      .from('messages')
+      .select('job_id, sender_user_id')
+      .eq('recipient_user_id', user.id)
+      .is('read_at', null)
+
+    const unreadSet = new Set((unreadRows ?? []).map(r => `${r.job_id}::${r.sender_user_id}`))
+
     const convMap = new Map()
     for (const msg of msgs) {
       const otherId = msg.sender_user_id === user.id ? msg.recipient_user_id : msg.sender_user_id
@@ -41,6 +49,7 @@ export default function RecruiterMessages() {
           lastMessage: msg.message_body,
           lastAt:      msg.sent_at,
           jobTitle:    msg.jobs?.title ?? null,
+          hasUnread:   unreadSet.has(key),
         })
       }
     }
@@ -129,13 +138,20 @@ export default function RecruiterMessages() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <p className="text-sm font-medium text-gray-900 truncate">{conv.otherUserName}</p>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className={`text-sm truncate ${conv.hasUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
+                              {conv.otherUserName}
+                            </p>
+                            {conv.hasUnread && (
+                              <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
+                            )}
+                          </div>
                           <span className="text-xs text-gray-400 flex-shrink-0">{timeAgo(conv.lastAt)}</span>
                         </div>
                         {conv.jobTitle && (
                           <p className="text-xs text-primary-600 truncate">{conv.jobTitle}</p>
                         )}
-                        <p className="text-xs text-gray-500 truncate mt-0.5">
+                        <p className={`text-xs truncate mt-0.5 ${conv.hasUnread ? 'font-semibold text-gray-700' : 'text-gray-500'}`}>
                           {conv.lastMessage.length > 50
                             ? conv.lastMessage.slice(0, 50) + '…'
                             : conv.lastMessage}
