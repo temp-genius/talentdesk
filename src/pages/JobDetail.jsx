@@ -271,9 +271,14 @@ function ProposalCard({ proposal, onUpdate, onAccept }) {
             {recruiter?.id ? (
               <Link
                 to={`/recruiter/profile/${recruiter.id}`}
-                className="font-semibold text-gray-900 hover:text-primary-600 transition-colors"
+                className="group inline-flex items-center gap-1 font-semibold text-primary-600 hover:text-primary-700 hover:underline transition-colors"
               >
                 {name}
+                <svg className="w-3.5 h-3.5 text-primary-400 group-hover:text-primary-600 transition-colors flex-shrink-0"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
               </Link>
             ) : (
               <span className="font-semibold text-gray-900">{name}</span>
@@ -285,6 +290,9 @@ function ProposalCard({ proposal, onUpdate, onAccept }) {
             {' · '}
             <span className="font-medium text-gray-700">{proposal.proposed_fee_percentage}% fee</span>
           </p>
+          {recruiter?.id && (
+            <p className="text-xs text-gray-400 mt-0.5">View profile &amp; message</p>
+          )}
         </div>
 
         <div className="flex gap-2 flex-shrink-0">
