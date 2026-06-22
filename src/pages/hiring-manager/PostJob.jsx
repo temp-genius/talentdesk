@@ -38,8 +38,10 @@ export default function PostJob() {
   const [companyId, setCompanyId]     = useState(null)
   const [loadingCompany, setLoading]  = useState(true)
   const [submitting, setSubmitting]   = useState(false)
+  const [publishing, setPublishing]   = useState(false)
   const [error, setError]             = useState('')
   const [form, setForm]               = useState(INIT)
+  const [createdJobId, setCreatedJobId] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -89,7 +91,15 @@ export default function PostJob() {
       setSubmitting(false)
       return
     }
-    navigate(`/browse-recruiters?job=${data.id}`)
+    setSubmitting(false)
+    setCreatedJobId(data.id)
+  }
+
+  async function handlePublish() {
+    if (!createdJobId) return
+    setPublishing(true)
+    await supabase.from('jobs').update({ status: 'open_for_proposals' }).eq('id', createdJobId)
+    navigate(`/jobs/${createdJobId}`)
   }
 
   if (loadingCompany) {
@@ -116,6 +126,61 @@ export default function PostJob() {
         </div>
       </header>
 
+      {/* ── Confirmation screen shown after successful job creation ── */}
+      {createdJobId && (
+        <div className="max-w-3xl mx-auto px-6 py-10">
+          <div className="card text-center py-10 space-y-3">
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Role saved</h2>
+            <p className="text-sm text-gray-500 max-w-sm mx-auto">
+              <strong>{form.title}</strong> has been created. How would you like to find a recruiter?
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4 mt-6">
+            <button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="card text-left hover:shadow-md transition-shadow cursor-pointer border-2 border-transparent hover:border-primary-200 disabled:opacity-50"
+            >
+              <div className="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center mb-3">
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+                </svg>
+              </div>
+              <p className="font-semibold text-gray-900 mb-1">
+                {publishing ? 'Publishing…' : 'Publish to marketplace'}
+              </p>
+              <p className="text-xs text-gray-500">
+                Let recruiters find and propose on your role. You review and choose who to work with.
+              </p>
+            </button>
+
+            <Link
+              to={`/browse-recruiters?job=${createdJobId}`}
+              className="card text-left hover:shadow-md transition-shadow border-2 border-transparent hover:border-primary-200 no-underline"
+            >
+              <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <p className="font-semibold text-gray-900 mb-1">Message a specific recruiter</p>
+              <p className="text-xs text-gray-500">
+                Browse the network and reach out directly to a recruiter you already have in mind.
+              </p>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {!createdJobId && (
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Post a Role</h1>
@@ -248,11 +313,12 @@ export default function PostJob() {
               className="btn-primary w-full text-base py-3"
               disabled={submitting || !companyId}
             >
-              {submitting ? 'Posting…' : 'Find Recruiters →'}
+              {submitting ? 'Posting…' : 'Save Role →'}
             </button>
           </div>
         </form>
       </div>
+      )}
     </div>
   )
 }

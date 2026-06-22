@@ -48,8 +48,9 @@ function AssignmentRow({ a }) {
 
 export default function ActiveJobList() {
   const { user, logout } = useAuth()
-  const [assignments, setAssignments] = useState([])
-  const [loading, setLoading]         = useState(true)
+  const [assignments,   setAssignments]   = useState([])
+  const [openJobs,      setOpenJobs]      = useState([])
+  const [loading,       setLoading]       = useState(true)
 
   useEffect(() => {
     if (!user) return
@@ -62,20 +63,30 @@ export default function ActiveJobList() {
 
       if (!profile) { setLoading(false); return }
 
-      // Get all active/completed assignments for jobs belonging to this company.
-      // Uses !inner on jobs so we can filter by hiring_company_id.
-      const { data: rows } = await supabase
-        .from('job_recruiter_assignments')
-        .select(`
-          id, status, assigned_at,
-          jobs!inner(id, title, hiring_company_id),
-          recruiter_profiles(first_name, last_name),
-          milestones(milestone_number, status)
-        `)
-        .eq('jobs.hiring_company_id', profile.id)
-        .order('assigned_at', { ascending: false })
+      const [{ data: rows }, { data: open }] = await Promise.all([
+        // Existing: assignments with recruiter + milestone data
+        supabase
+          .from('job_recruiter_assignments')
+          .select(`
+            id, status, assigned_at,
+            jobs!inner(id, title, hiring_company_id),
+            recruiter_profiles(first_name, last_name),
+            milestones(milestone_number, status)
+          `)
+          .eq('jobs.hiring_company_id', profile.id)
+          .order('assigned_at', { ascending: false }),
+
+        // New: jobs awaiting proposals (no assignment yet)
+        supabase
+          .from('jobs')
+          .select('id, title, sector, created_at')
+          .eq('hiring_company_id', profile.id)
+          .eq('status', 'open_for_proposals')
+          .order('created_at', { ascending: false }),
+      ])
 
       setAssignments(rows ?? [])
+      setOpenJobs(open ?? [])
       setLoading(false)
     }
     load()
@@ -119,6 +130,38 @@ export default function ActiveJobList() {
           </div>
         ) : (
           <div className="space-y-10">
+
+            {/* Awaiting Proposals */}
+            {openJobs.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  Awaiting Proposals ({openJobs.length})
+                </h2>
+                <div className="space-y-3">
+                  {openJobs.map(job => (
+                    <div key={job.id} className="card flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900 truncate">{job.title}</p>
+                        {job.sector && (
+                          <p className="text-sm text-gray-500 mt-0.5">{job.sector}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-xs text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full font-medium">
+                          Open for proposals
+                        </span>
+                        <Link
+                          to={`/jobs/${job.id}`}
+                          className="text-sm text-primary-600 hover:underline font-medium"
+                        >
+                          View →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Active */}
             <section>
