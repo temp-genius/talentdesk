@@ -274,6 +274,7 @@ export default function BrowseRecruiters() {
   const [allCategories,    setAllCategories]     = useState([])
   const [loading,          setLoading]           = useState(true)
   const [sort,             setSort]              = useState('relevance')
+  const [filtersOpen,      setFiltersOpen]       = useState(false)
   const [filters,          setFilters]           = useState(EMPTY_FILTERS)
   const [search,           setSearch]            = useState('')
   const [jobTitle,         setJobTitle]          = useState(null)
@@ -342,6 +343,7 @@ export default function BrowseRecruiters() {
 
   const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setSearch('') }, [])
   const hasActiveFilters = search.length >= 3 || Object.values(filters).some(a => a.length > 0)
+  const activeFilterCount = Object.values(filters).reduce((n, a) => n + a.length, 0) + (search.length >= 3 ? 1 : 0)
 
   const searchWords = useMemo(() => {
     if (search.length < 3) return []
@@ -475,10 +477,32 @@ export default function BrowseRecruiters() {
           </div>
         )}
 
-        <div className="flex gap-8 items-start">
-          <aside className="w-60 flex-shrink-0 bg-white rounded-xl border border-gray-200 p-5 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          <aside className="w-full md:w-60 flex-shrink-0 bg-white rounded-xl border border-gray-200 md:sticky md:top-24 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(o => !o)}
+              className="md:hidden w-full flex items-center justify-between px-5 py-4"
+            >
+              <span className="text-sm font-semibold text-gray-900">
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </span>
+              <svg
+                className={`w-4 h-4 text-gray-400 transition-transform ${filtersOpen ? 'rotate-180' : ''}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div className={`p-5 border-t border-gray-100 md:border-0 ${filtersOpen ? '' : 'hidden'} md:block`}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-900">Filters</h2>
+              <h2 className="hidden md:block text-sm font-semibold text-gray-900">Filters</h2>
               {hasActiveFilters && (
                 <button onClick={clearFilters} className="text-xs text-primary-600 hover:underline">
                   Clear all
@@ -548,9 +572,10 @@ export default function BrowseRecruiters() {
                 ))}
               </div>
             </FilterSection>
+            </div>
           </aside>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-gray-500">
                 {loading ? 'Loading…' : (
