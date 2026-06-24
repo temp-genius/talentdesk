@@ -46,7 +46,7 @@ export default function SpecialismSelector({ categories, selected, onChange }) {
                 </div>
               </button>
               {isOpen && (
-                <div className="px-4 py-3 grid grid-cols-2 gap-x-4 gap-y-2 bg-white">
+                <div className="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 bg-white">
                   {specs.map(spec => (
                     <label
                       key={spec.id}
