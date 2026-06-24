@@ -89,9 +89,11 @@ export default function RecruiterMessages() {
         </div>
       </header>
 
-      <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-6 items-start">
-        {/* Sidebar */}
-        <aside className="w-72 flex-shrink-0 bg-white rounded-xl border border-gray-200 overflow-hidden self-stretch flex flex-col">
+      {/* Main layout: stacked on mobile, side-by-side on desktop */}
+      <div className="flex flex-1 max-w-7xl mx-auto w-full md:px-6 md:py-8 md:gap-6 md:items-start">
+
+        {/* Sidebar: full-width on mobile when no thread open; always visible on desktop */}
+        <aside className={`${active ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 md:flex-shrink-0 bg-white md:rounded-xl border-b md:border border-gray-200 overflow-hidden md:self-stretch`}>
           <div className="px-4 py-3 border-b border-gray-100">
             <h2 className="text-sm font-semibold text-gray-900">Messages</h2>
           </div>
@@ -165,8 +167,22 @@ export default function RecruiterMessages() {
           )}
         </aside>
 
-        {/* Thread panel */}
-        <div className="flex-1 bg-white rounded-xl border border-gray-200 overflow-hidden" style={{ minHeight: 500 }}>
+        {/* Thread panel: full-width on mobile when active; always visible on desktop */}
+        <div className={`${active ? 'flex' : 'hidden md:flex'} flex-col flex-1 bg-white md:rounded-xl border border-gray-200 overflow-hidden md:min-h-[500px]`}>
+          {/* Back button — mobile only */}
+          {active && (
+            <div className="flex items-center px-4 py-3 border-b border-gray-100 md:hidden">
+              <button
+                onClick={() => setActive(null)}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to conversations
+              </button>
+            </div>
+          )}
           {active ? (
             <MessageThread
               jobId={active.jobId}

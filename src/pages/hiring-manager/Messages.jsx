@@ -19,6 +19,7 @@ export default function Messages() {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading]             = useState(true)
   const [active, setActive]               = useState(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const loadConversations = useCallback(async () => {
     if (!user) return
@@ -82,7 +83,8 @@ export default function Messages() {
           <Link to="/hiring-manager/dashboard">
             <Logo />
           </Link>
-          <div className="flex items-center gap-4">
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-4">
             <Link to="/hiring-manager/dashboard"
               className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Dashboard</Link>
             <Link to="/browse-recruiters"
@@ -91,12 +93,39 @@ export default function Messages() {
               className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Post a Role</Link>
             <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
           </div>
+          {/* Mobile controls */}
+          <div className="flex items-center gap-3 md:hidden">
+            <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
+            <button
+              onClick={() => setMobileMenuOpen(o => !o)}
+              className="p-1 text-gray-500 hover:text-gray-900 transition-colors"
+              aria-label="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+              </svg>
+            </button>
+          </div>
         </div>
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 px-6 py-4 flex flex-col gap-3 bg-white">
+            <Link to="/hiring-manager/dashboard" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+            <Link to="/browse-recruiters" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}>Browse</Link>
+            <button className="text-left text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={logout}>Sign out</button>
+          </div>
+        )}
       </header>
 
-      <div className="flex flex-1 max-w-7xl mx-auto w-full px-6 py-8 gap-6 items-start">
-        {/* Sidebar */}
-        <aside className="w-72 flex-shrink-0 bg-white rounded-xl border border-gray-200 overflow-hidden self-stretch flex flex-col">
+      {/* Main layout: stacked on mobile, side-by-side on desktop */}
+      <div className="flex flex-1 max-w-7xl mx-auto w-full md:px-6 md:py-8 md:gap-6 md:items-start">
+
+        {/* Sidebar: full-width on mobile when no thread open; always visible on desktop */}
+        <aside className={`${active ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 md:flex-shrink-0 bg-white md:rounded-xl border-b md:border border-gray-200 overflow-hidden md:self-stretch`}>
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900">Messages</h2>
             <Link to="/post-job" className="text-xs text-primary-600 hover:underline">+ Post a Role</Link>
@@ -172,8 +201,22 @@ export default function Messages() {
           )}
         </aside>
 
-        {/* Thread panel */}
-        <div className="flex-1 bg-white rounded-xl border border-gray-200 overflow-hidden" style={{ minHeight: 500 }}>
+        {/* Thread panel: full-width on mobile when active; always visible on desktop */}
+        <div className={`${active ? 'flex' : 'hidden md:flex'} flex-col flex-1 bg-white md:rounded-xl border border-gray-200 overflow-hidden md:min-h-[500px]`}>
+          {/* Back button — mobile only */}
+          {active && (
+            <div className="flex items-center px-4 py-3 border-b border-gray-100 md:hidden">
+              <button
+                onClick={() => setActive(null)}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to conversations
+              </button>
+            </div>
+          )}
           {active ? (
             <MessageThread
               jobId={active.jobId}
