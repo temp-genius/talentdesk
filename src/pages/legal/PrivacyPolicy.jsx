@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
+import Seo from '../../components/Seo'
 
 const SECTIONS = [
   {
@@ -51,6 +52,11 @@ const SECTIONS = [
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Seo
+        title="Privacy Policy | Vetted TA"
+        description="Vetted TA's Privacy Policy — how we collect, use, and protect personal data in accordance with GDPR."
+        path="/privacy"
+      />
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/">

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
+import Seo from '../../components/Seo'
 
 const SECTIONS = [
   {
@@ -36,6 +37,11 @@ const SECTIONS = [
 export default function RecruiterAgreement() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Seo
+        title="Recruiter Agreement | Vetted TA"
+        description="The Recruiter Agreement governing independent contractors working through the Vetted TA marketplace."
+        path="/recruiter-agreement"
+      />
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/">

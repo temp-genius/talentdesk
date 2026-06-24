@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
+import Seo from '../../components/Seo'
 
 export default function Contact() {
   const [name,        setName]        = useState('')
@@ -57,6 +58,11 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Seo
+        title="Contact Us | Vetted TA"
+        description="Get in touch with the Vetted TA team. Support for hiring companies and independent recruiters on the platform."
+        path="/contact"
+      />
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/"><Logo dark /></Link>

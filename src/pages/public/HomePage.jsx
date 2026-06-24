@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Seo from '../../components/Seo'
 
 const NAVY   = '#1a2b6d'
 const BLUE   = '#3b82f6'
@@ -96,6 +97,11 @@ const TESTIMONIALS = [
 export default function HomePage() {
   return (
     <div style={{ ...S.sans, backgroundColor: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
+      <Seo
+        title="Vetted TA | The Retained Recruitment Marketplace for Independent Recruiters"
+        description="Connect with independently vetted specialist recruiters. Retained engagements, milestone payments, 6–10% fees. No agency markup. Operated in Ireland."
+        path="/"
+      />
       {/* Google Fonts + global overrides */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');

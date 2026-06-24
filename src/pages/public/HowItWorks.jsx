@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
+import Seo from '../../components/Seo'
 
 /* ── Shared ── */
 function StepCard({ number, icon, title, description }) {
@@ -233,6 +234,11 @@ export default function HowItWorks() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Seo
+        title="How It Works | Vetted TA"
+        description="A transparent retained recruitment marketplace. Learn how milestone payments, vetted recruiters, and exclusive briefs work for both sides."
+        path="/how-it-works"
+      />
       {/* Nav */}
       <header className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">

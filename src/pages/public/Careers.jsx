@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
+import Seo from '../../components/Seo'
 
 const JOB_SCHEMA = {
   '@context': 'https://schema.org/',
@@ -45,6 +46,11 @@ function SectionTitle({ children }) {
 export default function Careers() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Seo
+        title="Talent Acquisition Partner (Contract) | Vetted TA Careers"
+        description="Work independently on exclusive retained briefs. No BD. Fee-based pay at 6–10% protected by escrow milestones. Apply to join Vetted TA's founding cohort."
+        path="/careers"
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JOB_SCHEMA) }}
