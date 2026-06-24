@@ -105,7 +105,7 @@ function InfoBox({ children }) {
 
 function CardSelector({ options, value, onChange }) {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       {options.map(opt => (
         <button
           key={opt.value}
@@ -133,7 +133,7 @@ function CapacitySelector({ value, onChange }) {
   const colorMap = { green: 'border-green-500 bg-green-50', amber: 'border-amber-500 bg-amber-50', red: 'border-red-500 bg-red-50' }
   const textMap  = { green: 'text-green-700', amber: 'text-amber-700', red: 'text-red-700' }
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       {CAPACITY_OPTIONS.map(opt => (
         <button
           key={opt.value}
@@ -437,7 +437,7 @@ export default function EditProfile() {
         {/* Personal Details */}
         <SectionCard title="Personal Details">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">First name</label>
                 <input type="text" className="input" value={form.firstName} onChange={e => setField('firstName', e.target.value)} placeholder="Jane" />
@@ -468,7 +468,7 @@ export default function EditProfile() {
               <input type="url" className="input" value={form.linkedinUrl} onChange={e => setField('linkedinUrl', e.target.value)} placeholder="https://www.linkedin.com/in/yourname" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Years experience</label>
                 <input type="number" min="0" max="50" className="input" value={form.yearsExperience} onChange={e => setField('yearsExperience', e.target.value)} placeholder="e.g. 5" />
@@ -577,7 +577,7 @@ export default function EditProfile() {
           <p className="text-sm text-gray-500 mb-4">
             List the sourcing tools and databases you actively use. This helps hiring managers understand your sourcing capability.
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {TOOLS.map(tool => (
               <label key={tool} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-gray-900">
                 <input
