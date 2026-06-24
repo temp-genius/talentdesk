@@ -85,7 +85,7 @@ function ExistingProposalCard({ proposal, onWithdraw, withdrawing }) {
         <Pill bg={cfg.bg} text={cfg.text}>{cfg.label}</Pill>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <div>
           <p className="text-xs text-gray-500 mb-0.5">Fee proposed</p>
           <p className="font-semibold text-gray-900">{proposal.proposed_fee_percentage}%</p>
@@ -387,6 +387,7 @@ export default function JobDetail() {
   const [job,            setJob]            = useState(null)
   const [loading,        setLoading]        = useState(true)
   const [notFound,       setNotFound]       = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // recruiter-only
   const [myProfileId,    setMyProfileId]    = useState(null)
@@ -573,7 +574,8 @@ export default function JobDetail() {
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
             <Link to="/recruiter/dashboard"><Logo /></Link>
-            <div className="flex items-center gap-4">
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center gap-4">
               <Link to="/recruiter/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
                 Dashboard
               </Link>
@@ -585,7 +587,31 @@ export default function JobDetail() {
               </Link>
               <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
             </div>
+            {/* Mobile controls */}
+            <button
+              onClick={() => setMobileMenuOpen(o => !o)}
+              className="p-1 text-gray-500 hover:text-gray-900 transition-colors md:hidden"
+              aria-label="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+              </svg>
+            </button>
           </div>
+          {/* Mobile dropdown */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 px-6 py-4 flex flex-col gap-3 bg-white">
+              <Link to="/recruiter/dashboard" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+              <Link to="/recruiter/browse-jobs" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}>Browse Roles</Link>
+              <Link to="/recruiter/messages" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}>Messages</Link>
+              <button className="text-left text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={logout}>Sign out</button>
+            </div>
+          )}
         </header>
 
         <div className="max-w-5xl mx-auto px-6 py-8">
@@ -667,7 +693,8 @@ export default function JobDetail() {
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
             <Link to="/hiring-manager/dashboard"><Logo /></Link>
-            <div className="flex items-center gap-4">
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center gap-4">
               <Link to="/hiring-manager/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
                 Dashboard
               </Link>
@@ -680,7 +707,34 @@ export default function JobDetail() {
               <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
               <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
             </div>
+            {/* Mobile controls */}
+            <div className="flex items-center gap-3 md:hidden">
+              <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
+              <button
+                onClick={() => setMobileMenuOpen(o => !o)}
+                className="p-1 text-gray-500 hover:text-gray-900 transition-colors"
+                aria-label="Menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                </svg>
+              </button>
+            </div>
           </div>
+          {/* Mobile dropdown */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 px-6 py-4 flex flex-col gap-3 bg-white">
+              <Link to="/hiring-manager/dashboard" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+              <Link to="/jobs" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}>My Jobs</Link>
+              <Link to="/messages" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}>Messages</Link>
+              <button className="text-left text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={logout}>Sign out</button>
+            </div>
+          )}
         </header>
 
         <div className="max-w-5xl mx-auto px-6 py-8">
