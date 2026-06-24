@@ -128,10 +128,10 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
   return (
     <div className={`bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden ${accentBorder}`}>
       <div className="p-6">
-        <div className="flex gap-6">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
 
           {/* ── Left column: Identity (25%) ── */}
-          <div className="w-1/4 flex-shrink-0 flex flex-col gap-3">
+          <div className="w-full md:w-1/4 md:flex-shrink-0 flex flex-row md:flex-col gap-3 items-center md:items-start">
             {/* Avatar + name */}
             <div className="flex items-start gap-3">
               <div className="w-14 h-14 rounded-full bg-primary-100 text-primary-700 font-bold text-lg
@@ -173,9 +173,9 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
           </div>
 
           {/* ── Middle column: Track Record (40%) ── */}
-          <div className="flex-1 flex flex-col gap-3 min-w-0">
+          <div className="w-full md:flex-1 flex flex-col gap-3 min-w-0">
             {/* Metric boxes */}
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <MetricBox
                 value={placements > 0 ? placements : null}
                 label="Mandates completed"
@@ -223,7 +223,7 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
           </div>
 
           {/* ── Right column: Specialisms + Employers (35%) ── */}
-          <div className="w-[35%] flex-shrink-0 flex flex-col gap-3">
+          <div className="w-full md:w-[35%] md:flex-shrink-0 flex flex-col gap-3">
             {/* Match badge */}
             {matchCfg && (
               <div className={`self-end text-center border rounded-lg px-3 py-2 ${matchCfg.bg}`}>
@@ -263,7 +263,7 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
       </div>
 
       {/* ── Bottom row: client types + actions ── */}
-      <div className="border-t border-gray-100 px-6 py-3 flex items-center justify-between gap-4">
+      <div className="border-t border-gray-100 px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         {/* Client experience tags */}
         <div className="flex items-center gap-2 flex-wrap min-w-0">
           {clientTypes.length > 0 ? (
@@ -281,16 +281,16 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Link
             to={`/recruiter/profile/${recruiter.id}${jobParam}`}
-            className="btn-secondary text-sm px-4 py-1.5 whitespace-nowrap"
+            className="btn-secondary text-sm px-4 py-1.5 whitespace-nowrap w-full sm:w-auto text-center"
           >
             View Profile
           </Link>
           <Link
             to={`/recruiter/profile/${recruiter.id}${jobParam}#contact`}
-            className="btn-primary text-sm px-4 py-1.5 whitespace-nowrap"
+            className="btn-primary text-sm px-4 py-1.5 whitespace-nowrap w-full sm:w-auto text-center"
           >
             Message or Request Services
           </Link>
