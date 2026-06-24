@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-400 pt-12 pb-8 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-10 mb-10">
+        <div className="grid md:grid-cols-4 gap-10 mb-10">
           {/* Left — brand */}
           <div>
             <Logo dark />
@@ -31,6 +31,18 @@ export default function Footer() {
               <li>
                 <Link to="/post-job" className="hover:text-white transition-colors">
                   Post a Role
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Third column — company */}
+          <div>
+            <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-4">Company</p>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <Link to="/careers" className="hover:text-white transition-colors">
+                  Careers
                 </Link>
               </li>
             </ul>

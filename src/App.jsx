@@ -31,6 +31,7 @@ import EditProfile            from './pages/recruiter/EditProfile'
 import StripeOnboarding       from './pages/recruiter/StripeOnboarding'
 import OfferAcceptance        from './pages/public/OfferAcceptance'
 import HowItWorks             from './pages/public/HowItWorks'
+import Careers               from './pages/public/Careers'
 import Contact                from './pages/public/Contact'
 import TermsOfService         from './pages/legal/TermsOfService'
 import PrivacyPolicy          from './pages/legal/PrivacyPolicy'
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="/privacy"                 element={<PrivacyPolicy />} />
           <Route path="/recruiter-agreement"     element={<RecruiterAgreement />} />
           <Route path="/contact"                 element={<Contact />} />
+          <Route path="/careers"                 element={<Careers />} />
 
           {/* Public offer acceptance — no auth required */}
           <Route path="/offer/:token"            element={<OfferAcceptance />} />
