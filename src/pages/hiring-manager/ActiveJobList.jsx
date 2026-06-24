@@ -30,7 +30,7 @@ function AssignmentRow({ a }) {
   return (
     <Link
       to={`/job/${a.id}`}
-      className="card flex items-center justify-between hover:shadow-md transition-shadow gap-4 no-underline"
+      className="card flex flex-col sm:flex-row sm:items-center sm:justify-between hover:shadow-md transition-shadow gap-2 sm:gap-4 no-underline"
     >
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-gray-900 truncate">{a.jobs?.title}</p>
@@ -48,9 +48,10 @@ function AssignmentRow({ a }) {
 
 export default function ActiveJobList() {
   const { user, logout } = useAuth()
-  const [assignments,   setAssignments]   = useState([])
-  const [openJobs,      setOpenJobs]      = useState([])
-  const [loading,       setLoading]       = useState(true)
+  const [assignments,    setAssignments]    = useState([])
+  const [openJobs,       setOpenJobs]       = useState([])
+  const [loading,        setLoading]        = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -100,10 +101,9 @@ export default function ActiveJobList() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Logo />
-          </div>
-          <div className="flex items-center gap-4">
+          <Logo />
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-4">
             <Link to="/hiring-manager/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
               Dashboard
             </Link>
@@ -113,7 +113,32 @@ export default function ActiveJobList() {
             <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
             <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
           </div>
+          {/* Mobile controls */}
+          <div className="flex items-center gap-3 md:hidden">
+            <Link to="/post-job" className="btn-primary text-sm">Post a Role</Link>
+            <button
+              onClick={() => setMobileMenuOpen(o => !o)}
+              className="p-1 text-gray-500 hover:text-gray-900 transition-colors"
+              aria-label="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+              </svg>
+            </button>
+          </div>
         </div>
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 px-6 py-4 flex flex-col gap-3 bg-white">
+            <Link to="/hiring-manager/dashboard" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+            <Link to="/messages" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}>Messages</Link>
+            <button className="text-left text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={logout}>Sign out</button>
+          </div>
+        )}
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-10">
@@ -139,7 +164,7 @@ export default function ActiveJobList() {
                 </h2>
                 <div className="space-y-3">
                   {openJobs.map(job => (
-                    <div key={job.id} className="card flex items-center justify-between gap-4">
+                    <div key={job.id} className="card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-gray-900 truncate">{job.title}</p>
                         {job.sector && (
@@ -192,7 +217,7 @@ export default function ActiveJobList() {
                     <Link
                       key={a.id}
                       to={`/job/${a.id}`}
-                      className="card flex items-center justify-between hover:shadow-md transition-shadow gap-4 no-underline"
+                      className="card flex flex-col sm:flex-row sm:items-center sm:justify-between hover:shadow-md transition-shadow gap-2 sm:gap-4 no-underline"
                     >
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-gray-900 truncate">{a.jobs?.title}</p>
@@ -219,7 +244,7 @@ export default function ActiveJobList() {
                 </h2>
                 <div className="space-y-3">
                   {cancelled.map(a => (
-                    <div key={a.id} className="card flex items-center justify-between gap-4 opacity-60">
+                    <div key={a.id} className="card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 opacity-60">
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-gray-900 truncate">{a.jobs?.title}</p>
                         <p className="text-sm text-gray-500 mt-0.5">
