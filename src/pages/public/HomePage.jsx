@@ -549,6 +549,7 @@ export default function HomePage() {
                   { to: '/terms', label: 'Terms of service' },
                   { to: '/privacy', label: 'Privacy policy' },
                   { to: '/recruiter-agreement', label: 'Recruiter agreement' },
+                  { to: '/careers', label: 'Careers' },
                 ].map(l => (
                   <li key={l.to}>
                     <Link to={l.to} className="hp-nav-link" style={{ ...S.sans, fontSize: 13, textDecoration: 'none', color: 'rgba(255,255,255,0.5)', transition: 'color 0.15s' }}>
