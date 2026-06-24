@@ -20,35 +20,51 @@ const SECTIONS = [
     body: 'Each role posted on Vetted TA is assigned to one recruiter exclusively. Hiring companies agree not to engage multiple recruiters simultaneously on the same role through Vetted TA.',
   },
   {
-    title: '5. Non-Circumvention',
+    title: '5. Hiring Company Obligations',
+    body: 'Hiring companies agree to provide accurate and complete information about each role posted on Vetted TA, including genuine salary range, location, and role requirements. Hiring companies agree to review and respond to submitted candidates within a reasonable timeframe, and to communicate promptly with the assigned recruiter regarding the status of a role. Hiring companies agree to treat all candidate information shared by a recruiter as confidential, and to use such information solely for the purpose of evaluating that candidate for the relevant role. Hiring companies agree not to contact a candidate introduced through Vetted TA for any role other than the one for which they were introduced, without the involvement of the introducing recruiter.',
+  },
+  {
+    title: '6. Non-Circumvention',
     body: 'By using Vetted TA both recruiters and hiring companies agree that any candidate introduction made through the platform creates a protected relationship for 24 months from the date of introduction. If a hiring company engages a candidate introduced through Vetted TA outside the platform within this period the full placement fee becomes immediately due. If a recruiter accepts direct payment from a hiring company introduced through Vetted TA within this period their account will be permanently suspended.',
   },
   {
-    title: '6. No Rebate Policy',
+    title: '7. No Rebate Policy',
     body: 'The recruiter\'s contractual obligation ends at offer acceptance confirmed through the Vetted TA platform. No refund or rebate applies after this point regardless of subsequent employment outcomes including candidate resignation or termination.',
   },
   {
-    title: '7. Milestone Payments and Refunds',
-    body: 'If a hiring company cancels a role before any CVs are submitted they receive a full refund minus the Vetted TA platform fee. If a hiring company cancels after CVs have been approved all milestone payments already released to the recruiter are non-refundable. Remaining unearned milestones are refunded to the hiring company. If a recruiter withdraws from a role before submitting CVs the hiring company receives a full refund including the platform fee. If a recruiter withdraws after CVs have been submitted milestone payments already released are retained by the recruiter.',
+    title: '8. Milestone Payments and Refunds',
+    body: 'If a hiring company cancels a role before any CVs are submitted they receive a full refund minus the Vetted TA platform fee. If a hiring company cancels after CVs have been approved all milestone payments already released to the recruiter are non-refundable. Remaining unearned milestones are refunded to the hiring company. If a recruiter withdraws from a role before submitting CVs the hiring company receives a full refund including the platform fee. If a recruiter withdraws after CVs have been submitted milestone payments already released are retained by the recruiter. Any remaining unearned milestones for that role are refunded to the hiring company in full, minus the Vetted TA platform fee already deducted from milestones already released. The hiring company is not charged for any milestone stage that has not been triggered at the time of withdrawal.',
   },
   {
-    title: '8. Dispute Resolution',
+    title: '9. Dispute Resolution',
     body: 'Disputes between recruiters and hiring companies are resolved through Vetted TA\'s three-tier dispute process. Vetted TA\'s decision at the final tier is binding on both parties. Where evidence is genuinely ambiguous Vetted TA may apply a 50-50 split of the disputed milestone amount. Vetted TA\'s liability to any user is limited to the platform fees paid by that user in the preceding 12 months.',
   },
   {
-    title: '9. Limitation of Liability',
+    title: '10. Disclaimer of Warranties',
+    body: 'The Vetted TA platform is provided on an \'as is\' and \'as available\' basis. Vetted TA makes no warranties, express or implied, regarding the platform\'s availability, accuracy, or fitness for a particular purpose, beyond what is required by applicable law.',
+  },
+  {
+    title: '11. Limitation of Liability',
     body: 'Vetted TA is not liable for the quality of placements made through the platform, the conduct of recruiters or hiring companies, employment outcomes following placement, or any losses arising from the use of the platform beyond the limitations stated in these terms.',
   },
   {
-    title: '10. Governing Law',
+    title: '12. Indemnification',
+    body: 'Each party agrees to indemnify and hold harmless Vetted TA, its officers, and operators from and against any claims, damages, losses, or expenses (including reasonable legal fees) arising from that party\'s breach of these terms, misrepresentation, fraudulent conduct, or violation of applicable law in connection with their use of the platform.',
+  },
+  {
+    title: '13. Force Majeure',
+    body: 'Neither party shall be liable for any failure or delay in performance under these terms resulting from circumstances beyond their reasonable control, including but not limited to acts of God, internet or infrastructure outages, or government action.',
+  },
+  {
+    title: '14. Governing Law',
     body: 'These terms are governed by the laws of Ireland. Any disputes arising under these terms are subject to the exclusive jurisdiction of the Irish courts.',
   },
   {
-    title: '11. Changes to These Terms',
+    title: '15. Changes to These Terms',
     body: 'Vetted TA reserves the right to update these terms at any time. Material changes will be communicated to registered users by email. Continued use of the platform after notification constitutes acceptance of the updated terms.',
   },
   {
-    title: '12. Contact',
+    title: '16. Contact',
     body: 'For questions about these terms contact hello@vettedta.com',
   },
 ]
