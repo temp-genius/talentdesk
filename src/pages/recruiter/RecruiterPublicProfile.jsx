@@ -67,7 +67,7 @@ function ReviewCard({ review }) {
       {review.written_comment && (
         <p className="text-sm text-gray-600 leading-relaxed">"{review.written_comment}"</p>
       )}
-      <div className="grid grid-cols-4 gap-2 text-xs text-gray-500 pt-1">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-500 pt-1">
         {[
           { label: 'Speed',    val: review.speed_rating },
           { label: 'Quality',  val: review.quality_rating },
@@ -501,7 +501,7 @@ export default function RecruiterPublicProfile() {
             {/* Track record */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Track Record</h2>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <StatBox value={profile.total_placements ?? 0} label="Total Placements" />
                 <StatBox
                   value={profile.average_days_to_shortlist ? `${Math.round(profile.average_days_to_shortlist)}d` : null}
