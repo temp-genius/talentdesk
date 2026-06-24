@@ -46,6 +46,7 @@ export default function RecruiterDashboard() {
   const [stripeError,         setStripeError]         = useState('')
   const [showApprovalModal,   setShowApprovalModal]   = useState(false)
   const [unreadCount,         setUnreadCount]         = useState(0)
+  const [mobileMenuOpen,      setMobileMenuOpen]      = useState(false)
 
   // Specialism editing
   const [allCategories,      setAllCategories]      = useState([])
@@ -233,7 +234,8 @@ export default function RecruiterDashboard() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Logo />
-          <div className="flex items-center gap-4">
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-4">
             <Link to="/recruiter/browse-jobs" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
               Browse Open Roles
             </Link>
@@ -245,7 +247,35 @@ export default function RecruiterDashboard() {
             </Link>
             <button className="btn-secondary text-sm" onClick={logout}>Sign out</button>
           </div>
+          {/* Mobile controls */}
+          <button
+            onClick={() => setMobileMenuOpen(o => !o)}
+            className="relative p-1 text-gray-500 hover:text-gray-900 transition-colors md:hidden"
+            aria-label="Menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+            </svg>
+            {unreadCount > 0 && !mobileMenuOpen && (
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+            )}
+          </button>
         </div>
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 px-6 py-4 flex flex-col gap-3 bg-white">
+            <Link to="/recruiter/browse-jobs" className="text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}>Browse Open Roles</Link>
+            <Link to="/recruiter/messages" className="inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}>
+              Messages
+              {unreadCount > 0 && <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />}
+            </Link>
+            <button className="text-left text-sm text-gray-700 hover:text-gray-900 transition-colors"
+              onClick={logout}>Sign out</button>
+          </div>
+        )}
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-10">

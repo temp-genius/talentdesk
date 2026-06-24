@@ -113,7 +113,6 @@ export default function HomePage() {
           .hp-nav-links   { display: none !important; }
           .hp-hero-grid   { grid-template-columns: 1fr !important; }
           .hp-hero-imgs   { display: none !important; }
-          .hp-proof-grid  { grid-template-columns: repeat(2,1fr) !important; }
           .hp-cards-grid  { grid-template-columns: 1fr !important; }
           .hp-testi-grid  { grid-template-columns: 1fr !important; }
           .hp-footer-grid { grid-template-columns: 1fr !important; }
@@ -246,9 +245,9 @@ export default function HomePage() {
       </section>
 
       {/* ── PROOF STRIP ── */}
-      <section style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7f0', borderBottom: '1px solid #e5e7f0', padding: '0 48px' }}>
+      <section style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7f0', borderBottom: '1px solid #e5e7f0' }}>
         <div style={{ ...S.container }}>
-          <div style={{ display: 'flex', alignItems: 'stretch' }}>
+          <div className="grid grid-cols-2 md:grid-cols-5">
             {[
               { value: '6–10%',                   label: 'Transparent fee range' },
               { value: '€6,000+',                 label: 'Avg placement fee' },
@@ -258,7 +257,7 @@ export default function HomePage() {
             ].map((item, i, arr) => (
               <div
                 key={item.label}
-                style={{ flex: '1 1 0', padding: '28px 24px', textAlign: 'center', borderRight: i < arr.length - 1 ? '1px solid #e5e7f0' : 'none' }}
+                className={`py-7 px-6 text-center${i < arr.length - 1 ? ' border-b border-[#e5e7f0] md:border-b-0 md:border-r' : ''}`}
               >
                 <p style={{ ...S.sans, fontWeight: 500, fontSize: 22, color: '#1a2b6d', margin: 0, lineHeight: 1.1 }}>
                   {item.value}
