@@ -315,6 +315,9 @@ function RecruitersTab() {
   const { user } = useAuth()
   const [rows,         setRows]         = useState([])
   const [search,       setSearch]       = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [sectorFilter, setSectorFilter] = useState('all')
+  const [marketFilter, setMarketFilter] = useState('all')
   const [loading,      setLoading]      = useState(true)
   const [emailWarning, setEmailWarning] = useState('')
 
@@ -324,9 +327,13 @@ function RecruitersTab() {
       .from('recruiter_profiles')
       .select(`
         id, first_name, last_name, status, total_placements, last_active_at,
-        approval_notes, years_experience, availability_status,
+        approval_notes, years_experience, availability_status, career_dna, capacity_status,
         users(email),
-        recruiter_sectors(sector_name)
+        recruiter_specialisms!left(
+          specialism_category_id,
+          specialism_categories(sector, specialism_name)
+        ),
+        recruiter_locations!left(country)
       `)
       .order('created_at', { ascending: false })
     setRows(data ?? [])
@@ -335,24 +342,68 @@ function RecruitersTab() {
 
   useEffect(() => { load() }, [load])
 
-  async function setStatus(id, status) {
+  async function setStatus(id, newStatus) {
     setEmailWarning('')
-    if (status === 'approved') {
+    const currentStatus = rows.find(r => r.id === id)?.status
+    if (newStatus === 'approved' && currentStatus !== 'suspended') {
       const profile = rows.find(r => r.id === id)
       const result  = await runApprovalFlow(profile, user?.id)
       if (result.warning) setEmailWarning(result.warning)
     } else {
-      await supabase.from('recruiter_profiles').update({ status }).eq('id', id)
+      await supabase.from('recruiter_profiles').update({ status: newStatus }).eq('id', id)
     }
     load()
   }
 
+  // ── derive stats (no extra queries) ──────────────────────────────────
+  const statusCounts = rows.reduce((acc, r) => {
+    acc[r.status] = (acc[r.status] ?? 0) + 1
+    return acc
+  }, {})
+
+  const sectorCounts = {}
+  rows.forEach(r => {
+    const sectors = new Set(
+      (r.recruiter_specialisms ?? [])
+        .map(s => s.specialism_categories?.sector)
+        .filter(Boolean)
+    )
+    sectors.forEach(s => { sectorCounts[s] = (sectorCounts[s] ?? 0) + 1 })
+  })
+
+  const marketCounts = {}
+  rows.forEach(r => {
+    const countries = new Set((r.recruiter_locations ?? []).map(l => l.country).filter(Boolean))
+    countries.forEach(c => { marketCounts[c] = (marketCounts[c] ?? 0) + 1 })
+  })
+
+  const topSectors = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
+  const topMarkets = Object.entries(marketCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
+
+  // ── filter options ────────────────────────────────────────────────────
+  const allSectors = Object.keys(sectorCounts).sort()
+  const allMarkets = Object.keys(marketCounts).sort()
+
   const filtered = rows.filter(r => {
     const q = search.toLowerCase()
-    const name = `${r.first_name ?? ''} ${r.last_name ?? ''}`.toLowerCase()
+    const name  = `${r.first_name ?? ''} ${r.last_name ?? ''}`.toLowerCase()
     const email = (r.users?.email ?? '').toLowerCase()
-    return name.includes(q) || email.includes(q)
+    if (q && !name.includes(q) && !email.includes(q)) return false
+    if (statusFilter !== 'all' && r.status !== statusFilter) return false
+    if (sectorFilter !== 'all') {
+      const sectors = (r.recruiter_specialisms ?? [])
+        .map(s => s.specialism_categories?.sector)
+        .filter(Boolean)
+      if (!sectors.includes(sectorFilter)) return false
+    }
+    if (marketFilter !== 'all') {
+      const countries = (r.recruiter_locations ?? []).map(l => l.country).filter(Boolean)
+      if (!countries.includes(marketFilter)) return false
+    }
+    return true
   })
+
+  const hasFilters = search || statusFilter !== 'all' || sectorFilter !== 'all' || marketFilter !== 'all'
 
   if (loading) return <LoadingSpinner />
 
@@ -364,17 +415,95 @@ function RecruitersTab() {
           <span>{emailWarning}</span>
         </div>
       )}
-      <input
-        className="input max-w-xs"
-        placeholder="Search recruiters…"
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-      />
+
+      {/* Stats bar */}
+      <div className="grid sm:grid-cols-3 gap-4">
+        <div className="card">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Recruiters</p>
+          <p className="text-3xl font-bold text-gray-900 mb-3">{rows.length}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {['approved','pending','rejected','suspended'].map(s => statusCounts[s] ? (
+              <span key={s} className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[s]}`}>
+                {s.charAt(0).toUpperCase() + s.slice(1)} · {statusCounts[s]}
+              </span>
+            ) : null)}
+          </div>
+        </div>
+        <div className="card">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Top Sectors</p>
+          {topSectors.length === 0
+            ? <p className="text-sm text-gray-400">No data</p>
+            : (
+              <dl className="space-y-1">
+                {topSectors.map(([sector, count]) => (
+                  <div key={sector} className="flex justify-between text-sm">
+                    <dt className="text-gray-600 truncate">{sector}</dt>
+                    <dd className="font-semibold text-gray-900 ml-2">{count}</dd>
+                  </div>
+                ))}
+              </dl>
+            )
+          }
+        </div>
+        <div className="card">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Top Markets</p>
+          {topMarkets.length === 0
+            ? <p className="text-sm text-gray-400">No data</p>
+            : (
+              <dl className="space-y-1">
+                {topMarkets.map(([country, count]) => (
+                  <div key={country} className="flex justify-between text-sm">
+                    <dt className="text-gray-600 truncate">{country}</dt>
+                    <dd className="font-semibold text-gray-900 ml-2">{count}</dd>
+                  </div>
+                ))}
+              </dl>
+            )
+          }
+        </div>
+      </div>
+
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          className="input max-w-xs"
+          placeholder="Search recruiters…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <select className="input w-auto" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <option value="all">All statuses</option>
+          {['approved','pending','rejected','suspended'].map(s => (
+            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+          ))}
+        </select>
+        <select className="input w-auto" value={sectorFilter} onChange={e => setSectorFilter(e.target.value)}>
+          <option value="all">All sectors</option>
+          {allSectors.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select className="input w-auto" value={marketFilter} onChange={e => setMarketFilter(e.target.value)}>
+          <option value="all">All markets</option>
+          {allMarkets.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        {hasFilters && (
+          <button
+            className="text-sm text-primary-600 hover:text-primary-800 font-medium"
+            onClick={() => { setSearch(''); setStatusFilter('all'); setSectorFilter('all'); setMarketFilter('all') }}
+          >
+            Clear filters
+          </button>
+        )}
+        <span className="text-xs text-gray-400 ml-auto">
+          Showing {filtered.length} of {rows.length} recruiters
+        </span>
+      </div>
+
+      {/* Table */}
       <div className="card overflow-x-auto p-0">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
-              {['Name', 'Email', 'Sectors', 'Status', 'Placements', 'Last Active', 'Actions'].map(h => (
+              {['Name', 'Email', 'Sectors', 'Markets', 'Status', 'Placements', 'Last Active', 'Actions'].map(h => (
                 <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 py-3">
                   {h}
                 </th>
@@ -382,48 +511,55 @@ function RecruitersTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filtered.map(r => (
-              <tr key={r.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-                  {r.first_name} {r.last_name}
-                </td>
-                <td className="px-4 py-3 text-gray-500">{r.users?.email ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-500 max-w-xs truncate">
-                  {r.recruiter_sectors?.map(s => s.sector_name).join(', ') || '—'}
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[r.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                    {r.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-700">{r.total_placements}</td>
-                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                  {r.last_active_at ? new Date(r.last_active_at).toLocaleDateString() : '—'}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    {r.status !== 'approved' && (
-                      <button onClick={() => setStatus(r.id, 'approved')}
-                        className="text-xs text-green-700 hover:text-green-900 font-medium">
-                        Approve
-                      </button>
-                    )}
-                    {r.status !== 'suspended' && (
-                      <button onClick={() => setStatus(r.id, 'suspended')}
-                        className="text-xs text-red-600 hover:text-red-800 font-medium">
-                        Suspend
-                      </button>
-                    )}
-                    {r.status === 'suspended' && (
-                      <button onClick={() => setStatus(r.id, 'approved')}
-                        className="text-xs text-gray-600 hover:text-gray-900 font-medium">
-                        Reinstate
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {filtered.map(r => {
+              const sectors   = [...new Set((r.recruiter_specialisms ?? []).map(s => s.specialism_categories?.sector).filter(Boolean))]
+              const countries = (r.recruiter_locations ?? []).map(l => l.country).filter(Boolean)
+              return (
+                <tr key={r.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                    {r.first_name} {r.last_name}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{r.users?.email ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-500 max-w-[160px] truncate">
+                    {sectors.length ? sectors.join(', ') : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 max-w-[140px] truncate">
+                    {countries.length ? countries.join(', ') : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[r.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-700">{r.total_placements ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                    {r.last_active_at ? new Date(r.last_active_at).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      {(r.status === 'pending' || r.status === 'rejected') && (
+                        <button onClick={() => setStatus(r.id, 'approved')}
+                          className="text-xs text-green-700 hover:text-green-900 font-medium">
+                          Approve
+                        </button>
+                      )}
+                      {r.status === 'suspended' && (
+                        <button onClick={() => setStatus(r.id, 'approved')}
+                          className="text-xs text-gray-600 hover:text-gray-900 font-medium">
+                          Reinstate
+                        </button>
+                      )}
+                      {r.status !== 'suspended' && (
+                        <button onClick={() => setStatus(r.id, 'suspended')}
+                          className="text-xs text-red-600 hover:text-red-800 font-medium">
+                          Suspend
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
         {filtered.length === 0 && (
