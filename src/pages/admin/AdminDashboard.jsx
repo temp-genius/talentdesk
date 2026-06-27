@@ -361,28 +361,56 @@ function RecruitersTab() {
     return acc
   }, {})
 
-  const sectorCounts = {}
-  rows.forEach(r => {
+  // Each card uses only the OTHER axis's filter so both show a meaningful
+  // cross-tab breakdown rather than a trivially self-confirming result.
+  const sectorCardRows = marketFilter === 'all'
+    ? rows
+    : rows.filter(r =>
+        (r.recruiter_locations ?? []).map(l => l.country).includes(marketFilter)
+      )
+
+  const marketCardRows = sectorFilter === 'all'
+    ? rows
+    : rows.filter(r =>
+        (r.recruiter_specialisms ?? [])
+          .map(s => s.specialism_categories?.sector)
+          .filter(Boolean)
+          .includes(sectorFilter)
+      )
+
+  const sectorCardCounts = {}
+  sectorCardRows.forEach(r => {
     const sectors = new Set(
-      (r.recruiter_specialisms ?? [])
-        .map(s => s.specialism_categories?.sector)
-        .filter(Boolean)
+      (r.recruiter_specialisms ?? []).map(s => s.specialism_categories?.sector).filter(Boolean)
     )
-    sectors.forEach(s => { sectorCounts[s] = (sectorCounts[s] ?? 0) + 1 })
+    sectors.forEach(s => { sectorCardCounts[s] = (sectorCardCounts[s] ?? 0) + 1 })
   })
 
-  const marketCounts = {}
-  rows.forEach(r => {
+  const marketCardCounts = {}
+  marketCardRows.forEach(r => {
     const countries = new Set((r.recruiter_locations ?? []).map(l => l.country).filter(Boolean))
-    countries.forEach(c => { marketCounts[c] = (marketCounts[c] ?? 0) + 1 })
+    countries.forEach(c => { marketCardCounts[c] = (marketCardCounts[c] ?? 0) + 1 })
   })
 
-  const topSectors = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
-  const topMarkets = Object.entries(marketCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
+  const topSectors = Object.entries(sectorCardCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
+  const topMarkets = Object.entries(marketCardCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
 
-  // ── filter options ────────────────────────────────────────────────────
-  const allSectors = Object.keys(sectorCounts).sort()
-  const allMarkets = Object.keys(marketCounts).sort()
+  const sectorCardTitle = marketFilter !== 'all' ? `Sectors in ${marketFilter}` : 'Top Sectors'
+  const marketCardTitle = sectorFilter !== 'all' ? `Markets in ${sectorFilter}` : 'Top Markets'
+
+  // ── filter options (always from full rows so dropdowns never disappear) ──
+  const allSectorCounts = {}
+  rows.forEach(r => {
+    new Set((r.recruiter_specialisms ?? []).map(s => s.specialism_categories?.sector).filter(Boolean))
+      .forEach(s => { allSectorCounts[s] = (allSectorCounts[s] ?? 0) + 1 })
+  })
+  const allMarketCounts = {}
+  rows.forEach(r => {
+    new Set((r.recruiter_locations ?? []).map(l => l.country).filter(Boolean))
+      .forEach(c => { allMarketCounts[c] = (allMarketCounts[c] ?? 0) + 1 })
+  })
+  const allSectors = Object.keys(allSectorCounts).sort()
+  const allMarkets = Object.keys(allMarketCounts).sort()
 
   const filtered = rows.filter(r => {
     const q = search.toLowerCase()
@@ -430,7 +458,7 @@ function RecruitersTab() {
           </div>
         </div>
         <div className="card">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Top Sectors</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{sectorCardTitle}</p>
           {topSectors.length === 0
             ? <p className="text-sm text-gray-400">No data</p>
             : (
@@ -446,7 +474,7 @@ function RecruitersTab() {
           }
         </div>
         <div className="card">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Top Markets</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{marketCardTitle}</p>
           {topMarkets.length === 0
             ? <p className="text-sm text-gray-400">No data</p>
             : (
