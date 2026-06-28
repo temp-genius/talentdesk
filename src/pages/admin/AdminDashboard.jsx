@@ -310,6 +310,55 @@ function Platform() {
   )
 }
 
+// ── Edit Tier modal ───────────────────────────────────────────────────
+function EditTierModal({ recruiter, onSave, onCancel }) {
+  const [floor,   setFloor]   = useState(recruiter.fee_floor   != null ? String(recruiter.fee_floor)   : '')
+  const [ceiling, setCeiling] = useState(recruiter.fee_ceiling != null ? String(recruiter.fee_ceiling) : '')
+
+  const floorNum   = floor   === '' ? null : Number(floor)
+  const ceilingNum = ceiling === '' ? null : Number(ceiling)
+  const rangeError = floorNum !== null && ceilingNum !== null && ceilingNum < floorNum
+  const canSave    = floorNum !== null && ceilingNum !== null && !rangeError
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onCancel}>
+      <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
+        <h3 className="text-base font-bold text-gray-900 mb-0.5">
+          Edit Fee Tier — {recruiter.first_name} {recruiter.last_name}
+        </h3>
+        <p className="text-xs text-gray-500 mb-4">No email will be sent. Data correction only.</p>
+        <div className="flex gap-4 mb-2">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Fee Floor</label>
+            <select className="input" value={floor} onChange={e => setFloor(e.target.value)}>
+              <option value="">—</option>
+              {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Fee Ceiling</label>
+            <select className="input" value={ceiling} onChange={e => setCeiling(e.target.value)}>
+              <option value="">—</option>
+              {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+            </select>
+          </div>
+        </div>
+        {rangeError && <p className="text-xs text-red-600 mb-3">Ceiling must be ≥ floor.</p>}
+        <div className="flex gap-3 justify-end mt-4">
+          <button className="btn-secondary text-sm" onClick={onCancel}>Cancel</button>
+          <button
+            className="btn-primary text-sm disabled:opacity-50"
+            onClick={() => canSave && onSave(floorNum, ceilingNum)}
+            disabled={!canSave}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Recruiters tab ────────────────────────────────────────────────────
 function RecruitersTab() {
   const { user } = useAuth()
@@ -320,6 +369,7 @@ function RecruitersTab() {
   const [marketFilter, setMarketFilter] = useState('all')
   const [loading,      setLoading]      = useState(true)
   const [emailWarning, setEmailWarning] = useState('')
+  const [editingTier,  setEditingTier]  = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -328,6 +378,7 @@ function RecruitersTab() {
       .select(`
         id, first_name, last_name, status, total_placements, last_active_at,
         approval_notes, years_experience, availability_status, career_dna, capacity_status,
+        fee_floor, fee_ceiling,
         users(email),
         recruiter_specialisms!left(
           specialism_category_id,
@@ -341,6 +392,15 @@ function RecruitersTab() {
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  async function saveTier(id, feeFloor, feeCeiling) {
+    await supabase
+      .from('recruiter_profiles')
+      .update({ fee_floor: feeFloor, fee_ceiling: feeCeiling })
+      .eq('id', id)
+    setEditingTier(null)
+    load()
+  }
 
   async function setStatus(id, newStatus) {
     setEmailWarning('')
@@ -531,7 +591,7 @@ function RecruitersTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
-              {['Name', 'Email', 'Sectors', 'Markets', 'Status', 'Placements', 'Last Active', 'Actions'].map(h => (
+              {['Name', 'Email', 'Sectors', 'Markets', 'Status', 'Tier', 'Placements', 'Last Active', 'Actions'].map(h => (
                 <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 py-3">
                   {h}
                 </th>
@@ -559,6 +619,14 @@ function RecruitersTab() {
                       {r.status}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                    {r.fee_floor != null && r.fee_ceiling != null
+                      ? r.fee_floor === r.fee_ceiling
+                        ? `${r.fee_floor}%`
+                        : `${r.fee_floor}–${r.fee_ceiling}%`
+                      : <span className="text-gray-300">—</span>
+                    }
+                  </td>
                   <td className="px-4 py-3 text-gray-700">{r.total_placements ?? '—'}</td>
                   <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                     {r.last_active_at ? new Date(r.last_active_at).toLocaleDateString() : '—'}
@@ -583,6 +651,10 @@ function RecruitersTab() {
                           Suspend
                         </button>
                       )}
+                      <button onClick={() => setEditingTier(r)}
+                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                        Edit Tier
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -594,6 +666,14 @@ function RecruitersTab() {
           <p className="text-center text-sm text-gray-400 py-8">No recruiters found.</p>
         )}
       </div>
+
+      {editingTier && (
+        <EditTierModal
+          recruiter={editingTier}
+          onSave={(floor, ceiling) => saveTier(editingTier.id, floor, ceiling)}
+          onCancel={() => setEditingTier(null)}
+        />
+      )}
     </div>
   )
 }

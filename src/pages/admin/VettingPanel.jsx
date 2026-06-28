@@ -51,14 +51,6 @@ function daysAgo(dateStr) {
   return `${days} days ago`
 }
 
-function feeDisplay(val) {
-  if (val == null) return '—'
-  const nums = val.toString().split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n)).sort((a, b) => a - b)
-  if (nums.length === 0) return '—'
-  if (nums.length === 1) return `${nums[0]}%`
-  return `${nums[0]}–${nums[nums.length - 1]}%`
-}
-
 // ── Modal components ──────────────────────────────────────────────────────────
 
 function ModalShell({ onClose, children }) {
@@ -72,18 +64,59 @@ function ModalShell({ onClose, children }) {
 }
 
 function ApproveModal({ onConfirm, onCancel, loading }) {
+  const [feeFloor,   setFeeFloor]   = useState('')
+  const [feeCeiling, setFeeCeiling] = useState('')
+
+  const floorNum   = feeFloor   === '' ? null : Number(feeFloor)
+  const ceilingNum = feeCeiling === '' ? null : Number(feeCeiling)
+  const rangeError = floorNum !== null && ceilingNum !== null && ceilingNum < floorNum
+  const canApprove = floorNum !== null && ceilingNum !== null && !rangeError
+
   return (
     <ModalShell onClose={onCancel}>
       <h3 className="text-lg font-bold text-gray-900 mb-2">Approve this recruiter?</h3>
-      <p className="text-sm text-gray-600 mb-6">
-        Are you sure you want to approve this recruiter? They will receive an email and gain full platform access.
+      <p className="text-sm text-gray-600 mb-5">
+        Assign a fee tier before approving — this will be included in the welcome email and stored on their profile.
       </p>
+      <div className="flex gap-4 mb-2">
+        <div className="flex-1">
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            Fee Floor <span className="text-red-500">*</span>
+          </label>
+          <select className="input" value={feeFloor} onChange={e => setFeeFloor(e.target.value)}>
+            <option value="">Select…</option>
+            {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+          </select>
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            Fee Ceiling <span className="text-red-500">*</span>
+          </label>
+          <select className="input" value={feeCeiling} onChange={e => setFeeCeiling(e.target.value)}>
+            <option value="">Select…</option>
+            {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+          </select>
+        </div>
+      </div>
+      {rangeError && (
+        <p className="text-xs text-red-600 mb-4">Ceiling must be ≥ floor.</p>
+      )}
+      {canApprove && (
+        <p className="text-xs text-gray-500 mb-4">
+          {floorNum === ceilingNum
+            ? `Approving at fixed ${floorNum}% tier.`
+            : `Approving with ${floorNum}–${ceilingNum}% range.`}
+        </p>
+      )}
+      {!canApprove && !rangeError && (
+        <p className="text-xs text-gray-400 mb-4">Both fields are required to proceed.</p>
+      )}
       <div className="flex gap-3 justify-end">
         <button className="btn-secondary" onClick={onCancel} disabled={loading}>Cancel</button>
         <button
           className="bg-green-600 text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors"
-          onClick={onConfirm}
-          disabled={loading}
+          onClick={() => canApprove && onConfirm(floorNum, ceilingNum)}
+          disabled={loading || !canApprove}
         >
           {loading ? 'Approving…' : 'Approve'}
         </button>
@@ -256,7 +289,7 @@ export default function VettingPanel() {
       .from('recruiter_profiles')
       .select(`
         id, user_id, first_name, last_name, bio, linkedin_url, years_experience,
-        availability_status, preferred_fee_percentage, career_dna, capacity_status,
+        availability_status, fee_floor, fee_ceiling, career_dna, capacity_status,
         previous_employers, previous_client_types, created_at, status,
         recruiter_specialisms!left(
           specialism_category_id,
@@ -337,13 +370,13 @@ export default function VettingPanel() {
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
-  async function handleApprove() {
+  async function handleApprove(feeFloor, feeCeiling) {
     if (!detail) return
     setActioning(true)
     setActionError('')
     setEmailWarning('')
 
-    const result = await approveRecruiter(detail, user.id)
+    const result = await approveRecruiter(detail, user.id, feeFloor, feeCeiling)
 
     if (!result.success) {
       setActionError(result.error)
@@ -793,8 +826,15 @@ export default function VettingPanel() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-gray-400 mb-0.5">Standard rate</dt>
-                    <dd className="font-medium text-gray-900">{feeDisplay(detail.preferred_fee_percentage)}</dd>
+                    <dt className="text-xs text-gray-400 mb-0.5">Fee tier</dt>
+                    <dd className="font-medium text-gray-900">
+                      {detail.fee_floor != null && detail.fee_ceiling != null
+                        ? detail.fee_floor === detail.fee_ceiling
+                          ? `${detail.fee_floor}%`
+                          : `${detail.fee_floor}–${detail.fee_ceiling}%`
+                        : <span className="text-amber-600">Not set — assign on approval</span>
+                      }
+                    </dd>
                   </div>
                 </dl>
               </Section>
