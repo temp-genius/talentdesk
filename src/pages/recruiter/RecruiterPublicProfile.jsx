@@ -251,7 +251,8 @@ export default function RecruiterPublicProfile() {
           recruiter_specialisms!left(specialism_categories(sector, specialism_name)),
           recruiter_locations(country, region),
           recruiter_tools(tool_name, verified),
-          recruiter_scores(overall_average, total_hm_reviews, total_candidate_reviews, average_candidate_satisfaction)
+          recruiter_scores(overall_average, total_hm_reviews, total_candidate_reviews, average_candidate_satisfaction),
+          recruiter_niches(niche_text)
         `)
         .eq('id', id)
         .eq('status', 'approved')
@@ -332,6 +333,7 @@ export default function RecruiterPublicProfile() {
   const capacityMeta   = CAPACITY_META[profile.capacity_status] ?? null
   const employers      = (profile.previous_employers ?? '').split(',').map(s => s.trim()).filter(Boolean)
   const clientTypes    = profile.previous_client_types ?? []
+  const niches         = (profile.recruiter_niches ?? []).map(n => n.niche_text).filter(Boolean)
 
   function lastPlacementLabel(dateStr) {
     if (!dateStr) return null
@@ -428,6 +430,18 @@ export default function RecruiterPublicProfile() {
                   )}
                 </div>
               </div>
+
+              {/* Top Niches */}
+              {niches.length > 0 && (
+                <div className="mt-5 pt-5 border-t border-gray-100">
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Top Niches</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {niches.map(n => (
+                      <span key={n} className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-medium">{n}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Bio */}
               {profile.bio && (

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
+import NicheTagInput from '../../components/recruiter/NicheTagInput'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
 import { MARKETS } from '../../lib/constants'
@@ -62,6 +63,7 @@ export default function RecruiterSignup() {
   const [agreedTerms,    setAgreedTerms]    = useState(false)
   const [agreedPrivacy,  setAgreedPrivacy]  = useState(false)
   const [agreedLinkedin, setAgreedLinkedin] = useState(false)
+  const [niches,         setNiches]         = useState([])
 
   const [form, setForm] = useState({
     firstName: '',
@@ -147,6 +149,21 @@ export default function RecruiterSignup() {
         availability_status: form.availabilityStatus,
         bio: form.bio || null,
       })
+      if (niches.length > 0) {
+        const { data: { user: newUser } } = await supabase.auth.getUser()
+        if (newUser) {
+          const { data: profileRow } = await supabase
+            .from('recruiter_profiles')
+            .select('id')
+            .eq('user_id', newUser.id)
+            .single()
+          if (profileRow) {
+            await supabase.from('recruiter_niches').insert(
+              niches.map(niche_text => ({ recruiter_profile_id: profileRow.id, niche_text }))
+            )
+          }
+        }
+      }
       setSubmitted(true)
       setTimeout(() => navigate('/recruiter/dashboard'), 1500)
     } catch (err) {
@@ -334,6 +351,17 @@ export default function RecruiterSignup() {
                     onChange={e => set('bio', e.target.value)}
                     placeholder="e.g. Senior technology recruiter specialising in Java, Python and data engineering roles for Irish fintech companies at mid to senior level…"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Your Top Niches{' '}
+                    <span className="text-gray-400 font-normal">(optional, up to 5)</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    What's your specific expertise? Be precise — 'Golang' or 'SRE' stands out more than 'Software Engineering.' Type one and press enter.
+                  </p>
+                  <NicheTagInput value={niches} onChange={setNiches} />
                 </div>
 
                 <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">

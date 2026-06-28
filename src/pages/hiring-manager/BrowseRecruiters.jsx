@@ -277,6 +277,7 @@ export default function BrowseRecruiters() {
   const [filtersOpen,      setFiltersOpen]       = useState(false)
   const [filters,          setFilters]           = useState(EMPTY_FILTERS)
   const [search,           setSearch]            = useState('')
+  const [nicheSearch,      setNicheSearch]       = useState('')
   const [jobTitle,         setJobTitle]          = useState(null)
   const [jobKeywords,      setJobKeywords]       = useState([])
   const [jobSpecialismIds, setJobSpecialismIds]  = useState([])
@@ -323,7 +324,8 @@ export default function BrowseRecruiters() {
         ),
         recruiter_locations!left(country, region),
         recruiter_tools!left(tool_name, verified),
-        recruiter_scores!left(overall_average, total_hm_reviews, total_candidate_reviews)
+        recruiter_scores!left(overall_average, total_hm_reviews, total_candidate_reviews),
+        recruiter_niches!left(niche_text)
       `)
       .eq('status', 'approved')
       .then(({ data, error }) => {
@@ -341,9 +343,9 @@ export default function BrowseRecruiters() {
     }))
   }
 
-  const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setSearch('') }, [])
-  const hasActiveFilters = search.length >= 3 || Object.values(filters).some(a => a.length > 0)
-  const activeFilterCount = Object.values(filters).reduce((n, a) => n + a.length, 0) + (search.length >= 3 ? 1 : 0)
+  const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setSearch(''); setNicheSearch('') }, [])
+  const hasActiveFilters = search.length >= 3 || nicheSearch.length >= 2 || Object.values(filters).some(a => a.length > 0)
+  const activeFilterCount = Object.values(filters).reduce((n, a) => n + a.length, 0) + (search.length >= 3 ? 1 : 0) + (nicheSearch.length >= 2 ? 1 : 0)
 
   const searchWords = useMemo(() => {
     if (search.length < 3) return []
@@ -377,8 +379,13 @@ export default function BrowseRecruiters() {
       const haystack = [r.bio ?? '', r.first_name ?? '', r.last_name ?? '', ...rNames].join(' ').toLowerCase()
       if (!searchWords.some(kw => haystack.includes(kw))) return false
     }
+    if (nicheSearch.trim().length >= 2) {
+      const q = nicheSearch.trim().toLowerCase()
+      const rNiches = (r.recruiter_niches ?? []).map(n => n.niche_text.toLowerCase())
+      if (!rNiches.some(n => n.includes(q))) return false
+    }
     return true
-  }), [recruiters, filters, searchWords])
+  }), [recruiters, filters, searchWords, nicheSearch])
 
   const withScores = useMemo(() => {
     if (!jobId) return filtered.map(r => ({ ...r, _matchScore: null }))
@@ -442,7 +449,7 @@ export default function BrowseRecruiters() {
           <p className="text-gray-500 mt-1 text-sm">Find the right specialist for your next hire</p>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-2">
           <div className="relative max-w-lg">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,6 +466,26 @@ export default function BrowseRecruiters() {
           </div>
           {search.length > 0 && search.length < 3 && (
             <p className="text-xs text-gray-400 mt-1 ml-1">Type at least 3 characters to search</p>
+          )}
+        </div>
+
+        <div className="mb-6">
+          <div className="relative max-w-lg">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400 pointer-events-none"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            <input
+              type="text"
+              className="input pl-9 w-full"
+              placeholder="Search by niche (e.g. 'Golang', 'SRE')…"
+              value={nicheSearch}
+              onChange={e => setNicheSearch(e.target.value)}
+            />
+          </div>
+          {nicheSearch.length > 0 && nicheSearch.length < 2 && (
+            <p className="text-xs text-gray-400 mt-1 ml-1">Type at least 2 characters to search</p>
           )}
         </div>
 

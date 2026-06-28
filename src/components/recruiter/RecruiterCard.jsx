@@ -82,6 +82,8 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
     .map(rs => rs.specialism_categories?.specialism_name)
     .filter(Boolean)
 
+  const niches = (recruiter.recruiter_niches ?? []).map(n => n.niche_text).filter(Boolean)
+
   const initials = [recruiter.first_name, recruiter.last_name]
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
 
@@ -216,8 +218,20 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
             </div>
           </div>
 
-          {/* ── Right column: Specialisms + Employers (35%) ── */}
+          {/* ── Right column: Niches + Specialisms + Employers (35%) ── */}
           <div className="w-full md:w-[35%] md:flex-shrink-0 flex flex-col gap-3">
+            {/* Top niches */}
+            {niches.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Top niches</p>
+                <div className="flex flex-wrap gap-1">
+                  {niches.map(n => (
+                    <span key={n} className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">{n}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Match badge */}
             {matchCfg && (
               <div className={`self-end text-center border rounded-lg px-3 py-2 ${matchCfg.bg}`}>

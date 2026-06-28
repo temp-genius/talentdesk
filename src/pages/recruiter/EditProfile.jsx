@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
+import NicheTagInput from '../../components/recruiter/NicheTagInput'
 import { MARKETS } from '../../lib/constants'
 const BIO_MAX  = 600
 const CLIENT_TYPES = [
@@ -164,6 +165,7 @@ export default function EditProfile() {
   const [photoUrl,       setPhotoUrl]      = useState(null)
   const [photoUploading, setPhotoUploading]= useState(false)
   const [selectedTools,  setSelectedTools] = useState([])
+  const [niches,         setNiches]        = useState([])
 
   const [loading, setLoading] = useState(true)
   const [saving,  setSaving]  = useState(false)
@@ -209,14 +211,16 @@ export default function EditProfile() {
       })
       if (catsRes.data) setAllCategories(catsRes.data)
 
-      const [specsRes, locsRes, toolsRes] = await Promise.all([
+      const [specsRes, locsRes, toolsRes, nichesRes] = await Promise.all([
         supabase.from('recruiter_specialisms').select('specialism_category_id').eq('recruiter_profile_id', p.id),
         supabase.from('recruiter_locations').select('country').eq('recruiter_profile_id', p.id),
         supabase.from('recruiter_tools').select('tool_name').eq('recruiter_profile_id', p.id),
+        supabase.from('recruiter_niches').select('niche_text').eq('recruiter_profile_id', p.id),
       ])
       setSpecialisms(specsRes.data?.map(s => s.specialism_category_id) ?? [])
       setMarkets(locsRes.data?.map(l => l.country) ?? [])
       setSelectedTools(toolsRes.data?.map(t => t.tool_name) ?? [])
+      setNiches(nichesRes.data?.map(n => n.niche_text) ?? [])
       setLoading(false)
     }
     load()
@@ -319,6 +323,13 @@ export default function EditProfile() {
     if (selectedTools.length > 0) {
       await supabase.from('recruiter_tools').insert(
         selectedTools.map(tool_name => ({ recruiter_profile_id: profileId, tool_name, verified: false }))
+      )
+    }
+
+    await supabase.from('recruiter_niches').delete().eq('recruiter_profile_id', profileId)
+    if (niches.length > 0) {
+      await supabase.from('recruiter_niches').insert(
+        niches.map(niche_text => ({ recruiter_profile_id: profileId, niche_text }))
       )
     }
 
@@ -525,6 +536,14 @@ export default function EditProfile() {
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
             </div>
           )}
+        </SectionCard>
+
+        {/* Top Niches */}
+        <SectionCard title="Top Niches">
+          <InfoBox>
+            What's your specific expertise? Be precise — 'Golang' or 'SRE' stands out more than 'Software Engineering.' Hiring managers search by niche, so specific tags make you discoverable.
+          </InfoBox>
+          <NicheTagInput value={niches} onChange={setNiches} />
         </SectionCard>
 
         {/* Markets */}
