@@ -243,7 +243,7 @@ export default function RecruiterPublicProfile() {
         .from('recruiter_profiles')
         .select(`
           id, user_id, first_name, last_name, bio, headline, sample_placements,
-          profile_photo_url, years_experience, availability_status, preferred_fee_percentage,
+          profile_photo_url, years_experience, availability_status, fee_floor, fee_ceiling,
           total_placements, average_days_to_shortlist, linkedin_url,
           linkedin_network_size_tier, response_time_average, created_at,
           career_dna, capacity_status, previous_employers, previous_client_types,
@@ -327,13 +327,6 @@ export default function RecruiterPublicProfile() {
     sme: 'SME', public_sector: 'Public Sector',
   }
 
-  function feeDisplay(val) {
-    if (val == null) return null
-    const nums = val.toString().split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n)).sort((a, b) => a - b)
-    if (nums.length === 0) return null
-    if (nums.length === 1) return `${nums[0]}%`
-    return `${nums[0]}–${nums[nums.length - 1]}%`
-  }
 
   const careerDnaMeta  = CAREER_DNA_TAGS[profile.career_dna] ?? null
   const capacityMeta   = CAPACITY_META[profile.capacity_status] ?? null
@@ -597,10 +590,14 @@ export default function RecruiterPublicProfile() {
           {/* ── Right sidebar: contact + fee ── */}
           <div className="space-y-4 lg:sticky lg:top-24">
             {/* Fee card */}
-            {feeDisplay(profile.preferred_fee_percentage) && (
+            {profile.fee_floor != null && profile.fee_ceiling != null && (
               <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
                 <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Standard rate</p>
-                <p className="text-4xl font-extrabold text-primary-600">{feeDisplay(profile.preferred_fee_percentage)}</p>
+                <p className="text-4xl font-extrabold text-primary-600">
+                  {profile.fee_floor === profile.fee_ceiling
+                    ? `${profile.fee_floor}%`
+                    : `${profile.fee_floor}–${profile.fee_ceiling}%`}
+                </p>
                 <p className="text-xs text-gray-400 mt-1">Actual fee agreed on engagement — within the Vetted TA 6 to 10 percent range.</p>
               </div>
             )}

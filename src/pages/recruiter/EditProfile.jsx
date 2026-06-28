@@ -44,7 +44,7 @@ const CAPACITY_OPTIONS = [
 const EMPTY_FORM = {
   firstName: '', lastName: '', bio: '', headline: '',
   linkedinUrl: '', yearsExperience: '',
-  preferredFeePercentage: [], availabilityStatus: 'available',
+  availabilityStatus: 'available',
   samplePlacements: '',
   careerDna: '', capacityStatus: 'open_to_new',
   previousEmployers: '', previousClientTypes: [],
@@ -177,7 +177,7 @@ export default function EditProfile() {
         supabase
           .from('recruiter_profiles')
           .select(`id, first_name, last_name, bio, headline, linkedin_url, years_experience,
-                   preferred_fee_percentage, availability_status, sample_placements,
+                   availability_status, sample_placements,
                    profile_photo_url, career_dna, capacity_status,
                    previous_employers, previous_client_types`)
           .eq('user_id', user.id)
@@ -200,9 +200,6 @@ export default function EditProfile() {
         headline:               p.headline ?? '',
         linkedinUrl:            p.linkedin_url ?? '',
         yearsExperience:        p.years_experience?.toString() ?? '',
-        preferredFeePercentage: p.preferred_fee_percentage
-          ? p.preferred_fee_percentage.toString().split(',').map(s => s.trim()).filter(Boolean)
-          : [],
         availabilityStatus:     p.availability_status ?? 'available',
         samplePlacements:       p.sample_placements ?? '',
         careerDna:              p.career_dna ?? '',
@@ -293,8 +290,6 @@ export default function EditProfile() {
         headline:                 form.headline.trim() || null,
         linkedin_url:             form.linkedinUrl.trim() || null,
         years_experience:         form.yearsExperience ? parseInt(form.yearsExperience, 10) : null,
-        preferred_fee_percentage: form.preferredFeePercentage.length > 0
-          ? [...form.preferredFeePercentage].sort().join(',') : null,
         availability_status:      form.availabilityStatus,
         sample_placements:        form.samplePlacements.trim() || null,
         career_dna:               form.careerDna || null,
@@ -481,28 +476,6 @@ export default function EditProfile() {
                   <option value="unavailable">Unavailable</option>
                 </select>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Standard rate</label>
-              <div className="flex gap-5">
-                {['6', '8', '10'].map(fee => (
-                  <label key={fee} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.preferredFeePercentage.includes(fee)}
-                      onChange={() => setForm(prev => ({
-                        ...prev,
-                        preferredFeePercentage: prev.preferredFeePercentage.includes(fee)
-                          ? prev.preferredFeePercentage.filter(v => v !== fee)
-                          : [...prev.preferredFeePercentage, fee],
-                      }))}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
-                    />
-                    {fee}%
-                  </label>
-                ))}
-              </div>
-              <p className="text-xs text-gray-400 mt-1">Select all rates you work at — actual fee agreed on engagement.</p>
             </div>
           </div>
         </SectionCard>

@@ -68,7 +68,7 @@ export default function HMActiveJob() {
         ),
         recruiter_profiles(
           id, first_name, last_name, bio, years_experience,
-          linkedin_url, preferred_fee_percentage, users(email)
+          linkedin_url, fee_floor, fee_ceiling, users(email)
         ),
         milestones(
           id, milestone_number, milestone_name, amount, charge_amount, currency,
@@ -327,9 +327,13 @@ export default function HMActiveJob() {
                 {recruiter.bio && (
                   <p className="text-sm text-gray-600 mb-3 line-clamp-3">{recruiter.bio}</p>
                 )}
-                {recruiter.preferred_fee_percentage && (
+                {recruiter.fee_floor != null && recruiter.fee_ceiling != null && (
                   <p className="text-sm text-gray-500">
-                    Fee rate: <span className="font-medium text-gray-900">{recruiter.preferred_fee_percentage}%</span>
+                    Fee rate: <span className="font-medium text-gray-900">
+                      {recruiter.fee_floor === recruiter.fee_ceiling
+                        ? `${recruiter.fee_floor}%`
+                        : `${recruiter.fee_floor}–${recruiter.fee_ceiling}%`}
+                    </span>
                   </p>
                 )}
                 <Link to="/messages" className="mt-3 block text-center btn-secondary text-sm">

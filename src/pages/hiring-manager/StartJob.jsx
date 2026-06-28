@@ -159,7 +159,7 @@ function StartJobInner() {
         supabase.from('jobs').select('*').eq('id', jobId).single(),
         supabase
           .from('recruiter_profiles')
-          .select('id, user_id, first_name, last_name, bio, preferred_fee_percentage, total_placements, availability_status, stripe_account_id, users(email)')
+          .select('id, user_id, first_name, last_name, bio, fee_floor, fee_ceiling, total_placements, availability_status, stripe_account_id, users(email)')
           .eq('id', recruiterId)
           .single(),
         supabase
@@ -176,8 +176,8 @@ function StartJobInner() {
       setJob(jobResult.data)
       setRecruiter(recruiterResult.data)
       setCompanyProfile(companyResult.data ?? null)
-      const preferredFee = recruiterResult.data?.preferred_fee_percentage
-      setFeePercentage([6, 8, 10].includes(preferredFee) ? preferredFee : 8)
+      const { fee_floor: recruiterFloor } = recruiterResult.data ?? {}
+      setFeePercentage(recruiterFloor ?? 8)
       setLoading(false)
     }
 
@@ -550,9 +550,10 @@ function StartJobInner() {
                 value={feePercentage ?? ''}
                 onChange={e => setFeePercentage(Number(e.target.value))}
               >
-                <option value="6">6%</option>
-                <option value="8">8%</option>
-                <option value="10">10%</option>
+                {[6, 8, 10]
+                  .filter(v => (recruiter?.fee_floor == null || v >= recruiter.fee_floor) && (recruiter?.fee_ceiling == null || v <= recruiter.fee_ceiling))
+                  .map(v => <option key={v} value={v}>{v}%</option>)
+                }
               </select>
             </div>
           </div>

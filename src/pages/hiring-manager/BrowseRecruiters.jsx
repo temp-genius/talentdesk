@@ -112,7 +112,7 @@ function computeRelevance(r, filters, jobKeywords) {
   else if (r.capacity_status === 'nearly_full') score += 2
   if (r.bio)                              score += 1
   if (r.linkedin_url)                     score += 1
-  if (r.preferred_fee_percentage != null) score += 1
+  if (r.fee_floor != null) score += 1
   if (jobKeywords.length > 0) {
     const haystack = [r.bio ?? '', ...rNames].join(' ').toLowerCase()
     score += jobKeywords.filter(kw => haystack.includes(kw)).length
@@ -312,7 +312,7 @@ export default function BrowseRecruiters() {
       .from('recruiter_profiles')
       .select(`
         id, user_id, first_name, last_name, bio, headline, profile_photo_url,
-        years_experience, availability_status, preferred_fee_percentage,
+        years_experience, availability_status, fee_floor, fee_ceiling,
         total_placements, linkedin_url, linkedin_network_size_tier,
         response_time_average, last_active_at, created_at,
         career_dna, capacity_status, previous_employers,
@@ -360,8 +360,8 @@ export default function BrowseRecruiters() {
       if (!filters.specialisms.some(id => rIds.includes(id))) return false
     }
     if (filters.fees.length > 0) {
-      const recruiterFees = (r.preferred_fee_percentage ?? '').toString().split(',').map(s => s.trim()).filter(Boolean)
-      if (!filters.fees.some(f => recruiterFees.includes(f))) return false
+      if (r.fee_floor == null || r.fee_ceiling == null) return false
+      if (!filters.fees.some(f => Number(f) >= r.fee_floor && Number(f) <= r.fee_ceiling)) return false
     }
     if (filters.availability.length > 0) {
       if (!filters.availability.includes(r.availability_status)) return false
@@ -403,7 +403,7 @@ export default function BrowseRecruiters() {
       case 'placements':
         return arr.sort((a, b) => (b.total_placements ?? 0) - (a.total_placements ?? 0))
       case 'fee_asc':
-        return arr.sort((a, b) => (a.preferred_fee_percentage ?? 99) - (b.preferred_fee_percentage ?? 99))
+        return arr.sort((a, b) => (a.fee_floor ?? 99) - (b.fee_floor ?? 99))
       case 'response':
         return arr.sort((a, b) => (a.response_time_average ?? 9999) - (b.response_time_average ?? 9999))
       case 'newest':

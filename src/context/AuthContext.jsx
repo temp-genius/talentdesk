@@ -136,7 +136,6 @@ export function AuthProvider({ children }) {
             years_experience:           rest.years_experience ?? null,
             linkedin_url:               rest.linkedin_url ?? null,
             linkedin_network_size_tier: rest.linkedin_network_size_tier || null,
-            preferred_fee_percentage:   rest.preferred_fee_percentage ?? null,
             availability_status:        rest.availability_status ?? 'available',
             bio:                        rest.bio ?? null,
           })
