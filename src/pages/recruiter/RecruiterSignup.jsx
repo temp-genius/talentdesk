@@ -72,7 +72,6 @@ export default function RecruiterSignup() {
     specialisms: [],
     markets: [],
     linkedinUrl: '',
-    preferredFeePercentage: [],
     bio: '',
     availabilityStatus: 'available',
   })
@@ -105,7 +104,6 @@ export default function RecruiterSignup() {
       if (form.markets.length === 0) return 'Please select at least one market'
     }
     if (step === 3) {
-      if (form.preferredFeePercentage.length === 0) return 'Please select at least one standard rate'
       if (!form.linkedinUrl.trim()) {
         return 'LinkedIn profile URL is required — we use this to verify your credentials before approving your application.'
       }
@@ -146,8 +144,6 @@ export default function RecruiterSignup() {
         markets: form.markets,
         years_experience: form.yearsExperience ? parseInt(form.yearsExperience, 10) : null,
         linkedin_url: form.linkedinUrl || null,
-        preferred_fee_percentage: form.preferredFeePercentage.length > 0
-          ? [...form.preferredFeePercentage].sort().join(',') : null,
         availability_status: form.availabilityStatus,
         bio: form.bio || null,
       })
@@ -340,25 +336,12 @@ export default function RecruiterSignup() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Standard rate <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-5">
-                    {['6', '8', '10'].map(fee => (
-                      <label key={fee} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={form.preferredFeePercentage.includes(fee)}
-                          onChange={() => toggle('preferredFeePercentage', fee)}
-                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                        />
-                        {fee}%
-                      </label>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1.5">
-                    Vetted TA recruiters work within the 6 to 10 percent range. Select all rates you work at — the actual fee is agreed on the discovery call.
+                <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
+                  <p className="text-sm font-semibold text-gray-800 mb-1">Your Fee Tier</p>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Our vetted recruiters earn between 6–10% per placement. Your specific
+                    tier will be assigned based on your experience and track record during
+                    our manual review process.
                   </p>
                 </div>
 
