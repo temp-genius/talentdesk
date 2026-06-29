@@ -158,6 +158,7 @@ export default function EditProfile() {
   const fileInputRef = useRef(null)
 
   const [profileId,      setProfileId]     = useState(null)
+  const [profileStatus,  setProfileStatus] = useState(null)
   const [form,           setForm]          = useState(EMPTY_FORM)
   const [specialisms,    setSpecialisms]   = useState([])
   const [markets,        setMarkets]       = useState([])
@@ -167,10 +168,10 @@ export default function EditProfile() {
   const [selectedTools,  setSelectedTools] = useState([])
   const [niches,         setNiches]        = useState([])
 
-  const [loading, setLoading] = useState(true)
-  const [saving,  setSaving]  = useState(false)
-  const [saved,   setSaved]   = useState(false)
-  const [error,   setError]   = useState('')
+  const [loading,      setLoading]      = useState(true)
+  const [saving,       setSaving]       = useState(false)
+  const [savedMessage, setSavedMessage] = useState('')
+  const [error,        setError]        = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -181,7 +182,7 @@ export default function EditProfile() {
           .select(`id, first_name, last_name, bio, headline, linkedin_url, years_experience,
                    availability_status, sample_placements,
                    profile_photo_url, career_dna, capacity_status,
-                   previous_employers, previous_client_types`)
+                   previous_employers, previous_client_types, status`)
           .eq('user_id', user.id)
           .single(),
         supabase
@@ -194,6 +195,7 @@ export default function EditProfile() {
       if (!p) { setLoading(false); return }
 
       setProfileId(p.id)
+      setProfileStatus(p.status ?? null)
       setPhotoUrl(p.profile_photo_url ?? null)
       setForm({
         firstName:              p.first_name ?? '',
@@ -283,7 +285,9 @@ export default function EditProfile() {
     if (!profileId) return
     setSaving(true)
     setError('')
-    setSaved(false)
+    setSavedMessage('')
+
+    const isInfoRequested = profileStatus === 'info_requested'
 
     const { error: updateErr } = await supabase
       .from('recruiter_profiles')
@@ -300,6 +304,7 @@ export default function EditProfile() {
         capacity_status:          form.capacityStatus,
         previous_employers:       form.previousEmployers.trim() || null,
         previous_client_types:    form.previousClientTypes.length > 0 ? form.previousClientTypes : null,
+        ...(isInfoRequested ? { status: 'pending' } : {}),
       })
       .eq('id', profileId)
 
@@ -333,9 +338,10 @@ export default function EditProfile() {
       )
     }
 
+    if (isInfoRequested) setProfileStatus('pending')
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    setSavedMessage(isInfoRequested ? 'Profile updated and resubmitted for review.' : 'Saved!')
+    setTimeout(() => setSavedMessage(''), 3000)
   }
 
   const score    = useMemo(() => calcScore(form, specialisms, markets), [form, specialisms, markets])
@@ -360,7 +366,7 @@ export default function EditProfile() {
             <span className="text-sm font-medium text-gray-900">Edit Profile</span>
           </div>
           <div className="flex items-center gap-3">
-            {saved && <span className="text-sm text-green-600 font-medium">Saved!</span>}
+            {savedMessage && <span className="text-sm text-green-600 font-medium">{savedMessage}</span>}
             {error && <span className="text-xs text-red-600 max-w-xs truncate">{error}</span>}
             <button onClick={handleSave} disabled={saving || !profileId} className="btn-primary text-sm">
               {saving ? 'Saving…' : 'Save Profile'}
@@ -599,9 +605,9 @@ export default function EditProfile() {
         </SectionCard>
 
         <div className="flex items-center justify-between pb-12">
-          {saved && <span className="text-sm text-green-600 font-medium">Profile saved!</span>}
+          {savedMessage && <span className="text-sm text-green-600 font-medium">{savedMessage}</span>}
           {error && <span className="text-sm text-red-600">{error}</span>}
-          {!saved && !error && <span />}
+          {!savedMessage && !error && <span />}
           <button onClick={handleSave} disabled={saving || !profileId} className="btn-primary">
             {saving ? 'Saving…' : 'Save Profile'}
           </button>
