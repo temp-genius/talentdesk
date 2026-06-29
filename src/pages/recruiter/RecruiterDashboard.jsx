@@ -47,6 +47,7 @@ export default function RecruiterDashboard() {
   const [showApprovalModal,   setShowApprovalModal]   = useState(false)
   const [unreadCount,         setUnreadCount]         = useState(0)
   const [mobileMenuOpen,      setMobileMenuOpen]      = useState(false)
+  const [showNicheBanner,     setShowNicheBanner]     = useState(false)
 
   // Specialism editing
   const [allCategories,      setAllCategories]      = useState([])
@@ -161,6 +162,16 @@ export default function RecruiterDashboard() {
     setEditingSpecialisms(true)
   }
 
+  useEffect(() => {
+    if (!profile?.id || profile.status !== 'approved') return
+    if (localStorage.getItem(`niches_banner_dismissed_${profile.id}`)) return
+    supabase
+      .from('recruiter_niches')
+      .select('id', { count: 'exact', head: true })
+      .eq('recruiter_profile_id', profile.id)
+      .then(({ count }) => { if (count === 0) setShowNicheBanner(true) })
+  }, [profile?.id, profile?.status])
+
   // Load pending proposals once profile id is available
   useEffect(() => {
     if (!profile?.id) return
@@ -222,6 +233,11 @@ export default function RecruiterDashboard() {
         .update({ has_seen_approval_modal: true })
         .eq('id', profile.id)
     }
+  }
+
+  function dismissNicheBanner() {
+    setShowNicheBanner(false)
+    if (profile?.id) localStorage.setItem(`niches_banner_dismissed_${profile.id}`, '1')
   }
 
   const displayName = profile?.first_name
@@ -429,6 +445,38 @@ export default function RecruiterDashboard() {
                 <Link to="/recruiter/profile/edit" className="text-sm font-medium text-amber-800 underline whitespace-nowrap ml-4">
                   Complete your profile
                 </Link>
+              </div>
+            )}
+
+            {/* Top Niches nudge banner */}
+            {showNicheBanner && (
+              <div className="bg-violet-50 border border-violet-200 rounded-xl p-5 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-9 h-9 bg-violet-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-sm font-bold text-violet-900 mb-1">Stand out with your Top Niches</h2>
+                    <p className="text-sm text-violet-800">
+                      Hiring managers search by specific expertise. Add up to 5 niches (e.g. 'Golang', 'SRE') to make your profile more discoverable.
+                    </p>
+                    <Link to="/recruiter/profile/edit" className="mt-3 inline-block text-sm font-semibold text-violet-700 hover:text-violet-900 underline underline-offset-2">
+                      Add Niches →
+                    </Link>
+                  </div>
+                  <button
+                    onClick={dismissNicheBanner}
+                    className="text-violet-400 hover:text-violet-700 transition-colors flex-shrink-0"
+                    aria-label="Dismiss"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             )}
 
