@@ -131,6 +131,71 @@ function ExistingProposalCard({ proposal, onWithdraw, withdrawing }) {
   )
 }
 
+// ─── Recruiter: track record repeatable input ────────────────────────────────
+
+const TRACK_RECORD_MAX = 3
+
+function TrackRecordInput({ value = [], onChange }) {
+  const [input, setInput] = useState('')
+  const [error, setError] = useState('')
+  const atMax = value.length >= TRACK_RECORD_MAX
+
+  function add() {
+    const entry = input.trim()
+    setError('')
+    if (!entry) return
+    if (entry.length < 5)   { setError('Must be at least 5 characters.'); return }
+    if (entry.length > 300) { setError('Must be 300 characters or fewer.'); return }
+    onChange([...value, entry])
+    setInput('')
+  }
+
+  return (
+    <div className="space-y-2">
+      {value.map((entry, i) => (
+        <div key={i} className="flex items-start gap-2 bg-gray-50 rounded-lg px-3 py-2.5">
+          <p className="flex-1 text-sm text-gray-700 leading-relaxed">{entry}</p>
+          <button
+            type="button"
+            onClick={() => { setError(''); onChange(value.filter((_, idx) => idx !== i)) }}
+            className="text-gray-400 hover:text-gray-700 flex-shrink-0 mt-0.5"
+            aria-label="Remove"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      ))}
+
+      {atMax ? (
+        <p className="text-xs text-gray-400 italic">3/3 — maximum reached</p>
+      ) : (
+        <div>
+          <textarea
+            className="input resize-none w-full text-sm"
+            rows={2}
+            value={input}
+            onChange={e => { setInput(e.target.value); setError('') }}
+            placeholder="e.g. 'While at Meta, filled 10 similar roles per quarter'"
+            maxLength={300}
+          />
+          <button
+            type="button"
+            onClick={add}
+            className="mt-1.5 text-xs font-medium text-primary-600 hover:text-primary-700"
+          >
+            + Add entry
+          </button>
+        </div>
+      )}
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      <p className="text-xs text-gray-400">{value.length}/{TRACK_RECORD_MAX} entries</p>
+    </div>
+  )
+}
+
 // ─── Recruiter: submit proposal form ─────────────────────────────────────────
 
 const FEE_OPTIONS = [
@@ -139,12 +204,24 @@ const FEE_OPTIONS = [
   { value: 10, label: '10%', sub: 'Premium'      },
 ]
 
-function ProposalForm({ jobId, recruiterId, onSubmitted }) {
-  const [fee,        setFee]        = useState(8)
-  const [pitch,      setPitch]      = useState('')
-  const [exp,        setExp]        = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [error,      setError]      = useState('')
+function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted }) {
+  const filteredFeeOptions = FEE_OPTIONS.filter(o =>
+    (feeFloor == null || o.value >= feeFloor) &&
+    (feeCeiling == null || o.value <= feeCeiling)
+  )
+
+  const [fee,              setFee]              = useState(
+    () => filteredFeeOptions.find(o => o.value === (feeFloor ?? 8))?.value
+          ?? filteredFeeOptions[0]?.value ?? 8
+  )
+  const [pitch,            setPitch]            = useState('')
+  const [exp,              setExp]              = useState('')
+  const [sourcingStrategy, setSourcingStrategy] = useState('')
+  const [toolsUsed,        setToolsUsed]        = useState('')
+  const [deliveryDays,     setDeliveryDays]     = useState('')
+  const [trackRecord,      setTrackRecord]      = useState([])
+  const [submitting,       setSubmitting]       = useState(false)
+  const [error,            setError]            = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -152,19 +229,29 @@ function ProposalForm({ jobId, recruiterId, onSubmitted }) {
     setSubmitting(true)
     setError('')
 
-    const { error: err } = await supabase.from('job_proposals').insert({
-      job_id:                  jobId,
-      recruiter_id:            recruiterId,
-      proposed_fee_percentage: fee,
-      pitch:                   pitch.trim(),
-      relevant_experience:     exp.trim() || null,
-    })
+    const { data: newProposal, error: err } = await supabase
+      .from('job_proposals')
+      .insert({
+        job_id:                  jobId,
+        recruiter_id:            recruiterId,
+        proposed_fee_percentage: fee,
+        pitch:                   pitch.trim(),
+        relevant_experience:     exp.trim() || null,
+        sourcing_strategy:       sourcingStrategy.trim() || null,
+        tools_used:              toolsUsed.trim() || null,
+        delivery_timeline_days:  deliveryDays ? parseInt(deliveryDays, 10) : null,
+      })
+      .select('id')
+      .single()
 
-    if (err) {
-      setError(err.message)
-      setSubmitting(false)
-      return
+    if (err) { setError(err.message); setSubmitting(false); return }
+
+    if (trackRecord.length > 0 && newProposal?.id) {
+      await supabase.from('proposal_track_record').insert(
+        trackRecord.map(description => ({ proposal_id: newProposal.id, description }))
+      )
     }
+
     onSubmitted()
   }
 
@@ -181,7 +268,7 @@ function ProposalForm({ jobId, recruiterId, onSubmitted }) {
           Proposed fee <span className="text-red-500">*</span>
         </label>
         <div className="flex gap-3">
-          {FEE_OPTIONS.map(o => (
+          {filteredFeeOptions.map(o => (
             <label
               key={o.value}
               className={`flex-1 flex flex-col items-center border rounded-lg py-3 px-2 cursor-pointer transition-colors ${
@@ -224,6 +311,52 @@ function ProposalForm({ jobId, recruiterId, onSubmitted }) {
           placeholder="Have you recruited similar roles before? Describe relevant placements…"
           value={exp} onChange={e => setExp(e.target.value)}
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Sourcing Strategy
+          <span className="ml-2 text-xs font-normal text-gray-400">Optional</span>
+        </label>
+        <textarea
+          className="input resize-none" rows={3}
+          placeholder="Where will you find these candidates? e.g. GitHub, specific Slack/Discord communities, niche job boards, your own network"
+          value={sourcingStrategy} onChange={e => setSourcingStrategy(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Tools You'll Use
+          <span className="ml-2 text-xs font-normal text-gray-400">Optional</span>
+        </label>
+        <textarea
+          className="input resize-none" rows={3}
+          placeholder="What tools or platforms will you use? e.g. LinkedIn Recruiter, Boolean search on GitHub, a specific ATS"
+          value={toolsUsed} onChange={e => setToolsUsed(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          How many business days until you can deliver the first shortlist?
+          <span className="ml-2 text-xs font-normal text-gray-400">Optional</span>
+        </label>
+        <input
+          type="number" min={1} max={90}
+          className="input w-32 text-sm"
+          placeholder="e.g. 7"
+          value={deliveryDays}
+          onChange={e => setDeliveryDays(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Track Record
+          <span className="ml-2 text-xs font-normal text-gray-400">Optional, up to 3</span>
+        </label>
+        <TrackRecordInput value={trackRecord} onChange={setTrackRecord} />
       </div>
 
       <button type="submit" disabled={submitting} className="btn-primary w-full py-2.5">
@@ -295,6 +428,9 @@ function ProposalCard({ proposal, onUpdate, onAccept }) {
             Submitted {submittedDate}
             {' · '}
             <span className="font-medium text-gray-700">{proposal.proposed_fee_percentage}% fee</span>
+            {proposal.delivery_timeline_days != null && (
+              <>{' · '}Delivery: <span className="font-medium text-gray-700">{proposal.delivery_timeline_days} business days</span></>
+            )}
           </p>
           {recruiter?.id && (
             <p className="text-xs text-gray-400 mt-0.5">View profile &amp; message</p>
@@ -358,6 +494,34 @@ function ProposalCard({ proposal, onUpdate, onAccept }) {
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{proposal.relevant_experience}</p>
         </div>
       )}
+
+      {proposal.sourcing_strategy && (
+        <div>
+          <p className="text-xs text-gray-500 mb-1">Sourcing strategy</p>
+          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{proposal.sourcing_strategy}</p>
+        </div>
+      )}
+
+      {proposal.tools_used && (
+        <div>
+          <p className="text-xs text-gray-500 mb-1">Tools</p>
+          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{proposal.tools_used}</p>
+        </div>
+      )}
+
+      {proposal.proposal_track_record?.length > 0 && (
+        <div>
+          <p className="text-xs text-gray-500 mb-1">Track record</p>
+          <ul className="space-y-1">
+            {proposal.proposal_track_record.map((tr, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                <span className="text-gray-400 flex-shrink-0 mt-0.5">•</span>
+                <span className="leading-relaxed">{tr.description}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
@@ -392,6 +556,8 @@ export default function JobDetail() {
   // recruiter-only
   const [myProfileId,    setMyProfileId]    = useState(null)
   const [myProfileName,  setMyProfileName]  = useState(null)
+  const [myFeeFloor,     setMyFeeFloor]     = useState(null)
+  const [myFeeCeiling,   setMyFeeCeiling]   = useState(null)
   const [myProposal,     setMyProposal]     = useState(null)
   const [proposalLoaded, setProposalLoaded] = useState(false)
   const [withdrawing,    setWithdrawing]    = useState(false)
@@ -417,7 +583,7 @@ export default function JobDetail() {
           .single(),
         supabase
           .from('recruiter_profiles')
-          .select('id, first_name, last_name')
+          .select('id, first_name, last_name, fee_floor, fee_ceiling')
           .eq('user_id', user.id)
           .single(),
       ])
@@ -428,6 +594,8 @@ export default function JobDetail() {
       if (profile) {
         setMyProfileId(profile.id)
         setMyProfileName([profile.first_name, profile.last_name].filter(Boolean).join(' ') || null)
+        setMyFeeFloor(profile.fee_floor ?? null)
+        setMyFeeCeiling(profile.fee_ceiling ?? null)
         const { data: existing } = await supabase
           .from('job_proposals')
           .select('id, proposed_fee_percentage, pitch, relevant_experience, status, submitted_at')
@@ -457,7 +625,7 @@ export default function JobDetail() {
       if (owned) {
         const { data: props } = await supabase
           .from('job_proposals')
-          .select('id, proposed_fee_percentage, pitch, relevant_experience, status, submitted_at, responded_at, recruiter_profiles(id, first_name, last_name)')
+          .select('id, proposed_fee_percentage, pitch, relevant_experience, sourcing_strategy, tools_used, delivery_timeline_days, status, submitted_at, responded_at, recruiter_profiles(id, first_name, last_name), proposal_track_record(description)')
           .eq('job_id', jobId)
           .order('submitted_at', { ascending: false })
         setProposals(props ?? [])
@@ -657,6 +825,8 @@ export default function JobDetail() {
                 <ProposalForm
                   jobId={jobId}
                   recruiterId={myProfileId}
+                  feeFloor={myFeeFloor}
+                  feeCeiling={myFeeCeiling}
                   onSubmitted={handleProposalSubmitted}
                 />
               ) : (
