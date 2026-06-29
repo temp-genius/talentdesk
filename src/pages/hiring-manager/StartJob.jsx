@@ -287,7 +287,7 @@ function StartJobInner() {
         milestone_name:   m.name,
         amount:           m.charge,
         charge_amount:    m.charge,
-        transfer_amount:  Math.round(m.charge * 0.85),
+        transfer_amount:  Math.round(m.charge * 0.70),
         currency,
         status: 'pending',
       }))

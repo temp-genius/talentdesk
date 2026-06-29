@@ -82,7 +82,7 @@ const RECRUITER_FAQS = [
   },
   {
     q: 'How does payment work?',
-    a: 'Payments are held in escrow and released at three milestones — shortlist approval, interview confirmation, and offer acceptance. Vetted TA deducts a 15 percent platform fee from each release. The remainder transfers to your connected bank account within two business days.',
+    a: 'Payments are held in escrow and released at three milestones — shortlist approval, interview confirmation, and offer acceptance. Vetted TA deducts a 30 percent platform fee from each release. The remainder transfers to your connected bank account within two business days.',
   },
   {
     q: 'Do I need to connect my bank account before starting work?',
@@ -179,8 +179,8 @@ function RecruiterFeeTable() {
       </div>
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <p className="text-sm text-amber-800">
-          <span className="font-semibold">Platform fee:</span> Vetted TA deducts 15% from each milestone release.
-          You receive 85% of each milestone payment, transferred to your bank within two business days.
+          <span className="font-semibold">Platform fee:</span> Vetted TA deducts 30% from each milestone release.
+          You receive 70% of each milestone payment, transferred to your bank within two business days.
         </p>
       </div>
     </div>

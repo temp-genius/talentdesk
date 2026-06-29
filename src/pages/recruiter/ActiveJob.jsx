@@ -118,7 +118,7 @@ export default function RecruiterActiveJob() {
   const showOfferSection = m2?.status === 'released' || candidates.some(c => c.interview_status === 'completed')
   const jobComplete     = m3?.status === 'released'
   const totalFee        = milestones.reduce((sum, m) => sum + (m.amount ?? 0), 0)
-  const recruiterEarned = Math.round(totalFee * 0.85)
+  const recruiterEarned = Math.round(totalFee * 0.70)
 
   function offerForCandidate(candidateId) {
     return offers.find(o => o.candidate_profile_id === candidateId)

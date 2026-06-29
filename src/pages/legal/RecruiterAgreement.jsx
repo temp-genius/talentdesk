@@ -22,7 +22,7 @@ const SECTIONS = [
   },
   {
     title: '5. Platform Fee',
-    body: 'You accept that Vetted TA deducts a platform fee of 15 percent from all milestone payments before releasing funds to your connected account. This fee is non-negotiable and applies to every placement made through the platform regardless of circumstances.',
+    body: 'You accept that Vetted TA deducts a platform fee of 30 percent from all milestone payments before releasing funds to your connected account. This fee is non-negotiable and applies to every placement made through the platform regardless of circumstances.',
   },
   {
     title: '6. Non-Circumvention',

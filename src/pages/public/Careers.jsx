@@ -19,7 +19,7 @@ const JOB_SCHEMA = {
   },
   jobLocationType: 'TELECOMMUTE',
   incentiveCompensation:
-    'Fee-based compensation. Recruiters receive 85% of the placement fee (after a 15% platform fee). Client fees are capped at 6–10% of candidate annual salary. Payments are protected by escrow and released in three milestones: 20% on shortlist approval, 30% on interview confirmation, 50% on offer acceptance.',
+    'Fee-based compensation. Recruiters receive 70% of the placement fee (after a 30% platform fee). Client fees are capped at 6–10% of candidate annual salary. Payments are protected by escrow and released in three milestones: 20% on shortlist approval, 30% on interview confirmation, 50% on offer acceptance.',
   applicantLocationRequirements: [
     { '@type': 'Country', name: 'Ireland' },
     { '@type': 'Country', name: 'United Kingdom' },

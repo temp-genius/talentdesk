@@ -14,7 +14,7 @@ const SECTIONS = [
   },
   {
     title: '3. The Engagement Model',
-    body: 'All recruitment engagements facilitated through Vetted TA are retained engagements. Hiring companies pay in three milestone stages — 20 percent on commencement, 30 percent on shortlist approval, and 50 percent on interview confirmation. Payments are held securely via Stripe and released to recruiters as milestones are completed. Vetted TA deducts a platform fee of 15 percent from each milestone payment before releasing funds to recruiters.',
+    body: 'All recruitment engagements facilitated through Vetted TA are retained engagements. Hiring companies pay in three milestone stages — 20 percent on commencement, 30 percent on shortlist approval, and 50 percent on interview confirmation. Payments are held securely via Stripe and released to recruiters as milestones are completed. Vetted TA deducts a platform fee of 30 percent from each milestone payment before releasing funds to recruiters.',
   },
   {
     title: '4. Exclusivity',
