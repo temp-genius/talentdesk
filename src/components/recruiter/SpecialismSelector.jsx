@@ -1,21 +1,47 @@
 import { useState } from 'react'
 
-export default function SpecialismSelector({ categories, selected, onChange }) {
+export default function SpecialismSelector({
+  categories, selected, onChange,
+  maxSpecialisms = 6, maxSectors = 3,
+}) {
   const sectors = [...new Set(categories.map(c => c.sector))]
   const [expanded, setExpanded] = useState({})
+  const [limitError, setLimitError] = useState('')
 
   function toggleExpand(sector) {
     setExpanded(prev => ({ ...prev, [sector]: !prev[sector] }))
   }
 
   function toggle(id) {
-    onChange(selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id])
+    if (selected.includes(id)) {
+      setLimitError('')
+      onChange(selected.filter(s => s !== id))
+      return
+    }
+    if (selected.length >= maxSpecialisms) {
+      setLimitError(`You've reached the maximum of ${maxSpecialisms} specialisms. Remove one to add another — we cap this to highlight your true areas of expertise.`)
+      return
+    }
+    const thisSector = categories.find(c => c.id === id)?.sector
+    const currentSectors = new Set(
+      selected.map(sid => categories.find(c => c.id === sid)?.sector).filter(Boolean)
+    )
+    if (thisSector && !currentSectors.has(thisSector) && currentSectors.size >= maxSectors) {
+      setLimitError(`You've reached the maximum of ${maxSectors} sectors. Vetted TA recruiters specialise deeply rather than spreading across many fields.`)
+      return
+    }
+    setLimitError('')
+    onChange([...selected, id])
   }
+
+  const atCap = selected.length >= maxSpecialisms
 
   return (
     <div>
       <p className="text-sm text-gray-500 mb-3">
-        <span className="font-semibold text-gray-800">{selected.length}</span>{' '}
+        <span className={`font-semibold ${atCap ? 'text-amber-600' : 'text-gray-800'}`}>
+          {selected.length}/{maxSpecialisms}
+        </span>{' '}
         specialism{selected.length !== 1 ? 's' : ''} selected
       </p>
       <div className="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-100">
@@ -33,7 +59,9 @@ export default function SpecialismSelector({ categories, selected, onChange }) {
                 <span className="text-sm font-medium text-gray-800">{sector}</span>
                 <div className="flex items-center gap-2">
                   {count > 0 && (
-                    <span className="text-xs bg-primary-100 text-primary-700 px-1.5 py-0.5 rounded-full font-medium">
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                      atCap ? 'bg-amber-100 text-amber-700' : 'bg-primary-100 text-primary-700'
+                    }`}>
                       {count}
                     </span>
                   )}
@@ -67,6 +95,11 @@ export default function SpecialismSelector({ categories, selected, onChange }) {
           )
         })}
       </div>
+      {limitError && (
+        <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          {limitError}
+        </p>
+      )}
     </div>
   )
 }

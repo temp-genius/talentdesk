@@ -301,6 +301,8 @@ export default function RecruiterSignup() {
                       categories={specialismCategories}
                       selected={form.specialisms}
                       onChange={v => set('specialisms', v)}
+                      maxSpecialisms={6}
+                      maxSectors={3}
                     />
                   )}
                 </div>
@@ -310,18 +312,33 @@ export default function RecruiterSignup() {
                     Markets you recruit in
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {MARKETS.map(market => (
-                      <label key={market} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={form.markets.includes(market)}
-                          onChange={() => toggle('markets', market)}
-                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                        />
-                        {market}
-                      </label>
-                    ))}
+                    {MARKETS.map(market => {
+                      const checked = form.markets.includes(market)
+                      const disabled = !checked && form.markets.length >= 3
+                      return (
+                        <label
+                          key={market}
+                          className={`flex items-center gap-2 text-sm cursor-pointer ${
+                            disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={disabled}
+                            onChange={() => toggle('markets', market)}
+                            className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-40"
+                          />
+                          {market}
+                        </label>
+                      )
+                    })}
                   </div>
+                  {form.markets.length >= 3 && (
+                    <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Markets are capped at 3 to ensure genuine depth — recruiters with deep, current knowledge of local talent pools and hiring norms place better candidates.
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="mt-6 flex justify-between">

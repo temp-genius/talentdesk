@@ -536,7 +536,7 @@ export default function EditProfile() {
         {/* Specialisms */}
         <SectionCard title="Specialisms">
           {allCategories.length > 0 ? (
-            <SpecialismSelector categories={allCategories} selected={specialisms} onChange={setSpecialisms} />
+            <SpecialismSelector categories={allCategories} selected={specialisms} onChange={setSpecialisms} maxSpecialisms={6} maxSectors={3} />
           ) : (
             <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
@@ -556,18 +556,33 @@ export default function EditProfile() {
         <SectionCard title="Markets">
           <p className="text-sm text-gray-500 mb-3">Which markets do you recruit in?</p>
           <div className="grid grid-cols-2 gap-2">
-            {MARKETS.map(country => (
-              <label key={country} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-gray-900">
-                <input
-                  type="checkbox"
-                  checked={markets.includes(country)}
-                  onChange={() => toggleMarket(country)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
-                />
-                {country}
-              </label>
-            ))}
+            {MARKETS.map(country => {
+              const checked = markets.includes(country)
+              const disabled = !checked && markets.length >= 3
+              return (
+                <label
+                  key={country}
+                  className={`flex items-center gap-2 text-sm cursor-pointer ${
+                    disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={() => toggleMarket(country)}
+                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0 disabled:opacity-40"
+                  />
+                  {country}
+                </label>
+              )
+            })}
           </div>
+          {markets.length >= 3 && (
+            <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              Markets are capped at 3 to ensure genuine depth — recruiters with deep, current knowledge of local talent pools and hiring norms place better candidates.
+            </p>
+          )}
         </SectionCard>
 
         {/* Tools and Sourcing Resources */}
