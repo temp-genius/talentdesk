@@ -124,7 +124,7 @@ const HM_STEPS = [
 const HM_FAQS = [
   {
     q: 'How is Vetted TA different from a recruitment agency?',
-    a: 'Vetted TA connects you directly with independent specialist recruiters. You choose who you work with based on their track record and specialisms. Fees are typically 6 to 10 percent versus 15 to 20 percent at traditional agencies. You pay as work is delivered not as one lump sum on placement.',
+    a: 'Vetted TA connects you directly with independent specialist recruiters. You choose who you work with based on their track record and specialisms. Fees are typically 8 to 12 percent versus 15 to 20 percent at traditional agencies. You pay as work is delivered not as one lump sum on placement.',
   },
   {
     q: 'How do I know the recruiters are legitimate?',

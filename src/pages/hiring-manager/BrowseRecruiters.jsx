@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import RecruiterCard from '../../components/recruiter/RecruiterCard'
 import Logo from '../../components/layout/Logo'
 import { MARKETS } from '../../lib/constants'
-const FILTER_FEES      = [{ label: '6%', value: '6' }, { label: '8%', value: '8' }, { label: '10%', value: '10' }]
+const FILTER_FEES      = [{ label: '8%', value: '8' }, { label: '10%', value: '10' }, { label: '12%', value: '12' }]
 const FILTER_AVAIL     = [{ label: 'Available now', value: 'available' }, { label: 'Limited', value: 'limited' }]
 const FILTER_CAREER_DNA = [
   { label: 'Agency Recruiter',       value: 'agency'  },
@@ -579,7 +579,7 @@ export default function BrowseRecruiters() {
 
             <FilterSection title="Standard rate">
               <p className="text-xs text-gray-400 mb-2 leading-relaxed">
-                Recruiters may negotiate within the 6 to 10 percent range on the discovery call.
+                Recruiters may negotiate within the 8 to 12 percent range on the discovery call.
               </p>
               <div className="space-y-1">
                 {FILTER_FEES.map(f => (

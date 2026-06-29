@@ -134,9 +134,9 @@ function ExistingProposalCard({ proposal, onWithdraw, withdrawing }) {
 // ─── Recruiter: submit proposal form ─────────────────────────────────────────
 
 const FEE_OPTIONS = [
-  { value: 6,  label: '6%',  sub: 'Competitive' },
-  { value: 8,  label: '8%',  sub: 'Standard'    },
-  { value: 10, label: '10%', sub: 'Premium'      },
+  { value: 8,  label: '8%',  sub: 'Competitive' },
+  { value: 10, label: '10%', sub: 'Standard'    },
+  { value: 12, label: '12%', sub: 'Premium'      },
 ]
 
 function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted }) {

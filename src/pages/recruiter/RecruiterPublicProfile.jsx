@@ -612,7 +612,7 @@ export default function RecruiterPublicProfile() {
                     ? `${profile.fee_floor}%`
                     : `${profile.fee_floor}–${profile.fee_ceiling}%`}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">Actual fee agreed on engagement — within the Vetted TA 6 to 10 percent range.</p>
+                <p className="text-xs text-gray-400 mt-1">Actual fee agreed on engagement — within the Vetted TA 8 to 12 percent range.</p>
               </div>
             )}
 

@@ -550,7 +550,7 @@ function StartJobInner() {
                 value={feePercentage ?? ''}
                 onChange={e => setFeePercentage(Number(e.target.value))}
               >
-                {[6, 8, 10]
+                {[8, 10, 12]
                   .filter(v => (recruiter?.fee_floor == null || v >= recruiter.fee_floor) && (recruiter?.fee_ceiling == null || v <= recruiter.fee_ceiling))
                   .map(v => <option key={v} value={v}>{v}%</option>)
                 }
@@ -558,7 +558,7 @@ function StartJobInner() {
             </div>
           </div>
           <p className="text-xs text-gray-400 mt-3">
-            All Vetted TA engagements are priced between 6 and 10 percent of the agreed annual salary. This is enforced by the platform.
+            All Vetted TA engagements are priced between 8 and 12 percent of the agreed annual salary. This is enforced by the platform.
           </p>
         </div>
 

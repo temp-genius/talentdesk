@@ -99,7 +99,7 @@ export default function HomePage() {
     <div style={{ ...S.sans, backgroundColor: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
       <Seo
         title="Vetted TA | The Retained Recruitment Marketplace for Independent Recruiters"
-        description="Connect with independently vetted specialist recruiters. Retained engagements, milestone payments, 6–10% fees. No agency markup. Operated in Ireland."
+        description="Connect with independently vetted specialist recruiters. Retained engagements, milestone payments, 8–12% fees. No agency markup. Operated in Ireland."
         path="/"
       />
       {/* Google Fonts + global overrides */}
@@ -255,7 +255,7 @@ export default function HomePage() {
         <div style={{ ...S.container }}>
           <div className="grid grid-cols-2 md:grid-cols-5">
             {[
-              { value: '6–10%',                   label: 'Transparent fee range' },
+              { value: '8–12%',                   label: 'Transparent fee range' },
               { value: '€6,000+',                 label: 'Avg placement fee' },
               { value: 'Vetted',                   label: 'Every recruiter. No exceptions.' },
               { value: 'Exclusive',                label: 'Every role. No contingency.' },
@@ -379,7 +379,7 @@ export default function HomePage() {
               {
                 step: '02',
                 title: 'Agree the fee',
-                body: 'Each recruiter sets their rate between 6–10%. You see their profile, reviews, and placement history before you agree anything.',
+                body: 'Each recruiter sets their rate between 8–12%. You see their profile, reviews, and placement history before you agree anything.',
               },
               {
                 step: '03',
@@ -519,7 +519,7 @@ export default function HomePage() {
                 </span>
               </Link>
               <p style={{ ...S.sans, fontSize: 13, lineHeight: 1.7, maxWidth: 280, marginTop: 8 }}>
-                The marketplace for independently vetted talent acquisition specialists. Fees 6–10%. Milestone payments. No agency markup.
+                The marketplace for independently vetted talent acquisition specialists. Fees 8–12%. Milestone payments. No agency markup.
               </p>
             </div>
 

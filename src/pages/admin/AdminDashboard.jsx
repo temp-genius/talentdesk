@@ -332,14 +332,14 @@ function EditTierModal({ recruiter, onSave, onCancel }) {
             <label className="block text-xs font-semibold text-gray-600 mb-1">Fee Floor</label>
             <select className="input" value={floor} onChange={e => setFloor(e.target.value)}>
               <option value="">—</option>
-              {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+              {[8, 10, 12].map(v => <option key={v} value={v}>{v}%</option>)}
             </select>
           </div>
           <div className="flex-1">
             <label className="block text-xs font-semibold text-gray-600 mb-1">Fee Ceiling</label>
             <select className="input" value={ceiling} onChange={e => setCeiling(e.target.value)}>
               <option value="">—</option>
-              {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+              {[8, 10, 12].map(v => <option key={v} value={v}>{v}%</option>)}
             </select>
           </div>
         </div>

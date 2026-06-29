@@ -8,7 +8,7 @@ const JOB_SCHEMA = {
   '@type': 'JobPosting',
   title: 'Talent Acquisition Partner (Contract)',
   description:
-    'Vetted TA is a retained recruitment marketplace connecting independent recruiters with companies that need hiring help. Every recruiter is personally vetted. Every role is exclusive. Every payment is milestone-protected. We are looking for experienced in-house TA professionals ready to work independently. You will take on exclusive retained briefs from hiring companies that need senior recruitment expertise but cannot justify a full-time hire. You manage the process end to end — sourcing, screening, managing hiring managers — exactly what you have always done. Zero business development. This is a marketplace where work finds you. Responsibilities: Manage end-to-end recruitment on exclusive retained briefs. Deliver an agreed shortlist of quality candidates. Manage the interview process and candidate experience. See placements through to offer accepted and signed. Compensation: Fee-based. Client fees capped at 6–10% of candidate salary. Example: €80,000 role at 10% = €6,800 net to you after platform fee. Payments released in three escrow-protected milestones — 20% on shortlist approval, 30% on interview confirmation, 50% on offer acceptance. No invoice chasing. No contingency risk. Eligibility: Must have proven history placing candidates in Ireland, UK, USA, Canada, Australia, Netherlands, Germany, France, Switzerland, Belgium, Denmark, Sweden, Norway, Finland, or UAE.',
+    'Vetted TA is a retained recruitment marketplace connecting independent recruiters with companies that need hiring help. Every recruiter is personally vetted. Every role is exclusive. Every payment is milestone-protected. We are looking for experienced in-house TA professionals ready to work independently. You will take on exclusive retained briefs from hiring companies that need senior recruitment expertise but cannot justify a full-time hire. You manage the process end to end — sourcing, screening, managing hiring managers — exactly what you have always done. Zero business development. This is a marketplace where work finds you. Responsibilities: Manage end-to-end recruitment on exclusive retained briefs. Deliver an agreed shortlist of quality candidates. Manage the interview process and candidate experience. See placements through to offer accepted and signed. Compensation: Fee-based. Client fees capped at 8–12% of candidate salary. Example: €80,000 role at 10% = €6,800 net to you after platform fee. Payments released in three escrow-protected milestones — 20% on shortlist approval, 30% on interview confirmation, 50% on offer acceptance. No invoice chasing. No contingency risk. Eligibility: Must have proven history placing candidates in Ireland, UK, USA, Canada, Australia, Netherlands, Germany, France, Switzerland, Belgium, Denmark, Sweden, Norway, Finland, or UAE.',
   datePosted: '2026-06-24',
   validThrough: '2026-12-31',
   employmentType: 'CONTRACTOR',
@@ -19,7 +19,7 @@ const JOB_SCHEMA = {
   },
   jobLocationType: 'TELECOMMUTE',
   incentiveCompensation:
-    'Fee-based compensation. Recruiters receive 70% of the placement fee (after a 30% platform fee). Client fees are capped at 6–10% of candidate annual salary. Payments are protected by escrow and released in three milestones: 20% on shortlist approval, 30% on interview confirmation, 50% on offer acceptance.',
+    'Fee-based compensation. Recruiters receive 70% of the placement fee (after a 30% platform fee). Client fees are capped at 8–12% of candidate annual salary. Payments are protected by escrow and released in three milestones: 20% on shortlist approval, 30% on interview confirmation, 50% on offer acceptance.',
   applicantLocationRequirements: [
     { '@type': 'Country', name: 'Ireland' },
     { '@type': 'Country', name: 'United Kingdom' },
@@ -48,7 +48,7 @@ export default function Careers() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Seo
         title="Talent Acquisition Partner (Contract) | Vetted TA Careers"
-        description="Work independently on exclusive retained briefs. No BD. Fee-based pay at 6–10% protected by escrow milestones. Apply to join Vetted TA's founding cohort."
+        description="Work independently on exclusive retained briefs. No BD. Fee-based pay at 8–12% protected by escrow milestones. Apply to join Vetted TA's founding cohort."
         path="/careers"
       />
       <script
@@ -151,7 +151,7 @@ export default function Careers() {
           <div className="space-y-5 text-sm text-gray-600 leading-relaxed">
             <p>This is where it gets interesting.</p>
             <p>
-              Fees on Vetted TA are capped at 6–10% — fair for clients, and life-changing for you compared
+              Fees on Vetted TA are capped at 8–12% — fair for clients, and life-changing for you compared
               to what you were earning in-house or what you'd take home at an agency.
             </p>
 

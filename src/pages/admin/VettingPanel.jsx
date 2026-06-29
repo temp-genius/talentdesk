@@ -85,7 +85,7 @@ function ApproveModal({ onConfirm, onCancel, loading }) {
           </label>
           <select className="input" value={feeFloor} onChange={e => setFeeFloor(e.target.value)}>
             <option value="">Select…</option>
-            {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+            {[8, 10, 12].map(v => <option key={v} value={v}>{v}%</option>)}
           </select>
         </div>
         <div className="flex-1">
@@ -94,7 +94,7 @@ function ApproveModal({ onConfirm, onCancel, loading }) {
           </label>
           <select className="input" value={feeCeiling} onChange={e => setFeeCeiling(e.target.value)}>
             <option value="">Select…</option>
-            {[6, 8, 10].map(v => <option key={v} value={v}>{v}%</option>)}
+            {[8, 10, 12].map(v => <option key={v} value={v}>{v}%</option>)}
           </select>
         </div>
       </div>

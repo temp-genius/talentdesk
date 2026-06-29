@@ -403,7 +403,7 @@ export default function RecruiterSignup() {
                 <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
                   <p className="text-sm font-semibold text-gray-800 mb-1">Your Fee Tier</p>
                   <p className="text-sm text-gray-600 leading-relaxed">
-                    Our vetted recruiters earn between 6–10% per placement. Your specific
+                    Our vetted recruiters earn between 8–12% per placement. Your specific
                     tier will be assigned based on your experience and track record during
                     our manual review process.
                   </p>

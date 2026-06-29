@@ -23,7 +23,7 @@ async function sendApprovalEmail(email, firstName, feeFloor, feeCeiling) {
 
 If you're hiring and need an experienced recruiter, my services are now available through the platform.
 
-What that actually means for you: the role is exclusive to me (no competing agencies racing the same brief), payment sits in escrow and releases in milestones, and fees are capped at 6-10%, not the usual 20%+.
+What that actually means for you: the role is exclusive to me (no competing agencies racing the same brief), payment sits in escrow and releases in milestones, and fees are capped at 8-12%, not the usual 20%+.
 
 If you're a hiring manager, founder, or know someone who is, take a look:
 www.vettedta.com</p>
@@ -50,8 +50,8 @@ www.vettedta.com</p>
  *
  * @param {object} profile      - recruiter_profiles row (must include id, user_id, first_name, last_name)
  * @param {string} adminUserId  - auth.uid() of the admin performing the action
- * @param {number} feeFloor     - assigned floor (6, 8, or 10)
- * @param {number} feeCeiling   - assigned ceiling (6, 8, or 10; must be >= feeFloor)
+ * @param {number} feeFloor     - assigned floor (8, 10, or 12)
+ * @param {number} feeCeiling   - assigned ceiling (8, 10, or 12; must be >= feeFloor)
  * @returns {{ success: boolean, emailSent?: boolean, warning?: string, error?: string }}
  */
 export async function approveRecruiter(profile, adminUserId, feeFloor, feeCeiling) {
