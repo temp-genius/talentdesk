@@ -138,6 +138,7 @@ export function AuthProvider({ children }) {
             linkedin_network_size_tier: rest.linkedin_network_size_tier || null,
             availability_status:        rest.availability_status ?? 'available',
             bio:                        rest.bio ?? null,
+            recent_track_record:        rest.recent_track_record ?? null,
           })
           .select('id')
           .single()

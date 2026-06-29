@@ -290,7 +290,7 @@ export default function VettingPanel() {
       .select(`
         id, user_id, first_name, last_name, bio, linkedin_url, years_experience,
         availability_status, fee_floor, fee_ceiling, career_dna, capacity_status,
-        previous_employers, previous_client_types, created_at, status,
+        previous_employers, previous_client_types, created_at, status, recent_track_record,
         recruiter_specialisms!left(
           specialism_category_id,
           specialism_categories(sector, specialism_name)
@@ -699,6 +699,21 @@ export default function VettingPanel() {
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     No LinkedIn URL provided — cannot approve without verification.
+                  </div>
+                )}
+              </Section>
+
+              {/* Recent Track Record */}
+              <Section title="Recent Track Record">
+                {detail.recent_track_record ? (
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{detail.recent_track_record}</p>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    No track record provided — consider requesting via "Request Info".
                   </div>
                 )}
               </Section>

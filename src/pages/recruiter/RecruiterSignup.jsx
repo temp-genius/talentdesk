@@ -73,6 +73,7 @@ export default function RecruiterSignup() {
     yearsExperience: '',
     specialisms: [],
     markets: [],
+    recentTrackRecord: '',
     linkedinUrl: '',
     bio: '',
     availabilityStatus: 'available',
@@ -103,6 +104,8 @@ export default function RecruiterSignup() {
     if (step === 2) {
       if (!form.yearsExperience) return 'Years of experience is required'
       if (form.specialisms.length === 0) return 'Please select at least one specialism'
+      if (!form.recentTrackRecord.trim() || form.recentTrackRecord.trim().length < 20)
+        return 'Please describe your recent track record (at least 20 characters)'
       if (form.markets.length === 0) return 'Please select at least one market'
     }
     if (step === 3) {
@@ -148,6 +151,7 @@ export default function RecruiterSignup() {
         linkedin_url: form.linkedinUrl || null,
         availability_status: form.availabilityStatus,
         bio: form.bio || null,
+        recent_track_record: form.recentTrackRecord.trim() || null,
       })
       if (niches.length > 0) {
         const { data: { user: newUser } } = await supabase.auth.getUser()
@@ -305,6 +309,21 @@ export default function RecruiterSignup() {
                       maxSectors={3}
                     />
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Recent Track Record <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Which 2–3 of your selected specialisms have you placed in within the last 12 months, and roughly how many placements? Be specific — this is the single most important thing we look at when reviewing your application.
+                  </p>
+                  <textarea
+                    className="input resize-none w-full" rows={3}
+                    value={form.recentTrackRecord}
+                    onChange={e => set('recentTrackRecord', e.target.value)}
+                    placeholder="e.g. 'Placed 4 Senior DevOps engineers and 2 SREs in the last year, mostly Series B-D startups'"
+                  />
                 </div>
 
                 <div>
