@@ -131,71 +131,6 @@ function ExistingProposalCard({ proposal, onWithdraw, withdrawing }) {
   )
 }
 
-// ─── Recruiter: track record repeatable input ────────────────────────────────
-
-const TRACK_RECORD_MAX = 3
-
-function TrackRecordInput({ value = [], onChange }) {
-  const [input, setInput] = useState('')
-  const [error, setError] = useState('')
-  const atMax = value.length >= TRACK_RECORD_MAX
-
-  function add() {
-    const entry = input.trim()
-    setError('')
-    if (!entry) return
-    if (entry.length < 5)   { setError('Must be at least 5 characters.'); return }
-    if (entry.length > 300) { setError('Must be 300 characters or fewer.'); return }
-    onChange([...value, entry])
-    setInput('')
-  }
-
-  return (
-    <div className="space-y-2">
-      {value.map((entry, i) => (
-        <div key={i} className="flex items-start gap-2 bg-gray-50 rounded-lg px-3 py-2.5">
-          <p className="flex-1 text-sm text-gray-700 leading-relaxed">{entry}</p>
-          <button
-            type="button"
-            onClick={() => { setError(''); onChange(value.filter((_, idx) => idx !== i)) }}
-            className="text-gray-400 hover:text-gray-700 flex-shrink-0 mt-0.5"
-            aria-label="Remove"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      ))}
-
-      {atMax ? (
-        <p className="text-xs text-gray-400 italic">3/3 — maximum reached</p>
-      ) : (
-        <div>
-          <textarea
-            className="input resize-none w-full text-sm"
-            rows={2}
-            value={input}
-            onChange={e => { setInput(e.target.value); setError('') }}
-            placeholder="e.g. 'While at Meta, filled 10 similar roles per quarter'"
-            maxLength={300}
-          />
-          <button
-            type="button"
-            onClick={add}
-            className="mt-1.5 text-xs font-medium text-primary-600 hover:text-primary-700"
-          >
-            + Add entry
-          </button>
-        </div>
-      )}
-
-      {error && <p className="text-xs text-red-500">{error}</p>}
-      <p className="text-xs text-gray-400">{value.length}/{TRACK_RECORD_MAX} entries</p>
-    </div>
-  )
-}
-
 // ─── Recruiter: submit proposal form ─────────────────────────────────────────
 
 const FEE_OPTIONS = [
@@ -216,11 +151,12 @@ function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted })
   )
   const [pitch,            setPitch]            = useState('')
   const [exp,              setExp]              = useState('')
-  const [sourcingStrategy, setSourcingStrategy] = useState('')
-  const [toolsUsed,        setToolsUsed]        = useState('')
-  const [deliveryDays,     setDeliveryDays]     = useState('')
-  const [trackRecord,      setTrackRecord]      = useState([])
-  const [submitting,       setSubmitting]       = useState(false)
+  const [sourcingStrategy,  setSourcingStrategy]  = useState('')
+  const [toolsUsed,         setToolsUsed]         = useState('')
+  const [deliveryDays,      setDeliveryDays]      = useState('')
+  const [screeningStrategy, setScreeningStrategy] = useState('')
+  const [trackRecord,       setTrackRecord]       = useState('')
+  const [submitting,        setSubmitting]        = useState(false)
   const [error,            setError]            = useState('')
 
   async function handleSubmit(e) {
@@ -229,7 +165,7 @@ function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted })
     setSubmitting(true)
     setError('')
 
-    const { data: newProposal, error: err } = await supabase
+    const { error: err } = await supabase
       .from('job_proposals')
       .insert({
         job_id:                  jobId,
@@ -240,17 +176,11 @@ function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted })
         sourcing_strategy:       sourcingStrategy.trim() || null,
         tools_used:              toolsUsed.trim() || null,
         delivery_timeline_days:  deliveryDays ? parseInt(deliveryDays, 10) : null,
+        screening_strategy:      screeningStrategy.trim() || null,
+        track_record:            trackRecord.trim() || null,
       })
-      .select('id')
-      .single()
 
     if (err) { setError(err.message); setSubmitting(false); return }
-
-    if (trackRecord.length > 0 && newProposal?.id) {
-      await supabase.from('proposal_track_record').insert(
-        trackRecord.map(description => ({ proposal_id: newProposal.id, description }))
-      )
-    }
 
     onSubmitted()
   }
@@ -352,11 +282,27 @@ function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted })
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Track Record
-          <span className="ml-2 text-xs font-normal text-gray-400">Optional, up to 3</span>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Screening Strategy
+          <span className="ml-2 text-xs font-normal text-gray-400">Optional</span>
         </label>
-        <TrackRecordInput value={trackRecord} onChange={setTrackRecord} />
+        <textarea
+          className="input resize-none" rows={3}
+          placeholder="How will you vet candidates before sending them to me? e.g. technical screening calls, take-home tests, reference checks"
+          value={screeningStrategy} onChange={e => setScreeningStrategy(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Track Record
+          <span className="ml-2 text-xs font-normal text-gray-400">Optional</span>
+        </label>
+        <textarea
+          className="input resize-none" rows={4}
+          placeholder="Tell us about similar roles you've filled — e.g. 'While at Meta, filled 10 similar roles per quarter' or 'Placed 3 SREs at a Series B startup in 2024'"
+          value={trackRecord} onChange={e => setTrackRecord(e.target.value)}
+        />
       </div>
 
       <button type="submit" disabled={submitting} className="btn-primary w-full py-2.5">
@@ -509,17 +455,17 @@ function ProposalCard({ proposal, onUpdate, onAccept }) {
         </div>
       )}
 
-      {proposal.proposal_track_record?.length > 0 && (
+      {proposal.screening_strategy && (
+        <div>
+          <p className="text-xs text-gray-500 mb-1">Screening strategy</p>
+          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{proposal.screening_strategy}</p>
+        </div>
+      )}
+
+      {proposal.track_record && (
         <div>
           <p className="text-xs text-gray-500 mb-1">Track record</p>
-          <ul className="space-y-1">
-            {proposal.proposal_track_record.map((tr, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="text-gray-400 flex-shrink-0 mt-0.5">•</span>
-                <span className="leading-relaxed">{tr.description}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{proposal.track_record}</p>
         </div>
       )}
     </div>
@@ -625,7 +571,7 @@ export default function JobDetail() {
       if (owned) {
         const { data: props } = await supabase
           .from('job_proposals')
-          .select('id, proposed_fee_percentage, pitch, relevant_experience, sourcing_strategy, tools_used, delivery_timeline_days, status, submitted_at, responded_at, recruiter_profiles(id, first_name, last_name), proposal_track_record(description)')
+          .select('id, proposed_fee_percentage, pitch, relevant_experience, sourcing_strategy, tools_used, delivery_timeline_days, screening_strategy, track_record, status, submitted_at, responded_at, recruiter_profiles(id, first_name, last_name)')
           .eq('job_id', jobId)
           .order('submitted_at', { ascending: false })
         setProposals(props ?? [])
