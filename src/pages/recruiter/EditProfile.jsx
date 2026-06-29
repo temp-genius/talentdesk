@@ -536,7 +536,7 @@ export default function EditProfile() {
         {/* Specialisms */}
         <SectionCard title="Specialisms">
           {allCategories.length > 0 ? (
-            <SpecialismSelector categories={allCategories} selected={specialisms} onChange={setSpecialisms} maxSpecialisms={6} maxSectors={3} />
+            <SpecialismSelector categories={allCategories} selected={specialisms} onChange={setSpecialisms} maxSpecialisms={5} maxSectors={3} />
           ) : (
             <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />

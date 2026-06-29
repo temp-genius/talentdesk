@@ -305,7 +305,7 @@ export default function RecruiterSignup() {
                       categories={specialismCategories}
                       selected={form.specialisms}
                       onChange={v => set('specialisms', v)}
-                      maxSpecialisms={6}
+                      maxSpecialisms={5}
                       maxSectors={3}
                     />
                   )}
@@ -322,7 +322,7 @@ export default function RecruiterSignup() {
                     className="input resize-none w-full" rows={3}
                     value={form.recentTrackRecord}
                     onChange={e => set('recentTrackRecord', e.target.value)}
-                    placeholder="e.g. 'Placed 4 Senior DevOps engineers and 2 SREs in the last year, mostly Series B-D startups'"
+                    placeholder="e.g. recent placements, sectors, and rough numbers"
                   />
                 </div>
 

@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 export default function SpecialismSelector({
   categories, selected, onChange,
-  maxSpecialisms = 6, maxSectors = 3,
+  maxSpecialisms = 5, maxSectors = 3,
 }) {
   const sectors = [...new Set(categories.map(c => c.sector))]
   const [expanded, setExpanded] = useState({})
