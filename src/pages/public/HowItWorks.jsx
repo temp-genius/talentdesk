@@ -65,20 +65,20 @@ const RECRUITER_STEPS = [
   },
   {
     icon: '💼',
-    title: 'Browse roles and get contacted',
-    description: 'Hiring managers search for recruiters by specialism, market, and background. You can also browse open roles and express interest directly.',
+    title: 'Browse open roles and submit proposals',
+    description: 'Browse roles published to the marketplace, filtered by your sectors, specialisms, and niches. Submit a proposal for any role that fits — your fee (within your assigned range), sourcing strategy, tools, screening approach, track record, and delivery timeline. The hiring manager reviews all proposals and decides who to work with.',
   },
   {
     icon: '💳',
-    title: 'Deliver and get paid at every stage',
-    description: 'Once a hiring manager starts a job with you, payments are triggered at three milestones — so you earn as you deliver, not only at placement.',
+    title: 'Get accepted and get paid at every stage',
+    description: 'If a hiring manager accepts your proposal, the role becomes active and payment is triggered at three milestones — so you earn as you deliver, not only at placement.',
   },
 ]
 
 const RECRUITER_FAQS = [
   {
     q: 'How do I get found by hiring managers?',
-    a: 'Complete your profile fully. Write a detailed bio mentioning specific role types, technologies, and sectors you have placed in. Select your specialisms carefully — hiring managers filter and search by these. Add your previous employers and career background.',
+    a: 'There are two ways work reaches you. The primary path is the marketplace: browse open roles and submit proposals — your profile and proposal together are what hiring managers evaluate when deciding who to work with. The second path is direct: hiring managers can also browse the recruiter directory and message you directly for roles where they already have someone in mind. For both paths, a complete profile matters — write a detailed bio covering the role types, sectors, and markets you have placed in, and select your specialisms carefully as hiring managers filter by these.',
   },
   {
     q: 'How does payment work?',
@@ -111,13 +111,13 @@ const HM_STEPS = [
   },
   {
     icon: '🤝',
-    title: 'Start a search with milestone payments',
-    description: 'When you are ready, click Start Job to assign a recruiter exclusively to your role. Your card is charged 20% upfront to begin the search.',
+    title: 'Post a role to the marketplace',
+    description: 'Publish your role and qualified recruiters submit proposals — their fee, sourcing approach, and track record. Compare proposals side by side and shortlist the ones you like. If you already know which recruiter you want to work with, you can also message them directly and assign the role without going through the marketplace.',
   },
   {
     icon: '✅',
-    title: 'Receive candidates and make a hire',
-    description: 'Approve a shortlist to trigger Stage 2, confirm interviews for Stage 3. You pay as real work is delivered — with a seven-day review window at each stage.',
+    title: 'Accept a proposal and the work begins',
+    description: 'Once you accept a proposal, your card is charged the first milestone (20%) and the recruiter starts work. Approve the shortlist to trigger Stage 2, confirm interviews for Stage 3. You pay as real work is delivered.',
   },
 ]
 
@@ -129,6 +129,10 @@ const HM_FAQS = [
   {
     q: 'How do I know the recruiters are legitimate?',
     a: 'Every recruiter on Vetted TA is manually vetted. We review their LinkedIn profile, verify their market experience, and check their stated track record before approving their profile. Platform ratings and reviews from other hiring managers provide ongoing quality assurance.',
+  },
+  {
+    q: 'Why do different recruiters show different fee ranges?',
+    a: 'Every recruiter is assigned a fee range during approval based on their experience and track record — more experienced recruiters may have access to higher rates. When submitting a proposal, a recruiter proposes a specific fee within their assigned range, so you always know exactly what you are paying before you accept.',
   },
   {
     q: 'What if I am not happy with the shortlist?',
