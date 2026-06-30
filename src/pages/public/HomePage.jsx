@@ -346,10 +346,7 @@ export default function HomePage() {
                   <blockquote style={{ ...S.sans, fontSize: 13, color: '#4b5563', lineHeight: 1.6, fontStyle: 'italic', margin: '0 0 16px 0', paddingLeft: 14, borderLeft: `3px solid ${BLUE}` }}>
                     "{r.quote}"
                   </blockquote>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 14, borderTop: `1px solid ${LGRAY}` }}>
-                    <span style={{ ...S.sans, fontSize: 12, fontWeight: 700, color: NAVY }}>{r.placements}</span>
-                    <span style={{ ...S.sans, fontSize: 12, color: GRAY }}>placements on platform</span>
-                  </div>
+
                 </div>
               </div>
             ))}
