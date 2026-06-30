@@ -136,7 +136,7 @@ const HM_FAQS = [
   },
   {
     q: 'What if I am not happy with the shortlist?',
-    a: 'You have a seven day review window after the shortlist is submitted. If the CVs do not match the brief you can raise a dispute before any payment releases. If you select candidates for interview the payment releases automatically as this confirms you are happy with the quality.',
+    a: "If a shortlist doesn't match the brief, contact us directly at hello@vettedta.com and we'll review the case individually and help resolve it.",
   },
   {
     q: 'Can I use the same recruiter again?',
@@ -322,7 +322,7 @@ export default function HowItWorks() {
           <p className="text-slate-400 text-sm mb-6">
             {isRecruiter
               ? 'Apply in minutes. Get approved within 48 hours.'
-              : 'Browse 100+ vetted specialist recruiters right now.'}
+              : 'Browse our vetted specialist recruiters right now.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {isRecruiter ? (
