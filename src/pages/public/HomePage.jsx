@@ -53,9 +53,8 @@ const RECRUITER_CARDS = [
     title: 'Senior Technology Recruiter',
     markets: 'Dublin · London',
     specialism: 'Engineering & Product',
-    fee: '8–10%',
-    placements: 34,
-    quote: 'Vetted TA gives me real flexibility — I work with the clients I choose, on my schedule.',
+    fee: '10%',
+    quote: 'I was tired of giving 80% of my fee to an agency. Here I keep the majority, the work is exclusive, and I actually enjoy what I do again.',
   },
   {
     img: '/images/mark-r.png',
@@ -63,9 +62,8 @@ const RECRUITER_CARDS = [
     title: 'Commercial Recruitment Lead',
     markets: 'London · Manchester',
     specialism: 'Sales & Revenue',
-    fee: '6–8%',
-    placements: 41,
-    quote: "I've built a great part-time revenue stream around my own consultancy practice.",
+    fee: '8–10%',
+    quote: 'The milestone payments changed everything for me. I get paid as I deliver, not six months after the offer letter.',
   },
   {
     img: '/images/claire-o.png',
@@ -73,9 +71,8 @@ const RECRUITER_CARDS = [
     title: 'Executive Search Specialist',
     markets: 'Dublin · New York',
     specialism: 'C-Suite & Leadership',
-    fee: '10%',
-    placements: 22,
-    quote: 'The milestone payment model means I get paid at every stage — not just at the end.',
+    fee: '12%',
+    quote: 'I applied not expecting much. The vetting process was thorough, which told me this was serious. I signed up the same day I was approved.',
   },
 ]
 
@@ -172,7 +169,7 @@ export default function HomePage() {
                 textTransform: 'uppercase', color: BLUE, background: 'rgba(59,130,246,0.18)',
                 padding: '5px 12px', borderRadius: 4, display: 'inline-block', marginBottom: 24,
               }}>
-                Now accepting recruiter applications
+                Now accepting founding recruiter applications — 15% acceptance rate
               </span>
               <h1 style={{ ...S.serif, fontWeight: 400, fontSize: 52, lineHeight: 1.12, color: '#fff', maxWidth: 580, marginBottom: 22 }}>
                 The retained marketplace for{' '}
@@ -180,7 +177,7 @@ export default function HomePage() {
                 recruiters.
               </h1>
               <p style={{ ...S.sans, fontWeight: 300, fontSize: 16, lineHeight: 1.7, color: 'rgba(255,255,255,0.65)', maxWidth: 460, marginBottom: 36 }}>
-                You've spent years building a network. Vetted TA gives you the infrastructure to monetise it — on your own terms. No agency. No cold calls. Work comes to you.
+                Fill an €80k role at 12% and take home up to €6,720. No BD. No competing agencies. No invoice chasing.
               </p>
               <div className="hp-cta-btns" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                 <Link to="/recruiter/signup" style={{
@@ -222,10 +219,10 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p style={{ ...S.sans, fontWeight: 500, fontSize: 12, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
-                    Applications open
+                    Applications open · 15% acceptance rate · Recruiters from Meta, Google, Amazon and more
                   </p>
                   <p style={{ ...S.sans, fontWeight: 300, fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, marginTop: 2 }}>
-                    Senior recruiters · Ireland and UK
+                    Senior recruiters · Ireland, UK and beyond.
                   </p>
                 </div>
               </div>
@@ -255,11 +252,11 @@ export default function HomePage() {
         <div style={{ ...S.container }}>
           <div className="grid grid-cols-2 md:grid-cols-5">
             {[
-              { value: '8–12%',                   label: 'Transparent fee range' },
-              { value: '€6,000+',                 label: 'Avg placement fee' },
-              { value: 'Vetted',                   label: 'Every recruiter. No exceptions.' },
-              { value: 'Exclusive',                label: 'Every role. No contingency.' },
-              { value: 'No Business Development',  label: 'Just Delivery.' },
+              { value: '8–12%',       label: 'Transparent fee range' },
+              { value: 'Up to €6,720', label: 'Per €80k placement' },
+              { value: '~15%',         label: 'Recruiter acceptance rate' },
+              { value: 'Exclusive',    label: 'One recruiter per role' },
+              { value: 'Zero BD',      label: 'Work finds you' },
             ].map((item, i, arr) => (
               <div
                 key={item.label}
@@ -301,9 +298,12 @@ export default function HomePage() {
               <p style={{ ...S.sans, fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: BLUE, marginBottom: 10 }}>
                 The talent
               </p>
-              <h2 style={{ ...S.serif, fontSize: 36, fontWeight: 700, color: NAVY, lineHeight: 1.2, letterSpacing: '-0.3px', margin: 0 }}>
-                Meet some of our vetted recruiters
+              <h2 style={{ ...S.serif, fontSize: 36, fontWeight: 700, color: NAVY, lineHeight: 1.2, letterSpacing: '-0.3px', margin: '0 0 10px 0' }}>
+                Why they joined. What they think.
               </h2>
+              <p style={{ ...S.sans, fontWeight: 300, fontSize: 14, color: GRAY, margin: 0 }}>
+                Early members — in their own words.
+              </p>
             </div>
             <Link to="/browse-recruiters" className="hp-btn-secondary" style={{ ...S.btnSecondary, fontSize: 13 }}>
               Browse all recruiters →
@@ -370,18 +370,18 @@ export default function HomePage() {
             {[
               {
                 step: '01',
-                title: 'Post your role',
-                body: "Describe the position, the team, and the skills you need. We'll match you with recruiters who have genuine experience placing into that market.",
+                title: 'Post a role to the marketplace',
+                body: 'Publish your brief and qualified recruiters submit proposals — their fee, sourcing strategy, and track record. You choose who to work with.',
               },
               {
                 step: '02',
-                title: 'Agree the fee',
-                body: 'Each recruiter sets their rate between 8–12%. You see their profile, reviews, and placement history before you agree anything.',
+                title: 'Review proposals and choose',
+                body: 'Compare proposals side by side. Every recruiter is manually vetted before they can bid. No agencies, no junior consultants — specialist independents only.',
               },
               {
                 step: '03',
-                title: 'Pay on milestones',
-                body: 'Stage 1: shortlist delivered (20%). Stage 2: interviews confirmed (30%). Stage 3: offer accepted (50%). Paid securely through Stripe.',
+                title: 'Pay on milestones, not on faith',
+                body: '20% when CVs are approved. 30% when interviews are confirmed. 50% when the offer is accepted. Every payment held in escrow by Stripe until the work is delivered.',
               },
             ].map(item => (
               <div key={item.step} style={{ padding: '32px 28px', background: 'rgba(255,255,255,0.06)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -403,19 +403,19 @@ export default function HomePage() {
               {
                 heading: 'For companies',
                 items: [
-                  'Access pre-vetted, specialist recruiters instantly',
-                  'Agreed fee upfront — no surprise invoices',
-                  'Real accountability through milestone payments',
-                  'Cancel any time before the next stage',
+                  'Exclusive: one recruiter per role, no competing agencies',
+                  'Vetted specialists: roughly 1 in 7 applicants is approved',
+                  'Milestone payments: pay as work is delivered, not upfront',
+                  'Transparent fees: 8–12% of salary, no hidden costs',
                 ],
               },
               {
                 heading: 'For independent recruiters',
                 items: [
-                  'Work flexibly — take on roles that fit your schedule',
-                  'Get paid at every stage, not just at placement',
-                  'Build your profile with verified reviews',
-                  'No agency overhead, no targets, no politics',
+                  'No business development: work finds you through the marketplace',
+                  'Milestone payments: get paid at every stage, not just at placement',
+                  'Up to €6,720 on a single €80k placement at 12%',
+                  'Exclusive briefs: you are never competing against another recruiter on the same role',
                 ],
               },
             ].map(col => (
@@ -437,6 +437,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── WHO WE APPROVE ── */}
+      <section style={{ backgroundColor: OFF_WH, padding: '96px 24px' }}>
+        <div style={{ ...S.containerWide }}>
+          <div style={{ marginBottom: 48 }}>
+            <p style={{ ...S.sans, fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: BLUE, marginBottom: 10 }}>
+              The standard
+            </p>
+            <h2 style={{ ...S.serif, fontSize: 36, fontWeight: 700, color: NAVY, lineHeight: 1.2, letterSpacing: '-0.3px', margin: '0 0 12px 0' }}>
+              The calibre of recruiters we approve.
+            </h2>
+            <p style={{ ...S.sans, fontWeight: 300, fontSize: 15, color: GRAY, margin: 0, maxWidth: 560 }}>
+              Roughly 1 in 7 applicants makes it through our vetting process. Here is the type of professional who does.
+            </p>
+          </div>
+          <div className="hp-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+            {[
+              { title: 'In-house TA alumni', desc: 'Former talent acquisition professionals from Meta, Google, Amazon, Salesforce and similar — with deep candidate networks and no agency overhead.' },
+              { title: 'Tech specialists', desc: 'Engineering, product, data and AI recruiters with genuine hands-on hiring experience in fast-growth and enterprise environments.' },
+              { title: 'Executive search', desc: 'C-suite, board, and senior leadership specialists with long-term candidate relationships in their markets.' },
+              { title: 'Legal and financial services', desc: 'Specialist recruiters covering qualified legal, compliance, risk, and financial services professionals across multiple jurisdictions.' },
+              { title: 'Web3 and emerging tech', desc: 'Recruiters with active networks in blockchain, DeFi, and Web3 hiring — a niche where specialist knowledge is essential.' },
+              { title: 'Construction and built environment', desc: 'Experienced recruiters covering civil, structural, M&E, and project management roles across Ireland, UK and Europe.' },
+            ].map(item => (
+              <div
+                key={item.title}
+                className="hp-card"
+                style={{ backgroundColor: '#fff', borderRadius: 12, border: `1px solid ${LGRAY}`, padding: '28px 26px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', transition: 'transform 0.2s, box-shadow 0.2s' }}
+              >
+                <h3 style={{ ...S.sans, fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 10 }}>
+                  {item.title}
+                </h3>
+                <p style={{ ...S.sans, fontSize: 14, color: GRAY, lineHeight: 1.65, margin: 0 }}>
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── TESTIMONIALS ── */}
       <section style={{ backgroundColor: '#f8f9fc', padding: '64px 48px' }}>
         <div style={{ ...S.container }}>
@@ -445,10 +485,10 @@ export default function HomePage() {
               From the community
             </p>
             <h2 style={{ ...S.serif, fontWeight: 400, fontSize: 28, color: '#1a1f36', margin: '0 0 6px 0' }}>
-              What recruiters say.
+              Why they joined. What they like.
             </h2>
             <p style={{ ...S.sans, fontWeight: 300, fontSize: 14, color: '#6b7280', margin: 0 }}>
-              Early members — in their own words.
+              Independent recruiters and hiring managers, in their own words.
             </p>
           </div>
 
@@ -482,10 +522,10 @@ export default function HomePage() {
             Get started today
           </p>
           <h2 style={{ ...S.serif, fontSize: 42, fontWeight: 700, color: '#fff', lineHeight: 1.18, marginBottom: 20, letterSpacing: '-0.4px' }}>
-            Ready to hire smarter?
+            Ready to work smarter, not harder?
           </h2>
           <p style={{ ...S.sans, fontSize: 17, color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, marginBottom: 40 }}>
-            Join the growing number of companies and independent recruiters who are changing how talent acquisition works.
+            No business development. No competing agencies. Exclusive retained briefs, milestone payments, and work that actually gets paid.
           </p>
           <div className="hp-cta-btns" style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/hiring-manager/signup" className="hp-btn-primary" style={{ ...S.btnPrimary, backgroundColor: BLUE, fontSize: 15, padding: '14px 36px' }}>
