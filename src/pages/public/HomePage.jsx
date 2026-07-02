@@ -253,7 +253,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-5">
             {[
               { value: '8–12%',     label: 'Transparent fee range' },
-              { value: '70%',       label: 'Retained by the recruiter' },
+              { value: '70% of fee', label: 'Paid to the recruiter' },
               { value: 'Elite only', label: 'Roughly 1 in 7 applicants approved' },
               { value: 'Exclusive', label: 'One recruiter per role' },
               { value: 'Zero BD',   label: 'Work finds you' },
