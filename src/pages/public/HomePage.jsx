@@ -72,20 +72,20 @@ const RECRUITER_CARDS = [
     markets: 'Dublin · New York',
     specialism: 'C-Suite & Leadership',
     fee: '12%',
-    quote: 'I applied not expecting much. The vetting process was thorough, which told me this was serious. I signed up the same day I was approved.',
+    quote: 'The platform looked serious from the start. The vetting process was thorough but quick, and I knew straightaway this was something different. I signed up the same day I was approved.',
   },
 ]
 
 const TESTIMONIALS = [
   {
     avatar: '/images/claire-o.png',
-    quote: "After being made redundant I didn't want to go back into agency. Vetted TA let me keep doing the work I'm good at — without the politics or the cold calling. My first placement was €7,200. That's real money for one brief.",
+    quote: "After being made redundant I didn't want to go back into agency. Vetted TA gives me the infrastructure to keep doing the work I'm good at — without the politics or the cold calling. The milestone payments mean I'm covered at every stage, not just when an offer lands.",
     name: 'Claire O.',
     detail: 'Independent recruiter · Technology · Dublin',
   },
   {
     avatar: '/images/paul-h.png',
-    quote: "We'd been burned by agencies sending CVs that clearly didn't fit. On Vetted TA we found a recruiter who'd spent ten years in our sector and actually understood the brief. Night and day difference.",
+    quote: "We'd been burned by agencies sending CVs that clearly didn't fit the brief. What I liked about Vetted TA is that the recruiter had spent years in our sector and actually understood what we were looking for. The proposal process made it easy to compare and choose with confidence.",
     name: 'Paul H.',
     detail: 'Head of People · Scale-up · London',
   },
@@ -252,11 +252,11 @@ export default function HomePage() {
         <div style={{ ...S.container }}>
           <div className="grid grid-cols-2 md:grid-cols-5">
             {[
-              { value: '8–12%',       label: 'Transparent fee range' },
-              { value: 'Up to €6,720', label: 'Per €80k placement' },
-              { value: '~15%',         label: 'Recruiter acceptance rate' },
-              { value: 'Exclusive',    label: 'One recruiter per role' },
-              { value: 'Zero BD',      label: 'Work finds you' },
+              { value: '8–12%',     label: 'Transparent fee range' },
+              { value: '70%',       label: 'Retained by the recruiter' },
+              { value: 'Elite only', label: 'Roughly 1 in 7 applicants approved' },
+              { value: 'Exclusive', label: 'One recruiter per role' },
+              { value: 'Zero BD',   label: 'Work finds you' },
             ].map((item, i, arr) => (
               <div
                 key={item.label}
@@ -414,7 +414,7 @@ export default function HomePage() {
                 items: [
                   'No business development: work finds you through the marketplace',
                   'Milestone payments: get paid at every stage, not just at placement',
-                  'Up to €6,720 on a single €80k placement at 12%',
+                  'Recruiters retain 70% of the placement fee after the Vetted TA platform fee — every time, on every brief.',
                   'Exclusive briefs: you are never competing against another recruiter on the same role',
                 ],
               },
@@ -453,11 +453,11 @@ export default function HomePage() {
           </div>
           <div className="hp-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
             {[
-              { title: 'In-house TA alumni', desc: 'Former talent acquisition professionals from Meta, Google, Amazon, Salesforce and similar — with deep candidate networks and no agency overhead.' },
-              { title: 'Tech specialists', desc: 'Engineering, product, data and AI recruiters with genuine hands-on hiring experience in fast-growth and enterprise environments.' },
-              { title: 'Executive search', desc: 'C-suite, board, and senior leadership specialists with long-term candidate relationships in their markets.' },
-              { title: 'Legal and financial services', desc: 'Specialist recruiters covering qualified legal, compliance, risk, and financial services professionals across multiple jurisdictions.' },
-              { title: 'Web3 and emerging tech', desc: 'Recruiters with active networks in blockchain, DeFi, and Web3 hiring — a niche where specialist knowledge is essential.' },
+              { title: 'Agency recruiters', desc: 'Experienced consultants stepping out of agency life who bring established client relationships, billing track records, and the discipline of working retained briefs.' },
+              { title: 'In-house TA alumni', desc: 'Former talent acquisition professionals from Meta, Google, Amazon, Salesforce and similar — with deep candidate networks built without the agency overhead.' },
+              { title: 'Tech specialists', desc: 'Engineering, product, data and AI recruiters with genuine hands-on hiring experience across fast-growth startups and enterprise environments.' },
+              { title: 'Executive search', desc: 'C-suite, board, and senior leadership specialists with long-term candidate relationships and the patience that complex searches require.' },
+              { title: 'Legal and financial services', desc: 'Specialist recruiters covering qualified legal, compliance, risk, and financial services professionals across multiple markets.' },
               { title: 'Construction and built environment', desc: 'Experienced recruiters covering civil, structural, M&E, and project management roles across Ireland, UK and Europe.' },
             ].map(item => (
               <div
@@ -474,6 +474,9 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <p style={{ ...S.sans, fontWeight: 300, fontSize: 13, color: GRAY, textAlign: 'center', marginTop: 28 }}>
+            And specialists across many more sectors — each manually reviewed before approval.
+          </p>
         </div>
       </section>
 
