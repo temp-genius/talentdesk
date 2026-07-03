@@ -545,6 +545,50 @@ export function sendProposalAcceptedNotification(recruiterEmail, jobTitle) {
   })
 }
 
+// ─── New job matches recruiter specialisms ────────────────────────────────────
+
+export function sendNewJobMatchNotification(recruiterEmail, recruiterFirstName, jobTitle, sector, jobId) {
+  const origin = window.location.origin
+  const jobUrl = `${origin}/jobs/${jobId}`
+
+  const html = wrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          New ${sector} role on Vetted TA
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          Hi ${recruiterFirstName}, a new role has just been published that matches your specialisms.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="background-color:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;margin-bottom:24px;">
+          <tr><td style="padding:20px 24px;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;
+                      text-transform:uppercase;letter-spacing:1px;">Role</p>
+            <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111827;">${jobTitle}</p>
+            <p style="margin:0;font-size:13px;color:#6b7280;">${sector}</p>
+          </td></tr>
+        </table>
+        <a href="${jobUrl}"
+           style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
+                  font-size:14px;font-weight:600;padding:12px 24px;
+                  border-radius:8px;text-decoration:none;margin-bottom:24px;">
+          View Role
+        </a>
+        <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;line-height:1.5;">
+          You are receiving this because your profile includes specialisms in ${sector}.
+          Log in to submit a proposal before the role fills.
+        </p>
+      </td>
+    </tr>`)
+
+  return sendEmail({
+    to:      recruiterEmail,
+    subject: `New ${sector} role on Vetted TA — ${jobTitle}`,
+    html,
+  })
+}
+
 // ─── Proposal submitted — admin notification ──────────────────────────────────
 
 export function sendProposalSubmittedAdminNotification(recruiterName, jobTitle) {

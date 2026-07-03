@@ -2,9 +2,24 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { sendNewJobMatchNotification } from '../../lib/emailService'
 import Logo from '../../components/layout/Logo'
 
-const SECTORS    = ['Technology', 'Finance', 'Legal', 'HR', 'Marketing', 'Operations', 'Logistics', 'Construction', 'Healthcare', 'Executive']
+const SECTORS = [
+  'Technology',
+  'Finance and Financial Services',
+  'Sales and Commercial',
+  'Marketing',
+  'Human Resources',
+  'Legal',
+  'Life Sciences and Pharma',
+  'Engineering and Manufacturing',
+  'Supply Chain and Logistics',
+  'Accounting',
+  'Construction and Property',
+  'Executive and Leadership',
+  'Operations and Business Support',
+]
 const COUNTRIES  = ['Ireland', 'UK', 'USA', 'Canada', 'Australia']
 const CURRENCIES = [
   { value: 'EUR', label: '€ EUR' },
@@ -98,7 +113,21 @@ export default function PostJob() {
   async function handlePublish() {
     if (!createdJobId) return
     setPublishing(true)
+
     await supabase.from('jobs').update({ status: 'open_for_proposals' }).eq('id', createdJobId)
+
+    // Fire-and-forget — do not block navigation
+    if (form.sector) {
+      supabase.rpc('get_recruiters_for_sector', { p_sector: form.sector })
+        .then(({ data }) => {
+          const recruiters = data ?? []
+          recruiters.forEach(r => {
+            sendNewJobMatchNotification(r.email, r.first_name ?? 'there', form.title.trim(), form.sector, createdJobId)
+          })
+        })
+        .catch(err => console.error('[PostJob] recruiter notification failed:', err))
+    }
+
     navigate(`/jobs/${createdJobId}`)
   }
 
