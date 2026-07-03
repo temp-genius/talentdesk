@@ -6,6 +6,7 @@ import Logo from '../components/layout/Logo'
 import {
   sendProposalShortlistedNotification,
   sendProposalRejectedNotification,
+  sendProposalRoleFilledNotification,
   sendProposalAcceptedNotification,
   sendProposalSubmittedAdminNotification,
 } from '../lib/emailService'
@@ -669,7 +670,7 @@ export default function JobDetail() {
             'get_recruiter_email_for_proposal',
             { p_proposal_id: rp.id }
           )
-          if (email) sendProposalRejectedNotification(email, job.title)
+          if (email) sendProposalRoleFilledNotification(email, job.title)
         })
       ).catch(err => console.error('[JobDetail] bulk-reject notifications failed:', err))
     }

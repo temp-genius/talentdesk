@@ -503,6 +503,42 @@ export function sendProposalRejectedNotification(recruiterEmail, jobTitle) {
   })
 }
 
+// ─── Proposal role filled (recruiter notification — bulk rejection path) ─────
+
+export function sendProposalRoleFilledNotification(recruiterEmail, jobTitle) {
+  const origin    = window.location.origin
+  const browseUrl = `${origin}/recruiter/browse-jobs`
+
+  const html = wrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          This role has been filled
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          Thank you for submitting a proposal for <strong>${jobTitle}</strong>.
+          The hiring manager has selected another recruiter for this role.
+        </p>
+        <p style="margin:0 0 20px;font-size:14px;color:#374151;">
+          Your proposal was well received — this one just came down to fit.
+          There are plenty more roles on Vetted TA — browse open roles and submit your next proposal.
+        </p>
+        <a href="${browseUrl}"
+           style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
+                  font-size:14px;font-weight:600;padding:12px 24px;
+                  border-radius:8px;text-decoration:none;">
+          Browse Open Roles
+        </a>
+      </td>
+    </tr>`)
+
+  return sendEmail({
+    to:      recruiterEmail,
+    subject: `Update on your proposal for ${jobTitle}`,
+    html,
+  })
+}
+
 // ─── Proposal accepted (recruiter notification) ───────────────────────────────
 
 export function sendProposalAcceptedNotification(recruiterEmail, jobTitle) {
