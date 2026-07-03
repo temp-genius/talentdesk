@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { sendShortlistApprovedNotification } from '../../lib/emailService'
+import PipelineTab from '../../components/jobs/PipelineTab'
 
 const OFFER_STATUS_STYLES = {
   pending:      'bg-yellow-100 text-yellow-800',
@@ -55,6 +56,7 @@ export default function HMActiveJob() {
   const [approving, setApproving]   = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [milestoneErr, setMilestoneErr] = useState('')
+  const [activeTab,    setActiveTab]    = useState('overview')
 
   const load = useCallback(async () => {
     const { data: row, error: err } = await supabase
@@ -226,7 +228,28 @@ export default function HMActiveJob() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="flex border-b border-gray-200 mb-6">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'pipeline', label: 'Pipeline' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                activeTab === tab.id
+                  ? 'border-primary-600 text-primary-700'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'overview' && (
+        <div className="space-y-6">
 
         {/* Job Complete banner */}
         {jobComplete && (
@@ -537,6 +560,12 @@ export default function HMActiveJob() {
           </div>
         </div>
 
+        </div>
+        )}
+
+        {activeTab === 'pipeline' && (
+          <PipelineTab assignmentId={assignmentId} userType="hiring_manager" milestones={milestones} />
+        )}
       </div>
 
       {/* Cancel role */}
