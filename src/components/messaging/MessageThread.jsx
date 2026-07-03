@@ -14,7 +14,7 @@ function formatTime(ts) {
   return date.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' }) + ` at ${timeStr}`
 }
 
-export default function MessageThread({ jobId, otherUserId, otherUserName, jobTitle }) {
+export default function MessageThread({ jobId, otherUserId, otherUserName, jobTitle, currentUserName }) {
   const { user } = useAuth()
   const [messages, setMessages] = useState([])
   const [body, setBody] = useState('')
@@ -109,7 +109,7 @@ export default function MessageThread({ jobId, otherUserId, otherUserName, jobTi
           otherUserId,
         })
         if (recipientEmail) {
-          const senderName = user.email
+          const senderName = currentUserName || user.email
           await sendNewMessageNotification(
             recipientEmail,
             senderName,

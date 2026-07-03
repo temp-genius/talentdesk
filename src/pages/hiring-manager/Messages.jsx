@@ -20,6 +20,7 @@ export default function Messages() {
   const [loading, setLoading]             = useState(true)
   const [active, setActive]               = useState(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [currentUserName, setCurrentUserName] = useState('')
 
   const loadConversations = useCallback(async () => {
     if (!user) return
@@ -75,6 +76,18 @@ export default function Messages() {
   }, [user])
 
   useEffect(() => { loadConversations() }, [loadConversations])
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('hiring_company_profiles')
+      .select('company_name')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCurrentUserName(data.company_name || user.email)
+      })
+  }, [user])
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -223,6 +236,7 @@ export default function Messages() {
               otherUserId={active.otherUserId}
               otherUserName={active.otherUserName}
               jobTitle={active.jobTitle}
+              currentUserName={currentUserName || user.email}
             />
           ) : (
             <div className="flex items-center justify-center h-full py-24 text-center px-6">

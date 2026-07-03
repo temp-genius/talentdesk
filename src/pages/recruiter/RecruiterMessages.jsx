@@ -19,6 +19,7 @@ export default function RecruiterMessages() {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading]             = useState(true)
   const [active, setActive]               = useState(null)
+  const [currentUserName, setCurrentUserName] = useState('')
 
   const loadConversations = useCallback(async () => {
     if (!user) return
@@ -73,6 +74,20 @@ export default function RecruiterMessages() {
   }, [user])
 
   useEffect(() => { loadConversations() }, [loadConversations])
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('recruiter_profiles')
+      .select('first_name, last_name')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCurrentUserName(
+          `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim() || user.email
+        )
+      })
+  }, [user])
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -189,6 +204,7 @@ export default function RecruiterMessages() {
               otherUserId={active.otherUserId}
               otherUserName={active.otherUserName}
               jobTitle={active.jobTitle}
+              currentUserName={currentUserName || user.email}
             />
           ) : (
             <div className="flex items-center justify-center h-full py-24 text-center px-6">
