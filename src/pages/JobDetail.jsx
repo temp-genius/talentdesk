@@ -645,6 +645,14 @@ export default function JobDetail() {
       console.error('[JobDetail] accept email failed:', e)
     }
 
+    // Fetch proposals about to be bulk-rejected so we can notify them
+    const { data: toReject } = await supabase
+      .from('job_proposals')
+      .select('id')
+      .eq('job_id', jobId)
+      .neq('id', proposalId)
+      .in('status', ['submitted', 'shortlisted'])
+
     // Reject all remaining submitted/shortlisted proposals on this job (non-blocking)
     await supabase
       .from('job_proposals')
@@ -652,6 +660,19 @@ export default function JobDetail() {
       .eq('job_id', jobId)
       .neq('id', proposalId)
       .in('status', ['submitted', 'shortlisted'])
+
+    // Notify bulk-rejected recruiters (fire and forget — don't block navigation)
+    if (toReject?.length) {
+      Promise.allSettled(
+        toReject.map(async (rp) => {
+          const { data: email } = await supabase.rpc(
+            'get_recruiter_email_for_proposal',
+            { p_proposal_id: rp.id }
+          )
+          if (email) sendProposalRejectedNotification(email, job.title)
+        })
+      ).catch(err => console.error('[JobDetail] bulk-reject notifications failed:', err))
+    }
 
     navigate(`/start-job?recruiter_id=${recruiterId}&job_id=${jobId}`)
     return null
