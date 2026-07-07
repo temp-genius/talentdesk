@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
+async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
   const supabaseUrl    = Deno.env.get('SUPABASE_URL') ?? ''
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   const url            = `${supabaseUrl}/functions/v1/send-email`
@@ -19,7 +19,9 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   })
   if (!res.ok) {
     console.error('[notify-recruiters-for-job] send-email returned', res.status, await res.text())
+    return false
   }
+  return true
 }
 
 function emailHeader(): string {
@@ -178,18 +180,21 @@ Deno.serve(async (req: Request) => {
     const jobUrl  = `${appUrl}/jobs/${job_id}`
     const subject = `New ${sector} role on Vetted TA — ${job_title}`
 
-    // Send all notifications in parallel — one failed send doesn't block the others
-    const results = await Promise.allSettled(
-      (profiles ?? []).map(async (p: { first_name: string; user_id: string }) => {
-        const email = emailMap[p.user_id]
-        if (!email) return
-        const html = buildMatchEmail(p.first_name ?? 'there', job_title, sector, jobUrl)
-        await sendEmail(email, subject, html)
-      })
+    // Send notifications sequentially with a small delay to avoid rate-limiting send-email
+    const recipients = (profiles ?? []).filter(
+      (p: { first_name: string; user_id: string }) => emailMap[p.user_id]
     )
-
-    const notified = results.filter(r => r.status === 'fulfilled').length
-    console.log(`[notify-recruiters-for-job] notified ${notified}/${results.length} recruiters for job ${job_id}`)
+    let notified = 0
+    for (let i = 0; i < recipients.length; i++) {
+      const p = recipients[i]
+      const html = buildMatchEmail(p.first_name ?? 'there', job_title, sector, jobUrl)
+      const ok = await sendEmail(emailMap[p.user_id], subject, html)
+      if (ok) notified++
+      if (i < recipients.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    }
+    console.log(`[notify-recruiters-for-job] notified ${notified}/${recipients.length} recruiters for job ${job_id}`)
 
     return new Response(
       JSON.stringify({ success: true, notified }),
