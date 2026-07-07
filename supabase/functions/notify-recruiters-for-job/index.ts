@@ -175,7 +175,7 @@ Deno.serve(async (req: Request) => {
       .select('recruiter_profile_id')
       .in('specialism_category_id', categoryIds)
 
-    const profileIds = [
+    let profileIds = [
       ...new Set((specialisms ?? []).map((s: { recruiter_profile_id: string }) => s.recruiter_profile_id))
     ]
     if (!profileIds.length) {
@@ -186,11 +186,37 @@ Deno.serve(async (req: Request) => {
     }
 
     // Step 3: fetch approved recruiter profiles — service_role bypasses RLS
-    const { data: profiles } = await supabase
+    const { data: rawProfiles } = await supabase
       .from('recruiter_profiles')
-      .select('first_name, user_id')
+      .select('id, first_name, user_id')
       .in('id', profileIds)
       .eq('status', 'approved')
+
+    // Step 3b — when nudging, exclude recruiters who already proposed on this job
+    let profiles = rawProfiles
+    if (isNudge) {
+      const { data: existingProposals } = await supabase
+        .from('job_proposals')
+        .select('recruiter_id')
+        .eq('job_id', job_id)
+        .neq('status', 'withdrawn')
+
+      const alreadyProposed = new Set(
+        (existingProposals ?? []).map((p: { recruiter_id: string }) => p.recruiter_id)
+      )
+
+      profileIds = profileIds.filter((id: string) => !alreadyProposed.has(id))
+      profiles = (rawProfiles ?? []).filter(
+        (p: { id: string; first_name: string; user_id: string }) => !alreadyProposed.has(p.id)
+      )
+
+      if (!profileIds.length) {
+        return new Response(
+          JSON.stringify({ success: true, notified: 0, message: 'All matching recruiters have already proposed' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
 
     const userIds = (profiles ?? []).map((p: { first_name: string; user_id: string }) => p.user_id)
     if (!userIds.length) {
