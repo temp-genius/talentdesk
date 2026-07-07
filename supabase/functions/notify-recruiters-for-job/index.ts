@@ -68,6 +68,30 @@ function emailWrap(bodyRows: string): string {
 </html>`
 }
 
+function roleCard(jobTitle: string, sector: string): string {
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0"
+           style="background-color:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;margin-bottom:24px;">
+      <tr><td style="padding:20px 24px;">
+        <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;
+                  text-transform:uppercase;letter-spacing:1px;">Role</p>
+        <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111827;">${jobTitle}</p>
+        <p style="margin:0;font-size:13px;color:#6b7280;">${sector}</p>
+      </td></tr>
+    </table>`
+}
+
+function viewRoleButton(jobUrl: string): string {
+  return `
+    <a href="${jobUrl}"
+       style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
+              font-size:14px;font-weight:600;padding:12px 24px;
+              border-radius:8px;text-decoration:none;margin-bottom:24px;">
+      View Role
+    </a>`
+}
+
+// ── "New role published" email ────────────────────────────────────────
 function buildMatchEmail(firstName: string, jobTitle: string, sector: string, jobUrl: string): string {
   return emailWrap(`
     <tr>
@@ -78,24 +102,33 @@ function buildMatchEmail(firstName: string, jobTitle: string, sector: string, jo
         <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
           Hi ${firstName}, a new role has just been published that matches your specialisms.
         </p>
-        <table width="100%" cellpadding="0" cellspacing="0"
-               style="background-color:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;margin-bottom:24px;">
-          <tr><td style="padding:20px 24px;">
-            <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#9ca3af;
-                      text-transform:uppercase;letter-spacing:1px;">Role</p>
-            <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111827;">${jobTitle}</p>
-            <p style="margin:0;font-size:13px;color:#6b7280;">${sector}</p>
-          </td></tr>
-        </table>
-        <a href="${jobUrl}"
-           style="display:inline-block;background-color:#0f2d5e;color:#ffffff;
-                  font-size:14px;font-weight:600;padding:12px 24px;
-                  border-radius:8px;text-decoration:none;margin-bottom:24px;">
-          View Role
-        </a>
+        ${roleCard(jobTitle, sector)}
+        ${viewRoleButton(jobUrl)}
         <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;line-height:1.5;">
           You are receiving this because your profile includes specialisms in ${sector}.
           Log in to submit a proposal before the role fills.
+        </p>
+      </td>
+    </tr>`)
+}
+
+// ── "Reminder — role still open" email ───────────────────────────────
+function buildNudgeEmail(firstName: string, jobTitle: string, sector: string, jobUrl: string): string {
+  return emailWrap(`
+    <tr>
+      <td style="background-color:#ffffff;padding:32px;">
+        <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">
+          This role is still open
+        </h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+          Hi ${firstName}, this role is still accepting proposals and your specialisms
+          are a strong match. Don't miss out.
+        </p>
+        ${roleCard(jobTitle, sector)}
+        ${viewRoleButton(jobUrl)}
+        <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;line-height:1.5;">
+          Submit your proposal before this role fills.
+          Log in to Vetted TA to apply.
         </p>
       </td>
     </tr>`)
@@ -107,7 +140,8 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { job_id, sector, job_title } = await req.json()
+    const { job_id, sector, job_title, nudge } = await req.json()
+    const isNudge = nudge === true
 
     if (!job_id || !sector || !job_title) {
       return new Response(
@@ -176,25 +210,29 @@ Deno.serve(async (req: Request) => {
       (users ?? []).map((u: { id: string; email: string }) => [u.id, u.email])
     )
 
-    const appUrl  = Deno.env.get('PUBLIC_APP_URL') ?? 'https://vettedta.com'
-    const jobUrl  = `${appUrl}/jobs/${job_id}`
-    const subject = `New ${sector} role on Vetted TA — ${job_title}`
+    const appUrl = Deno.env.get('PUBLIC_APP_URL') ?? 'https://vettedta.com'
+    const jobUrl = `${appUrl}/jobs/${job_id}`
+    const subject = isNudge
+      ? `Reminder — proposals still open: ${job_title}`
+      : `New ${sector} role on Vetted TA — ${job_title}`
 
-    // Send notifications sequentially with a small delay to avoid rate-limiting send-email
+    // Send sequentially with a small delay to avoid rate-limiting send-email
     const recipients = (profiles ?? []).filter(
       (p: { first_name: string; user_id: string }) => emailMap[p.user_id]
     )
     let notified = 0
     for (let i = 0; i < recipients.length; i++) {
       const p = recipients[i]
-      const html = buildMatchEmail(p.first_name ?? 'there', job_title, sector, jobUrl)
+      const html = isNudge
+        ? buildNudgeEmail(p.first_name ?? 'there', job_title, sector, jobUrl)
+        : buildMatchEmail(p.first_name ?? 'there', job_title, sector, jobUrl)
       const ok = await sendEmail(emailMap[p.user_id], subject, html)
       if (ok) notified++
       if (i < recipients.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 100))
       }
     }
-    console.log(`[notify-recruiters-for-job] notified ${notified}/${recipients.length} recruiters for job ${job_id}`)
+    console.log(`[notify-recruiters-for-job] notified ${notified}/${recipients.length} recruiters for job ${job_id} (nudge=${isNudge})`)
 
     return new Response(
       JSON.stringify({ success: true, notified }),

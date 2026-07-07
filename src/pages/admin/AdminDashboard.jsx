@@ -697,6 +697,7 @@ function JobsTab() {
   const [openJobs,   setOpenJobs]   = useState([])
   const [activeJobs, setActiveJobs] = useState([])
   const [loading,    setLoading]    = useState(true)
+  const [nudging,    setNudging]    = useState({})
 
   useEffect(() => {
     Promise.all([
@@ -730,6 +731,16 @@ function JobsTab() {
     })
   }, [])
 
+  async function sendNudge(j) {
+    setNudging(n => ({ ...n, [j.id]: 'sending' }))
+    const { error } = await supabase.functions.invoke('notify-recruiters-for-job', {
+      body: { job_id: j.id, sector: j.sector, job_title: j.title, nudge: true },
+    })
+    const result = error ? 'failed' : 'sent'
+    setNudging(n => ({ ...n, [j.id]: result }))
+    setTimeout(() => setNudging(n => ({ ...n, [j.id]: undefined })), 2000)
+  }
+
   function milestoneStage(assignments) {
     const active = assignments?.find(a => a.status === 'assigned')
     if (!active) return '—'
@@ -759,7 +770,7 @@ function JobsTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100">
-                  {['Title', 'Sector', 'Posted', 'Deadline', 'Proposals', 'Shortlisted', ''].map(h => (
+                  {['Title', 'Sector', 'Posted', 'Deadline', 'Proposals', 'Shortlisted', 'Nudge'].map(h => (
                     <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">
                       {h}
                     </th>
@@ -781,12 +792,30 @@ function JobsTab() {
                       </td>
                       <td className="px-4 py-3 font-medium text-gray-900">{j.proposalCount}</td>
                       <td className="px-4 py-3 font-medium text-gray-900">{j.shortlistedCount}</td>
-                      <td className="px-4 py-3">
-                        {needsNudge && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">
-                            Needs nudge
-                          </span>
-                        )}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          {needsNudge && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                              Needs nudge
+                            </span>
+                          )}
+                          {j.sector && (
+                            <button
+                              onClick={() => sendNudge(j)}
+                              disabled={nudging[j.id] === 'sending'}
+                              className={`text-xs font-medium disabled:opacity-50 ${
+                                nudging[j.id] === 'failed'  ? 'text-red-600' :
+                                nudging[j.id] === 'sent'    ? 'text-green-700' :
+                                'text-indigo-600 hover:text-indigo-800'
+                              }`}
+                            >
+                              {nudging[j.id] === 'sending' ? 'Sending…' :
+                               nudging[j.id] === 'sent'    ? 'Sent ✓'   :
+                               nudging[j.id] === 'failed'  ? 'Failed'   :
+                               'Send nudge'}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )
