@@ -25,6 +25,13 @@ function timeAgo(isoStr) {
   return `${days} day${days !== 1 ? 's' : ''} ago`
 }
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+function formatDeadline(dateStr) {
+  if (!dateStr) return null
+  const [y, m, d] = dateStr.split('-')
+  return `${parseInt(d)} ${MONTHS[parseInt(m) - 1]} ${y}`
+}
+
 const STATUS_BADGE = {
   pending:  'bg-yellow-100 text-yellow-800',
   approved: 'bg-green-100 text-green-800',
@@ -687,17 +694,21 @@ function RecruitersTab() {
 
 // ── Jobs tab ──────────────────────────────────────────────────────────
 function JobsTab() {
-  const [jobs,    setJobs]    = useState([])
-  const [flagged, setFlagged] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [openJobs,   setOpenJobs]   = useState([])
+  const [activeJobs, setActiveJobs] = useState([])
+  const [loading,    setLoading]    = useState(true)
 
   useEffect(() => {
-    const twelveHoursAgo = new Date(Date.now() - 12 * 3_600_000).toISOString()
     Promise.all([
       supabase
         .from('jobs')
+        .select('id, title, sector, created_at, proposal_deadline, job_proposals!left(id, status)')
+        .eq('status', 'open_for_proposals')
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('jobs')
         .select(`
-          id, title, status, created_at,
+          id, title, created_at,
           hiring_company_profiles(company_name),
           job_recruiter_assignments!left(
             id, status,
@@ -705,24 +716,16 @@ function JobsTab() {
             milestones(milestone_number, status)
           )
         `)
-        .order('created_at', { ascending: false })
-        .limit(100),
-      supabase
-        .from('jobs')
-        .select('id, title, sector, created_at, job_proposals!left(id, status)')
-        .eq('status', 'open_for_proposals')
-        .lt('created_at', twelveHoursAgo),
-    ]).then(([{ data: jobData }, { data: openData }]) => {
-      setJobs(jobData ?? [])
-      setFlagged(
-        (openData ?? [])
-          .map(j => ({
-            ...j,
-            proposalCount: (j.job_proposals ?? []).filter(p => p.status !== 'withdrawn').length,
-          }))
-          .filter(j => j.proposalCount < 3)
-          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-      )
+        .eq('status', 'active')
+        .order('created_at', { ascending: false }),
+    ]).then(([{ data: openData }, { data: activeData }]) => {
+      setOpenJobs((openData ?? []).map(j => ({
+        ...j,
+        proposalCount:    (j.job_proposals ?? []).filter(p => p.status !== 'withdrawn').length,
+        shortlistedCount: (j.job_proposals ?? []).filter(p => p.status === 'shortlisted').length,
+        hoursOld:         (Date.now() - new Date(j.created_at).getTime()) / 3_600_000,
+      })))
+      setActiveJobs(activeData ?? [])
       setLoading(false)
     })
   }, [])
@@ -739,88 +742,117 @@ function JobsTab() {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-6">
-      {/* Needs attention */}
-      {flagged.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">Needs attention</h2>
-            <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full">
-              {flagged.length}
-            </span>
-          </div>
-          <div className="space-y-2">
-            {flagged.map(j => (
-              <div key={j.id} className="card flex items-center justify-between gap-4 py-3">
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{j.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    posted {timeAgo(j.created_at)}
-                    {' · '}
-                    {j.proposalCount} proposal{j.proposalCount !== 1 ? 's' : ''}
-                    {j.sector && <>{' · '}{j.sector}</>}
-                  </p>
-                </div>
-                <span className="flex-shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                  Needs nudge
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+    <div className="space-y-8">
 
-      {/* All jobs table */}
-      <div className="card overflow-x-auto p-0">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gray-100">
-              {['Title', 'Company', 'Recruiter', 'Status', 'Milestone', 'Created', ''].map(h => (
-                <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 py-3">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {jobs.map(j => {
-              const assignment = j.job_recruiter_assignments?.find(a => a.status === 'assigned')
-              const recruiter  = assignment?.recruiter_profiles
-              return (
-                <tr key={j.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900 max-w-xs truncate">{j.title}</td>
-                  <td className="px-4 py-3 text-gray-500">{j.hiring_company_profiles?.company_name ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {recruiter ? `${recruiter.first_name} ${recruiter.last_name}` : '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[j.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {j.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                    {milestoneStage(j.job_recruiter_assignments)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-400 whitespace-nowrap text-xs">
-                    {new Date(j.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    {assignment && (
-                      <Link to={`/job/${assignment.id}`} target="_blank"
-                        className="text-xs text-primary-600 hover:underline font-medium">
-                        View →
-                      </Link>
-                    )}
-                  </td>
+      {/* ── Section 1: Open for proposals ── */}
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-sm font-semibold text-gray-700">Open for proposals</h2>
+          <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full">
+            {openJobs.length}
+          </span>
+        </div>
+        <div className="card overflow-x-auto p-0">
+          {openJobs.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">None</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  {['Title', 'Sector', 'Posted', 'Deadline', 'Proposals', 'Shortlisted', ''].map(h => (
+                    <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              )
-            })}
-          </tbody>
-        </table>
-        {jobs.length === 0 && (
-          <p className="text-center text-sm text-gray-400 py-8">No jobs found.</p>
-        )}
-      </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {openJobs.map(j => {
+                  const needsNudge = j.hoursOld > 12 && j.proposalCount < 3
+                  return (
+                    <tr key={j.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900 max-w-[200px] truncate">{j.title}</td>
+                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{j.sector ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{timeAgo(j.created_at)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {j.proposal_deadline
+                          ? <span className="text-gray-700">Closes {formatDeadline(j.proposal_deadline)}</span>
+                          : <span className="text-gray-300">No deadline</span>}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-gray-900">{j.proposalCount}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900">{j.shortlistedCount}</td>
+                      <td className="px-4 py-3">
+                        {needsNudge && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">
+                            Needs nudge
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </section>
+
+      {/* ── Section 2: Active jobs ── */}
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-sm font-semibold text-gray-700">Active jobs</h2>
+          <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-0.5 rounded-full">
+            {activeJobs.length}
+          </span>
+        </div>
+        <div className="card overflow-x-auto p-0">
+          {activeJobs.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">None</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  {['Title', 'Company', 'Recruiter', 'Milestone', 'Started', ''].map(h => (
+                    <th key={h} className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 py-3 whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {activeJobs.map(j => {
+                  const assignment = j.job_recruiter_assignments?.find(a => a.status === 'assigned')
+                  const recruiter  = assignment?.recruiter_profiles
+                  return (
+                    <tr key={j.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900 max-w-[180px] truncate">{j.title}</td>
+                      <td className="px-4 py-3 text-gray-500">{j.hiring_company_profiles?.company_name || '—'}</td>
+                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                        {recruiter ? `${recruiter.first_name} ${recruiter.last_name}` : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                        {milestoneStage(j.job_recruiter_assignments)}
+                      </td>
+                      <td className="px-4 py-3 text-gray-400 whitespace-nowrap text-xs">
+                        {new Date(j.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        {assignment && (
+                          <Link to={`/job/${assignment.id}`} target="_blank"
+                            className="text-xs text-primary-600 hover:underline font-medium">
+                            View →
+                          </Link>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </section>
+
     </div>
   )
 }
