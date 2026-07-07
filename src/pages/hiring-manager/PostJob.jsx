@@ -324,11 +324,11 @@ export default function PostJob() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Brief Description
               <span className="ml-2 text-xs font-normal text-gray-400">
-                ({form.description.length}/500)
+                ({form.description.length}/1000)
               </span>
             </label>
             <textarea
-              className="input resize-none" rows={4} maxLength={500}
+              className="input resize-none" rows={4} maxLength={1000}
               placeholder="Key requirements, must-haves, and what you're looking for in a candidate…"
               value={form.description} onChange={set('description')}
             />
