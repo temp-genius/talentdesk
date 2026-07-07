@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
-import { sendNewJobMatchNotification } from '../../lib/emailService'
 import Logo from '../../components/layout/Logo'
 
 const SECTORS = [
@@ -116,16 +115,15 @@ export default function PostJob() {
 
     await supabase.from('jobs').update({ status: 'open_for_proposals' }).eq('id', createdJobId)
 
-    // Fire-and-forget — do not block navigation
+    // Fire-and-forget — Edge Function handles all notifications server-side
     if (form.sector) {
-      supabase.rpc('get_recruiters_for_sector', { p_sector: form.sector })
-        .then(({ data }) => {
-          const recruiters = data ?? []
-          recruiters.forEach(r => {
-            sendNewJobMatchNotification(r.email, r.first_name ?? 'there', form.title.trim(), form.sector, createdJobId)
-          })
-        })
-        .catch(err => console.error('[PostJob] recruiter notification failed:', err))
+      supabase.functions.invoke('notify-recruiters-for-job', {
+        body: {
+          job_id:    createdJobId,
+          sector:    form.sector,
+          job_title: form.title.trim(),
+        },
+      }).catch(err => console.error('[PostJob] notify failed:', err))
     }
 
     navigate(`/jobs/${createdJobId}`)
