@@ -43,7 +43,7 @@ const LOCATION_TYPES = [
 const INIT = {
   title: '', sector: '', location_country: '', location_city: '',
   location_type: 'hybrid', salary_min: '', salary_max: '',
-  currency: 'EUR', seniority_level: '', description: '',
+  currency: 'EUR', seniority_level: '', proposal_deadline: '', description: '',
 }
 
 export default function PostJob() {
@@ -93,6 +93,7 @@ export default function PostJob() {
         salary_max:        form.salary_max   ? Number(form.salary_max)  : null,
         currency:          form.currency,
         seniority_level:   form.seniority_level     || null,
+        proposal_deadline: form.proposal_deadline   || null,
         description:       form.description.trim()  || null,
         status:            'draft',
         anonymous:         true,
@@ -317,6 +318,22 @@ export default function PostJob() {
               <option value="">Select seniority</option>
               {SENIORITY.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
+          </div>
+
+          {/* Proposal deadline */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Proposal Deadline
+              <span className="ml-2 text-xs font-normal text-gray-400">Optional</span>
+            </label>
+            <input
+              type="date" className="input w-48"
+              min={new Date().toISOString().split('T')[0]}
+              value={form.proposal_deadline} onChange={set('proposal_deadline')}
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              The date you want to stop accepting proposals. Shown to recruiters on the role listing.
+            </p>
           </div>
 
           {/* Description */}

@@ -15,6 +15,13 @@ const SENIORITY_LABELS  = { junior: 'Junior', mid: 'Mid', senior: 'Senior', dire
 const LOCATION_LABELS   = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' }
 const ROLE_TYPE_LABELS  = { permanent: 'Permanent', contract: 'Contract' }
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+function formatDeadline(dateStr) {
+  if (!dateStr) return null
+  const [y, m, d] = dateStr.split('-')
+  return `${parseInt(d)} ${MONTHS[parseInt(m) - 1]} ${y}`
+}
+
 const RECRUITER_STATUS_CFG = {
   submitted:   { label: 'Proposal submitted', bg: 'bg-blue-50',     text: 'text-blue-700'    },
   shortlisted: { label: 'Shortlisted',        bg: 'bg-green-50',    text: 'text-green-700'   },
@@ -525,7 +532,7 @@ export default function JobDetail() {
       const [{ data: jobData, error: jobErr }, { data: profile }] = await Promise.all([
         supabase
           .from('jobs')
-          .select('id, title, sector, seniority_level, location_type, location_country, location_city, salary_min, salary_max, currency, role_type, description, status')
+          .select('id, title, sector, seniority_level, location_type, location_country, location_city, salary_min, salary_max, currency, role_type, description, status, proposal_deadline')
           .eq('id', jobId)
           .single(),
         supabase
@@ -769,6 +776,16 @@ export default function JobDetail() {
               </div>
 
               <JobMetaBadges job={job} />
+
+              {job.proposal_deadline && (
+                <div className="flex items-center gap-1.5 text-sm text-amber-700">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>Proposals close <strong>{formatDeadline(job.proposal_deadline)}</strong></span>
+                </div>
+              )}
 
               {job.description ? (
                 <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description}</p>

@@ -28,6 +28,13 @@ const ROLE_TYPE_LABELS = { permanent: 'Permanent', contract: 'Contract' }
 const SENIORITY_LABELS = { junior: 'Junior', mid: 'Mid', senior: 'Senior', director: 'Director', c_suite: 'C-Suite' }
 const LOCATION_LABELS  = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' }
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+function formatDeadline(dateStr) {
+  if (!dateStr) return null
+  const [y, m, d] = dateStr.split('-')
+  return `${parseInt(d)} ${MONTHS[parseInt(m) - 1]} ${y}`
+}
+
 const EMPTY_FILTERS = { sectors: [], seniority: [], locationTypes: [], countries: [] }
 
 function fmt(amount, currency = 'EUR') {
@@ -74,6 +81,7 @@ function FilterCheckbox({ label, checked, onChange }) {
 function JobCard({ job }) {
   const salary   = salaryRange(job)
   const location = locationLine(job)
+  const deadline = formatDeadline(job.proposal_deadline)
   const excerpt  = job.description
     ? job.description.slice(0, 140) + (job.description.length > 140 ? '…' : '')
     : null
@@ -116,6 +124,15 @@ function JobCard({ job }) {
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-700">
           Open for proposals
         </span>
+        {deadline && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Closes {deadline}
+          </span>
+        )}
       </div>
 
       {excerpt && (
@@ -161,7 +178,7 @@ export default function BrowseJobs() {
     if (!user) { setLoading(false); return }
     supabase
       .from('jobs')
-      .select('id, title, sector, seniority_level, location_type, location_country, location_city, salary_min, salary_max, currency, role_type, description')
+      .select('id, title, sector, seniority_level, location_type, location_country, location_city, salary_min, salary_max, currency, role_type, description, proposal_deadline')
       .eq('status', 'open_for_proposals')
       .order('created_at', { ascending: false })
       .then(({ data }) => {
