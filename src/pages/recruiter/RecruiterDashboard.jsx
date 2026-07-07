@@ -314,37 +314,20 @@ export default function RecruiterDashboard() {
           </div>
         ) : (
           <>
-            {/* Stripe Connect banner — approved but no bank account connected */}
+            {/* Stripe Connect banner — slim single-line bar */}
             {profile.status === 'approved' && !profile.stripe_account_id && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-base font-bold text-amber-900 mb-1">
-                      Connect your bank account to receive payments
-                    </h2>
-                    <p className="text-sm text-amber-800 mb-4">
-                      You need to connect your bank account through Stripe before any milestone payments can be released to you. This takes about 5 minutes and is required before you can receive money for completed work.
-                    </p>
-                    {stripeError && (
-                      <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mb-3">
-                        {stripeError}
-                      </p>
-                    )}
-                    <button
-                      onClick={connectStripe}
-                      disabled={connectingStripe}
-                      className="btn-primary disabled:opacity-50"
-                    >
-                      {connectingStripe ? 'Preparing…' : 'Connect with Stripe →'}
-                    </button>
-                  </div>
-                </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 mb-6 flex items-center justify-between gap-4">
+                <p className="text-sm text-amber-800">
+                  Connect your bank account to receive payments
+                  {stripeError && <span className="ml-2 text-xs text-red-700">{stripeError}</span>}
+                </p>
+                <button
+                  onClick={connectStripe}
+                  disabled={connectingStripe}
+                  className="text-sm font-semibold text-amber-900 hover:text-amber-700 whitespace-nowrap flex-shrink-0 disabled:opacity-50 transition-colors"
+                >
+                  {connectingStripe ? 'Preparing…' : 'Connect with Stripe →'}
+                </button>
               </div>
             )}
 
@@ -367,6 +350,24 @@ export default function RecruiterDashboard() {
               </h1>
               <p className="text-gray-500 mt-1">{user?.email}</p>
             </div>
+
+            {/* Browse open roles CTA — approved with no active assignments */}
+            {profile.status === 'approved' && !loadingJobs && assignments.length === 0 && (
+              <div className="bg-[#0f2d5e] rounded-xl px-6 py-5 mb-8 flex items-center justify-between gap-6">
+                <div className="min-w-0">
+                  <h2 className="text-base font-bold text-white mb-1">New roles are waiting</h2>
+                  <p className="text-sm text-blue-200">
+                    Browse open roles and submit a proposal — exclusive briefs, milestone payments, no BD.
+                  </p>
+                </div>
+                <Link
+                  to="/recruiter/browse-jobs"
+                  className="flex-shrink-0 text-sm font-semibold bg-white text-[#0f2d5e] px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap"
+                >
+                  Browse Open Roles →
+                </Link>
+              </div>
+            )}
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {/* Application status */}
@@ -480,67 +481,62 @@ export default function RecruiterDashboard() {
               </div>
             )}
 
-            {/* Specialisms */}
+            {/* Pending Proposals */}
             {profile?.status === 'approved' && (
               <div className="card">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Specialisms</h2>
-                  {!editingSpecialisms && (
-                    <button onClick={startEditSpecialisms} className="text-xs text-primary-600 hover:underline">
-                      {currentSpecialisms.length > 0 ? 'Edit' : 'Add Specialisms'}
-                    </button>
-                  )}
-                </div>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                  Pending Proposals
+                </h2>
 
-                {editingSpecialisms ? (
-                  <div className="space-y-4">
-                    <SpecialismSelector
-                      categories={allCategories}
-                      selected={draftSpecialisms}
-                      onChange={setDraftSpecialisms}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={saveSpecialisms}
-                        disabled={savingSpecialisms}
-                        className="btn-primary flex-1 text-sm"
-                      >
-                        {savingSpecialisms ? 'Saving…' : 'Save Specialisms'}
-                      </button>
-                      <button
-                        onClick={() => setEditingSpecialisms(false)}
-                        className="btn-secondary flex-1 text-sm"
-                      >
-                        Cancel
-                      </button>
+                {pendingProposals.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                     </div>
+                    <p className="text-sm font-medium text-gray-600">No pending proposals</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      <Link to="/recruiter/browse-jobs" className="text-primary-600 hover:underline">Browse open roles</Link>
+                      {' '}to submit your next proposal
+                    </p>
                   </div>
-                ) : currentSpecialisms.length === 0 ? (
-                  <p className="text-sm text-gray-400 italic">
-                    No specialisms added yet. Add them so hiring managers can find you.
-                  </p>
                 ) : (
-                  <div className="space-y-3">
-                    {Object.entries(
-                      allCategories
-                        .filter(c => currentSpecialisms.includes(c.id))
-                        .reduce((acc, c) => {
-                          if (!acc[c.sector]) acc[c.sector] = []
-                          acc[c.sector].push(c.specialism_name)
-                          return acc
-                        }, {})
-                    ).map(([sector, specs]) => (
-                      <div key={sector}>
-                        <p className="text-xs font-semibold text-gray-500 mb-1">{sector}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {specs.map(s => (
-                            <span key={s} className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium">
-                              {s}
+                  <div className="space-y-2">
+                    {pendingProposals.map(p => {
+                      const submittedDate = new Date(p.submitted_at).toLocaleDateString('en-IE', {
+                        day: 'numeric', month: 'short',
+                      })
+                      const isShortlisted = p.status === 'shortlisted'
+                      return (
+                        <Link
+                          key={p.id}
+                          to={`/jobs/${p.jobs?.id}`}
+                          className="flex items-center justify-between p-3 rounded-lg bg-gray-50
+                                     hover:bg-gray-100 transition-colors no-underline"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{p.jobs?.title}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {p.proposed_fee_percentage}% fee · submitted {submittedDate}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              isShortlisted
+                                ? 'bg-green-50 text-green-700'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {isShortlisted ? 'Shortlisted' : 'Submitted'}
                             </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </Link>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -602,62 +598,67 @@ export default function RecruiterDashboard() {
               </div>
             )}
 
-            {/* Pending Proposals */}
+            {/* Specialisms */}
             {profile?.status === 'approved' && (
               <div className="card">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-                  Pending Proposals
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Specialisms</h2>
+                  {!editingSpecialisms && (
+                    <button onClick={startEditSpecialisms} className="text-xs text-primary-600 hover:underline">
+                      {currentSpecialisms.length > 0 ? 'Edit' : 'Add Specialisms'}
+                    </button>
+                  )}
+                </div>
 
-                {pendingProposals.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+                {editingSpecialisms ? (
+                  <div className="space-y-4">
+                    <SpecialismSelector
+                      categories={allCategories}
+                      selected={draftSpecialisms}
+                      onChange={setDraftSpecialisms}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveSpecialisms}
+                        disabled={savingSpecialisms}
+                        className="btn-primary flex-1 text-sm"
+                      >
+                        {savingSpecialisms ? 'Saving…' : 'Save Specialisms'}
+                      </button>
+                      <button
+                        onClick={() => setEditingSpecialisms(false)}
+                        className="btn-secondary flex-1 text-sm"
+                      >
+                        Cancel
+                      </button>
                     </div>
-                    <p className="text-sm font-medium text-gray-600">No pending proposals</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      <Link to="/recruiter/browse-jobs" className="text-primary-600 hover:underline">Browse open roles</Link>
-                      {' '}to submit your next proposal
-                    </p>
                   </div>
+                ) : currentSpecialisms.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">
+                    No specialisms added yet. Add them so hiring managers can find you.
+                  </p>
                 ) : (
-                  <div className="space-y-2">
-                    {pendingProposals.map(p => {
-                      const submittedDate = new Date(p.submitted_at).toLocaleDateString('en-IE', {
-                        day: 'numeric', month: 'short',
-                      })
-                      const isShortlisted = p.status === 'shortlisted'
-                      return (
-                        <Link
-                          key={p.id}
-                          to={`/jobs/${p.jobs?.id}`}
-                          className="flex items-center justify-between p-3 rounded-lg bg-gray-50
-                                     hover:bg-gray-100 transition-colors no-underline"
-                        >
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{p.jobs?.title}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              {p.proposed_fee_percentage}% fee · submitted {submittedDate}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              isShortlisted
-                                ? 'bg-green-50 text-green-700'
-                                : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {isShortlisted ? 'Shortlisted' : 'Submitted'}
+                  <div className="space-y-3">
+                    {Object.entries(
+                      allCategories
+                        .filter(c => currentSpecialisms.includes(c.id))
+                        .reduce((acc, c) => {
+                          if (!acc[c.sector]) acc[c.sector] = []
+                          acc[c.sector].push(c.specialism_name)
+                          return acc
+                        }, {})
+                    ).map(([sector, specs]) => (
+                      <div key={sector}>
+                        <p className="text-xs font-semibold text-gray-500 mb-1">{sector}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {specs.map(s => (
+                            <span key={s} className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium">
+                              {s}
                             </span>
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </div>
-                        </Link>
-                      )
-                    })}
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
