@@ -147,7 +147,7 @@ const FEE_OPTIONS = [
   { value: 12, label: '12%', sub: 'Premium'      },
 ]
 
-function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted }) {
+function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, profileStatus, onSubmitted }) {
   const filteredFeeOptions = FEE_OPTIONS.filter(o =>
     (feeFloor == null || o.value >= feeFloor) &&
     (feeCeiling == null || o.value <= feeCeiling)
@@ -169,6 +169,10 @@ function ProposalForm({ jobId, recruiterId, feeFloor, feeCeiling, onSubmitted })
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (profileStatus !== 'approved') {
+      setError('Your profile must be approved before you can submit proposals.')
+      return
+    }
     if (!pitch.trim()) { setError('A pitch is required'); return }
     setSubmitting(true)
     setError('')
@@ -508,10 +512,11 @@ export default function JobDetail() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // recruiter-only
-  const [myProfileId,    setMyProfileId]    = useState(null)
-  const [myProfileName,  setMyProfileName]  = useState(null)
-  const [myFeeFloor,     setMyFeeFloor]     = useState(null)
-  const [myFeeCeiling,   setMyFeeCeiling]   = useState(null)
+  const [myProfileId,     setMyProfileId]     = useState(null)
+  const [myProfileName,   setMyProfileName]   = useState(null)
+  const [myFeeFloor,      setMyFeeFloor]      = useState(null)
+  const [myFeeCeiling,    setMyFeeCeiling]    = useState(null)
+  const [myProfileStatus, setMyProfileStatus] = useState(null)
   const [myProposal,     setMyProposal]     = useState(null)
   const [proposalLoaded, setProposalLoaded] = useState(false)
   const [withdrawing,    setWithdrawing]    = useState(false)
@@ -537,7 +542,7 @@ export default function JobDetail() {
           .single(),
         supabase
           .from('recruiter_profiles')
-          .select('id, first_name, last_name, fee_floor, fee_ceiling')
+          .select('id, first_name, last_name, fee_floor, fee_ceiling, status')
           .eq('user_id', user.id)
           .single(),
       ])
@@ -550,6 +555,7 @@ export default function JobDetail() {
         setMyProfileName([profile.first_name, profile.last_name].filter(Boolean).join(' ') || null)
         setMyFeeFloor(profile.fee_floor ?? null)
         setMyFeeCeiling(profile.fee_ceiling ?? null)
+        setMyProfileStatus(profile.status ?? null)
         const { data: existing } = await supabase
           .from('job_proposals')
           .select('id, proposed_fee_percentage, pitch, relevant_experience, status, submitted_at')
@@ -806,14 +812,25 @@ export default function JobDetail() {
                   onWithdraw={handleWithdraw}
                   withdrawing={withdrawing}
                 />
-              ) : isOpen ? (
+              ) : isOpen && myProfileStatus === 'approved' ? (
                 <ProposalForm
                   jobId={jobId}
                   recruiterId={myProfileId}
                   feeFloor={myFeeFloor}
                   feeCeiling={myFeeCeiling}
+                  profileStatus={myProfileStatus}
                   onSubmitted={handleProposalSubmitted}
                 />
+              ) : isOpen && myProfileStatus !== 'approved' ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+                  <p className="text-sm font-semibold text-amber-800 mb-1">
+                    Your application is under review
+                  </p>
+                  <p className="text-sm text-amber-700">
+                    You will be able to submit proposals once your profile
+                    has been approved by the Vetted TA team.
+                  </p>
+                </div>
               ) : (
                 <div className="card text-center py-10">
                   <p className="text-sm text-gray-500">This role is no longer accepting proposals.</p>
