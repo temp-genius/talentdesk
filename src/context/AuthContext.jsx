@@ -312,6 +312,14 @@ export function AuthProvider({ children }) {
         setUserType(resolvedUserType)
       }
 
+      if (resolvedUserType === 'recruiter') {
+        supabase
+          .from('recruiter_profiles')
+          .update({ last_active_at: new Date().toISOString() })
+          .eq('user_id', data.user.id)
+          .then(() => {})
+      }
+
       return { ...data, resolvedUserType }
     }
 

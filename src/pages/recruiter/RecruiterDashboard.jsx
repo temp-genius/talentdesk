@@ -93,6 +93,11 @@ export default function RecruiterDashboard() {
           if (data) {
             setProfile(data)
             setLoadingProfile(false)
+            supabase
+              .from('recruiter_profiles')
+              .update({ last_active_at: new Date().toISOString() })
+              .eq('user_id', user.id)
+              .then(() => {})
             if (data.status === 'approved' && data.has_seen_approval_modal === false) {
               setShowApprovalModal(true)
             }
