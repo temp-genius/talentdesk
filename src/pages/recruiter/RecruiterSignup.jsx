@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 import NicheTagInput from '../../components/recruiter/NicheTagInput'
+import LanguageSelector from '../../components/recruiter/LanguageSelector'
 import Footer from '../../components/layout/Footer'
 import Logo from '../../components/layout/Logo'
 import { MARKETS } from '../../lib/constants'
@@ -64,6 +65,7 @@ export default function RecruiterSignup() {
   const [agreedPrivacy,  setAgreedPrivacy]  = useState(false)
   const [agreedLinkedin, setAgreedLinkedin] = useState(false)
   const [niches,         setNiches]         = useState([])
+  const [languages,      setLanguages]      = useState([])
 
   const [form, setForm] = useState({
     firstName: '',
@@ -153,7 +155,7 @@ export default function RecruiterSignup() {
         bio: form.bio || null,
         recent_track_record: form.recentTrackRecord.trim() || null,
       })
-      if (niches.length > 0) {
+      if (niches.length > 0 || languages.length > 0) {
         const { data: { user: newUser } } = await supabase.auth.getUser()
         if (newUser) {
           const { data: profileRow } = await supabase
@@ -162,9 +164,18 @@ export default function RecruiterSignup() {
             .eq('user_id', newUser.id)
             .single()
           if (profileRow) {
-            await supabase.from('recruiter_niches').insert(
-              niches.map(niche_text => ({ recruiter_profile_id: profileRow.id, niche_text }))
-            )
+            if (niches.length > 0) {
+              await supabase.from('recruiter_niches').insert(
+                niches.map(niche_text => ({ recruiter_profile_id: profileRow.id, niche_text }))
+              )
+            }
+            if (languages.length > 0) {
+              await supabase.from('recruiter_languages').insert(
+                languages.map(({ language, proficiency }) => ({
+                  recruiter_profile_id: profileRow.id, language, proficiency,
+                }))
+              )
+            }
           }
         }
       }
@@ -358,6 +369,14 @@ export default function RecruiterSignup() {
                       Markets are capped at 3 to ensure genuine depth — recruiters with deep, current knowledge of local talent pools and hiring norms place better candidates.
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Languages <span className="text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">Add languages you can conduct interviews in beyond English.</p>
+                  <LanguageSelector value={languages} onChange={setLanguages} />
                 </div>
               </div>
               <div className="mt-6 flex justify-between">

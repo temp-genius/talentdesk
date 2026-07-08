@@ -38,6 +38,8 @@ const CLIENT_TYPE_LABELS = {
   sme: 'SME', public_sector: 'Public Sector',
 }
 
+const PROFICIENCY_LABELS = { native: 'Native', fluent: 'Fluent', professional: 'Professional' }
+
 const DEFAULT_INFO_MESSAGE =
   'Thank you for applying to Vetted TA. Before we can complete our review we need a little more information. Please update your profile with the following and resubmit for review:'
 
@@ -295,7 +297,8 @@ export default function VettingPanel() {
           specialism_category_id,
           specialism_categories(sector, specialism_name)
         ),
-        recruiter_locations!left(country)
+        recruiter_locations!left(country),
+        recruiter_languages!left(language, proficiency)
       `)
       .eq('id', id)
       .single()
@@ -806,6 +809,21 @@ export default function VettingPanel() {
                   <div className="flex flex-wrap gap-2">
                     {markets.map(m => (
                       <span key={m} className="px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 text-sm font-medium">{m}</span>
+                    ))}
+                  </div>
+                )}
+              </Section>
+
+              {/* Languages */}
+              <Section title="Languages">
+                {(detail.recruiter_languages ?? []).length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">No languages added</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {(detail.recruiter_languages ?? []).map(l => (
+                      <span key={l.language} className="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">
+                        {l.language} — {PROFICIENCY_LABELS[l.proficiency] ?? l.proficiency}
+                      </span>
                     ))}
                   </div>
                 )}

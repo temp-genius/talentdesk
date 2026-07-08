@@ -283,6 +283,7 @@ export default function BrowseRecruiters() {
   const [jobSpecialismIds, setJobSpecialismIds]  = useState([])
   const [jobCountries,     setJobCountries]      = useState([])
   const [jobCareerDna,     setJobCareerDna]      = useState(null)
+  const [languageFilter,   setLanguageFilter]    = useState('')
 
   useEffect(() => {
     supabase
@@ -325,7 +326,8 @@ export default function BrowseRecruiters() {
         recruiter_locations!left(country, region),
         recruiter_tools!left(tool_name, verified),
         recruiter_scores!left(overall_average, total_hm_reviews, total_candidate_reviews),
-        recruiter_niches!left(niche_text)
+        recruiter_niches!left(niche_text),
+        recruiter_languages!left(language, proficiency)
       `)
       .eq('status', 'approved')
       .then(({ data, error }) => {
@@ -343,9 +345,15 @@ export default function BrowseRecruiters() {
     }))
   }
 
-  const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setSearch(''); setNicheSearch('') }, [])
-  const hasActiveFilters = search.length >= 3 || nicheSearch.length >= 2 || Object.values(filters).some(a => a.length > 0)
-  const activeFilterCount = Object.values(filters).reduce((n, a) => n + a.length, 0) + (search.length >= 3 ? 1 : 0) + (nicheSearch.length >= 2 ? 1 : 0)
+  const clearFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setSearch(''); setNicheSearch(''); setLanguageFilter('') }, [])
+  const hasActiveFilters = search.length >= 3 || nicheSearch.length >= 2 || languageFilter !== '' || Object.values(filters).some(a => a.length > 0)
+  const activeFilterCount = Object.values(filters).reduce((n, a) => n + a.length, 0) + (search.length >= 3 ? 1 : 0) + (nicheSearch.length >= 2 ? 1 : 0) + (languageFilter ? 1 : 0)
+
+  const availableLanguages = useMemo(() => {
+    const langs = new Set()
+    recruiters.forEach(r => (r.recruiter_languages ?? []).forEach(l => { if (l.language) langs.add(l.language) }))
+    return [...langs].sort()
+  }, [recruiters])
 
   const searchWords = useMemo(() => {
     if (search.length < 3) return []
@@ -384,8 +392,12 @@ export default function BrowseRecruiters() {
       const rNiches = (r.recruiter_niches ?? []).map(n => n.niche_text.toLowerCase())
       if (!rNiches.some(n => n.includes(q))) return false
     }
+    if (languageFilter) {
+      const rLangs = (r.recruiter_languages ?? []).map(l => l.language)
+      if (!rLangs.includes(languageFilter)) return false
+    }
     return true
-  }), [recruiters, filters, searchWords, nicheSearch])
+  }), [recruiters, filters, searchWords, nicheSearch, languageFilter])
 
   const withScores = useMemo(() => {
     if (!jobId) return filtered.map(r => ({ ...r, _matchScore: null }))
@@ -536,6 +548,15 @@ export default function BrowseRecruiters() {
                 </button>
               )}
             </div>
+
+            {availableLanguages.length > 0 && (
+              <FilterSection title="Language">
+                <select value={languageFilter} onChange={e => setLanguageFilter(e.target.value)} className="input text-sm w-full">
+                  <option value="">All languages</option>
+                  {availableLanguages.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </FilterSection>
+            )}
 
             <FilterSection title="Country">
               <div className="space-y-1">

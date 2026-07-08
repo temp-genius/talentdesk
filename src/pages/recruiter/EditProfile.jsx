@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import SpecialismSelector from '../../components/recruiter/SpecialismSelector'
 import NicheTagInput from '../../components/recruiter/NicheTagInput'
+import LanguageSelector from '../../components/recruiter/LanguageSelector'
 import { MARKETS } from '../../lib/constants'
 const BIO_MAX  = 600
 const CLIENT_TYPES = [
@@ -167,6 +168,7 @@ export default function EditProfile() {
   const [photoUploading, setPhotoUploading]= useState(false)
   const [selectedTools,  setSelectedTools] = useState([])
   const [niches,         setNiches]        = useState([])
+  const [languages,      setLanguages]     = useState([])
 
   const [loading,      setLoading]      = useState(true)
   const [saving,       setSaving]       = useState(false)
@@ -213,16 +215,18 @@ export default function EditProfile() {
       })
       if (catsRes.data) setAllCategories(catsRes.data)
 
-      const [specsRes, locsRes, toolsRes, nichesRes] = await Promise.all([
+      const [specsRes, locsRes, toolsRes, nichesRes, langsRes] = await Promise.all([
         supabase.from('recruiter_specialisms').select('specialism_category_id').eq('recruiter_profile_id', p.id),
         supabase.from('recruiter_locations').select('country').eq('recruiter_profile_id', p.id),
         supabase.from('recruiter_tools').select('tool_name').eq('recruiter_profile_id', p.id),
         supabase.from('recruiter_niches').select('niche_text').eq('recruiter_profile_id', p.id),
+        supabase.from('recruiter_languages').select('language, proficiency').eq('recruiter_profile_id', p.id),
       ])
       setSpecialisms(specsRes.data?.map(s => s.specialism_category_id) ?? [])
       setMarkets(locsRes.data?.map(l => l.country) ?? [])
       setSelectedTools(toolsRes.data?.map(t => t.tool_name) ?? [])
       setNiches(nichesRes.data?.map(n => n.niche_text) ?? [])
+      setLanguages(langsRes.data ?? [])
       setLoading(false)
     }
     load()
@@ -335,6 +339,13 @@ export default function EditProfile() {
     if (niches.length > 0) {
       await supabase.from('recruiter_niches').insert(
         niches.map(niche_text => ({ recruiter_profile_id: profileId, niche_text }))
+      )
+    }
+
+    await supabase.from('recruiter_languages').delete().eq('recruiter_profile_id', profileId)
+    if (languages.length > 0) {
+      await supabase.from('recruiter_languages').insert(
+        languages.map(({ language, proficiency }) => ({ recruiter_profile_id: profileId, language, proficiency }))
       )
     }
 
@@ -583,6 +594,11 @@ export default function EditProfile() {
               Markets are capped at 3 to ensure genuine depth — recruiters with deep, current knowledge of local talent pools and hiring norms place better candidates.
             </p>
           )}
+        </SectionCard>
+
+        {/* Languages */}
+        <SectionCard title="Languages">
+          <LanguageSelector value={languages} onChange={setLanguages} />
         </SectionCard>
 
         {/* Tools and Sourcing Resources */}

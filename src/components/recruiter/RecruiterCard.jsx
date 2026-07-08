@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 const AGENCY_TAG  = { label: 'Agency Recruiter', cls: 'bg-blue-100 text-blue-700' }
 const INHOUSE_TAG = { label: 'In-House TA',      cls: 'bg-purple-100 text-purple-700' }
+const PROFICIENCY_LABELS = { native: 'Native', fluent: 'Fluent', professional: 'Professional' }
 
 function careerDnaTags(value) {
   if (value === 'agency')  return [AGENCY_TAG]
@@ -83,6 +84,7 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
     .filter(Boolean)
 
   const niches = (recruiter.recruiter_niches ?? []).map(n => n.niche_text).filter(Boolean)
+  const languages = (recruiter.recruiter_languages ?? []).filter(l => l.language)
 
   const initials = [recruiter.first_name, recruiter.last_name]
     .filter(Boolean).map(n => n[0].toUpperCase()).join('') || '?'
@@ -227,6 +229,20 @@ export default function RecruiterCard({ recruiter, jobId, matchScore }) {
                 <div className="flex flex-wrap gap-1">
                   {niches.map(n => (
                     <span key={n} className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">{n}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Languages */}
+            {languages.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Languages</p>
+                <div className="flex flex-wrap gap-1">
+                  {languages.map(l => (
+                    <span key={l.language} className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-medium">
+                      {l.language} — {PROFICIENCY_LABELS[l.proficiency] ?? l.proficiency}
+                    </span>
                   ))}
                 </div>
               </div>

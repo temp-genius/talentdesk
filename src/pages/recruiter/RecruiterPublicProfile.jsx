@@ -252,7 +252,8 @@ export default function RecruiterPublicProfile() {
           recruiter_locations(country, region),
           recruiter_tools(tool_name, verified),
           recruiter_scores(overall_average, total_hm_reviews, total_candidate_reviews, average_candidate_satisfaction),
-          recruiter_niches(niche_text)
+          recruiter_niches(niche_text),
+          recruiter_languages!left(language, proficiency)
         `)
         .eq('id', id)
         .eq('status', 'approved')
@@ -327,6 +328,7 @@ export default function RecruiterPublicProfile() {
     startup: 'Startups', scaleup: 'Scale-ups', enterprise: 'Enterprise',
     sme: 'SME', public_sector: 'Public Sector',
   }
+  const PROFICIENCY_LABELS = { native: 'Native', fluent: 'Fluent', professional: 'Professional' }
 
 
   const careerDnaMeta  = CAREER_DNA_TAGS[profile.career_dna] ?? null
@@ -334,6 +336,7 @@ export default function RecruiterPublicProfile() {
   const employers      = (profile.previous_employers ?? '').split(',').map(s => s.trim()).filter(Boolean)
   const clientTypes    = profile.previous_client_types ?? []
   const niches         = (profile.recruiter_niches ?? []).map(n => n.niche_text).filter(Boolean)
+  const languages      = (profile.recruiter_languages ?? []).filter(l => l.language)
 
   function lastPlacementLabel(dateStr) {
     if (!dateStr) return null
@@ -438,6 +441,20 @@ export default function RecruiterPublicProfile() {
                   <div className="flex flex-wrap gap-2">
                     {niches.map(n => (
                       <span key={n} className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-medium">{n}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Languages */}
+              {languages.length > 0 && (
+                <div className="mt-5 pt-5 border-t border-gray-100">
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Languages</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {languages.map(l => (
+                      <span key={l.language} className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium">
+                        {l.language} — {PROFICIENCY_LABELS[l.proficiency] ?? l.proficiency}
+                      </span>
                     ))}
                   </div>
                 </div>
