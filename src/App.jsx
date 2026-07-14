@@ -31,6 +31,8 @@ import EditProfile            from './pages/recruiter/EditProfile'
 import StripeOnboarding       from './pages/recruiter/StripeOnboarding'
 import OfferAcceptance        from './pages/public/OfferAcceptance'
 import HowItWorks             from './pages/public/HowItWorks'
+import ForRecruiters         from './pages/public/ForRecruiters'
+import Hire                  from './pages/public/Hire'
 import Careers               from './pages/public/Careers'
 import Contact                from './pages/public/Contact'
 import TermsOfService         from './pages/legal/TermsOfService'
@@ -83,6 +85,8 @@ export default function App() {
           {/* Public recruiter profile — viewable by anyone */}
           <Route path="/recruiter/profile/:id"   element={<RecruiterPublicProfile />} />
           <Route path="/how-it-works"            element={<HowItWorks />} />
+          <Route path="/for-recruiters"          element={<ForRecruiters />} />
+          <Route path="/hire"                    element={<Hire />} />
           <Route path="/terms"                   element={<TermsOfService />} />
           <Route path="/privacy"                 element={<PrivacyPolicy />} />
           <Route path="/recruiter-agreement"     element={<RecruiterAgreement />} />

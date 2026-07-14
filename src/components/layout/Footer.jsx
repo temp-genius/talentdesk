@@ -19,6 +19,16 @@ export default function Footer() {
             <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-4">Platform</p>
             <ul className="space-y-2.5 text-sm">
               <li>
+                <Link to="/hire" className="hover:text-white transition-colors">
+                  For Companies
+                </Link>
+              </li>
+              <li>
+                <Link to="/for-recruiters" className="hover:text-white transition-colors">
+                  For Recruiters
+                </Link>
+              </li>
+              <li>
                 <Link to="/how-it-works" className="hover:text-white transition-colors">
                   How It Works
                 </Link>
