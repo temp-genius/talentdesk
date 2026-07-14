@@ -255,7 +255,7 @@ export default function Hire() {
           <div className="hi-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
             {[
               {
-                title: 'CVs that don't fit the brief',
+                title: "CVs that don't fit the brief",
                 body: 'Agencies optimise for speed, not fit. You get volume, not quality — and you spend your time filtering candidates that were never right.',
               },
               {
