@@ -104,66 +104,86 @@ function BrowseSlide() {
   )
 }
 
+function ProposalField({ label, children }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#9ca3af', marginBottom: 4 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 12, color: '#374151', lineHeight: 1.6 }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function ProposalsSlide() {
   return (
-    <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", padding: '20px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+    <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", padding: '20px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
       {/* Card 1 — Jack N. */}
-      <div style={{ border: `2px solid ${NAVY}`, borderRadius: 8, padding: '16px', position: 'relative', backgroundColor: '#fff' }}>
-        <div style={{ position: 'absolute', top: 12, right: 12, backgroundColor: '#dcfce7', color: '#16a34a', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10 }}>
+      <div style={{ border: `2px solid ${NAVY}`, borderRadius: 8, padding: '20px', position: 'relative', backgroundColor: '#fff' }}>
+        <div style={{ position: 'absolute', top: 14, right: 14, backgroundColor: '#dcfce7', color: '#16a34a', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10 }}>
           Shortlisted
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>JN</div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>Jack Nolan</div>
             <div style={{ fontSize: 11, color: '#6b7280' }}>Tech · 9 yrs exp</div>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-          {[
-            { label: 'Sourcing',  val: 'LinkedIn · GitHub · Referrals' },
-            { label: 'Screening', val: 'Structured async' },
-            { label: 'Tools',     val: 'Greenhouse, Lever' },
-            { label: 'Timeline',  val: '4–6 weeks' },
-          ].map(row => (
-            <div key={row.label}>
-              <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#9ca3af', marginBottom: 2 }}>{row.label}</div>
-              <div style={{ fontSize: 11, color: '#374151' }}>{row.val}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontWeight: 700, fontSize: 18, color: NAVY }}>10%</div>
-          <div style={{ fontSize: 10, color: '#6b7280' }}>Track record: 94% fill rate</div>
+        <ProposalField label="Sourcing Strategy">
+          Direct LinkedIn Recruiter outreach targeting passive candidates with Node.js and TypeScript experience across Dublin and remote-first markets. Will tap into 3 niche tech communities — IrishDev Slack, Dublin Tech Jobs, and a private engineering referral network. Headhunting approach only — no job board blasting or spray-and-pray methods.
+        </ProposalField>
+        <ProposalField label="Screening Approach">
+          Every candidate goes through a 30-minute structured technical screen covering AWS depth, system design thinking, and cultural fit before a CV is submitted. Maximum 6 candidates submitted — quality over volume. You will receive a written summary with each CV.
+        </ProposalField>
+        <ProposalField label="Tools">
+          LinkedIn Recruiter, GitHub profile sourcing, Workable ATS, HireEZ for passive outreach
+        </ProposalField>
+        <ProposalField label="Delivery Timeline">
+          First shortlist of 4–6 candidates within 10 business days of brief confirmation
+        </ProposalField>
+        <ProposalField label="Recent Track Record">
+          Placed 3 senior full-stack engineers in the last 6 months — two at Series B startups in Dublin, one at a US-listed fintech (€95k base). Average time-to-shortlist: 9 days. All three candidates are still in role after 12+ months.
+        </ProposalField>
+        <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <div style={{ fontWeight: 700, fontSize: 20, color: NAVY }}>10%</div>
+          <div style={{ fontSize: 10, color: '#6b7280' }}>94% fill rate</div>
         </div>
       </div>
+
       {/* Card 2 — Tracey B. */}
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '16px', backgroundColor: '#fff' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+      <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: '20px', backgroundColor: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>TB</div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>Tracey Burke</div>
             <div style={{ fontSize: 11, color: '#6b7280' }}>Tech · 12 yrs exp</div>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-          {[
-            { label: 'Sourcing',  val: 'Boolean · Referrals' },
-            { label: 'Screening', val: 'Video + portfolio' },
-            { label: 'Tools',     val: 'Ashby, Notion' },
-            { label: 'Timeline',  val: '5–7 weeks' },
-          ].map(row => (
-            <div key={row.label}>
-              <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#9ca3af', marginBottom: 2 }}>{row.label}</div>
-              <div style={{ fontSize: 11, color: '#374151' }}>{row.val}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontWeight: 700, fontSize: 18, color: NAVY }}>8%</div>
-          <div style={{ fontSize: 10, color: '#6b7280' }}>Track record: 88% fill rate</div>
+        <ProposalField label="Sourcing Strategy">
+          Warm network outreach first — have successfully placed engineers at 4 Dublin-based tech companies in the past 14 months. Will supplement with targeted Boolean search across LinkedIn and Stack Overflow Talent for candidates not actively looking.
+        </ProposalField>
+        <ProposalField label="Screening Approach">
+          Initial CV review against the tech stack requirements, followed by a 20-minute intro call to assess motivation and cultural fit. Will provide a one-page candidate summary sheet with each CV covering salary expectations, notice period, and key strengths.
+        </ProposalField>
+        <ProposalField label="Tools">
+          LinkedIn Recruiter, Stack Overflow Talent, Ashby ATS, Notion for candidate tracking
+        </ProposalField>
+        <ProposalField label="Delivery Timeline">
+          First shortlist of 4–5 candidates within 12 business days of brief confirmation
+        </ProposalField>
+        <ProposalField label="Recent Track Record">
+          8 successful placements in Technology in the past 12 months, 5 of which were full-stack or backend engineering roles. Average placement fee 9%. 100% offer acceptance rate across all placements in the past year.
+        </ProposalField>
+        <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <div style={{ fontWeight: 700, fontSize: 20, color: NAVY }}>8%</div>
+          <div style={{ fontSize: 10, color: '#6b7280' }}>88% fill rate</div>
         </div>
       </div>
+
     </div>
   )
 }
@@ -292,7 +312,7 @@ function ProductCarousel() {
         </div>
       </div>
       {/* Slide content */}
-      <div style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderTop: 'none', borderRadius: '0 0 8px 8px', overflow: 'hidden', minHeight: 320 }}>
+      <div style={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderTop: 'none', borderRadius: '0 0 8px 8px', overflow: 'hidden' }}>
         <Component />
       </div>
       {/* Tab nav */}
@@ -363,7 +383,9 @@ export default function HomePage() {
           .hp-cta-btns     { flex-direction: column !important; align-items: flex-start !important; }
           .hp-hero-grid    { grid-template-columns: 1fr !important; }
           .hp-hero-img-col { display: none !important; }
+          .hp-why-grid     { grid-template-columns: 1fr !important; }
           .hp-split-grid   { grid-template-columns: 1fr !important; }
+          .hp-how-grid     { grid-template-columns: 1fr !important; }
           .hp-footer-grid  { grid-template-columns: 1fr !important; }
         }
       `}</style>
@@ -410,10 +432,10 @@ export default function HomePage() {
             {/* Left — copy */}
             <div>
               <h1 style={{ ...S.serif, fontWeight: 700, fontSize: 52, lineHeight: 1.1, color: '#fff', marginBottom: 22 }}>
-                The marketplace for elite recruiters and the companies who hire them.
+                Marketplace for elite recruiters.
               </h1>
               <p style={{ ...S.sans, fontWeight: 300, fontSize: 16, lineHeight: 1.7, color: 'rgba(255,255,255,0.65)', marginBottom: 36 }}>
-                Milestone payments, transparent fees, no agency overhead.
+                Hire smarter and on your terms with independent recruiters at a fraction of the cost of a recruitment agency.
               </p>
               <div className="hp-cta-btns" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link to="/hire" className="hp-btn-blue" style={{
@@ -429,62 +451,71 @@ export default function HomePage() {
                 </Link>
               </div>
               <p style={{ ...S.sans, fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 20, letterSpacing: '0.03em', marginBottom: 0 }}>
-                Average fees 10% · Elite recruiters only · Payments via Stripe escrow
+                Fees capped at 12% · Manually vetted recruiters · Payments held in escrow by Stripe
               </p>
             </div>
 
             {/* Right — hero photo */}
             <div className="hp-hero-img-col" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <img
-                src="/images/hero-human.png"
-                alt="Recruiter at work"
-                onError={e => { e.target.style.display = 'none' }}
-                style={{ width: '100%', maxWidth: 420, borderRadius: 12, objectFit: 'cover', display: 'block' }}
-              />
+              <div style={{ borderRadius: 16, overflow: 'hidden', height: 420, width: '100%' }}>
+                <img
+                  src="/images/hero-human.png"
+                  alt="Professional recruiter at work"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── TRUST STRIP ── */}
-      <section style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7f0', borderBottom: '1px solid #e5e7f0' }}>
+      {/* ── WHY COMPANIES CHOOSE VETTED TA ── */}
+      <section style={{ backgroundColor: '#ffffff', padding: '80px 24px' }}>
         <div style={{ ...S.container }}>
-          <div className="grid grid-cols-2 md:grid-cols-4">
+          <h2 style={{ ...S.serif, fontWeight: 400, fontSize: 32, color: NAVY, textAlign: 'center', marginBottom: 48, lineHeight: 1.2 }}>
+            Why companies choose to work with Vetted TA
+          </h2>
+          <div
+            className="hp-why-grid"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}
+          >
             {[
-              { value: 'avg. 10%',   label: 'Client fee — half the agency standard' },
-              { value: 'Elite only', label: 'High bar — stringent vetting process' },
-              { value: 'Escrow',     label: 'Every payment held by Stripe until delivered' },
-              { value: 'You choose', label: 'See proposals before you commit to anything' },
-            ].map((item, i, arr) => (
-              <div
-                key={item.label}
-                className={`py-7 px-6 text-center${i < arr.length - 1 ? ' border-b border-[#e5e7f0] md:border-b-0 md:border-r' : ''}`}
-              >
-                <p style={{ ...S.sans, fontWeight: 500, fontSize: 20, color: '#1a2b6d', margin: 0, lineHeight: 1.1 }}>
-                  {item.value}
-                </p>
-                <p style={{ ...S.sans, fontWeight: 300, fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b7280', marginTop: 6, marginBottom: 0 }}>
-                  {item.label}
+              {
+                num: '01',
+                heading: 'Fees capped at 12%',
+                body: 'Saving you thousands per hire while working with elite specialist recruiters who know your sector inside out. The average fee on Vetted TA is 10% — half the agency standard.',
+              },
+              {
+                num: '02',
+                heading: 'Vetted recruiters only',
+                body: 'Every recruiter is manually reviewed before they can bid on a single role. We only approve top-tier professionals — agency veterans, in-house TA alumni from Google, Meta, Amazon, and specialist independents with deep sector track records.',
+              },
+              {
+                num: '03',
+                heading: 'Guaranteed results',
+                body: 'Fees are held in escrow by Stripe and paid in three milestones — only once work is approved by you. You never pay for promises. You pay for delivery.',
+              },
+            ].map(card => (
+              <div key={card.num} style={{
+                backgroundColor: '#fff',
+                borderRadius: 16,
+                border: `1px solid ${LGRAY}`,
+                borderTop: `4px solid ${NAVY}`,
+                padding: '36px',
+                boxShadow: '0 4px 24px rgba(26,43,109,0.08)',
+              }}>
+                <span style={{ ...S.serif, fontSize: 48, fontWeight: 700, color: 'rgba(26,43,109,0.12)', lineHeight: 1, display: 'block', marginBottom: 16 }}>
+                  {card.num}
+                </span>
+                <h3 style={{ ...S.sans, fontSize: 20, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+                  {card.heading}
+                </h3>
+                <p style={{ ...S.sans, fontSize: 15, color: GRAY, lineHeight: 1.7, margin: 0 }}>
+                  {card.body}
                 </p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── MANIFESTO ── */}
-      <section style={{ backgroundColor: '#eef2ff', borderTop: '1px solid #c7d2fe', borderBottom: '1px solid #c7d2fe', padding: '64px 48px' }}>
-        <div style={{ ...S.container }}>
-          <blockquote style={{
-            ...S.serif, fontWeight: 400, fontStyle: 'italic', fontSize: 22, lineHeight: 1.6,
-            color: '#3730a3', borderLeft: '3px solid #3b82f6', paddingLeft: 24,
-            maxWidth: 640, margin: '0 0 14px 0',
-          }}>
-            There are thousands of brilliant recruiters who've been made redundant. They have the networks. They have the craft. They just need somewhere to work.
-          </blockquote>
-          <p style={{ ...S.sans, fontWeight: 300, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b7280', paddingLeft: 24, margin: 0 }}>
-            — Why Vetted TA exists
-          </p>
         </div>
       </section>
 
@@ -501,6 +532,22 @@ export default function HomePage() {
             From browsing specialists to tracking candidates — everything in one place.
           </p>
           <ProductCarousel />
+        </div>
+      </section>
+
+      {/* ── MANIFESTO ── */}
+      <section style={{ backgroundColor: '#eef2ff', borderTop: '1px solid #c7d2fe', borderBottom: '1px solid #c7d2fe', padding: '80px 48px' }}>
+        <div style={{ ...S.container }}>
+          <blockquote style={{
+            ...S.serif, fontWeight: 400, fontStyle: 'italic', fontSize: 26, lineHeight: 1.6,
+            color: '#3730a3', borderLeft: '3px solid #3b82f6', paddingLeft: 24,
+            maxWidth: 640, margin: '0 0 14px 0',
+          }}>
+            There are thousands of brilliant recruiters who've been made redundant. This is the marketplace to find them and to work with them directly — on a per role basis, on your terms.
+          </blockquote>
+          <p style={{ ...S.sans, fontWeight: 300, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6b7280', paddingLeft: 24, margin: 0 }}>
+            — Why Vetted TA exists.
+          </p>
         </div>
       </section>
 
@@ -556,6 +603,59 @@ export default function HomePage() {
                 Apply as a recruiter →
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section style={{ backgroundColor: NAVY, color: '#fff', padding: '96px 24px' }}>
+        <div style={{ ...S.container }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ ...S.sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: GOLD, marginBottom: 12 }}>
+              How it works
+            </p>
+            <h2 style={{ ...S.serif, fontWeight: 400, fontSize: 38, color: '#fff', lineHeight: 1.2 }}>
+              From brief to hire in three steps.
+            </h2>
+          </div>
+          <div
+            className="hp-how-grid"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}
+          >
+            {[
+              {
+                step: '01',
+                title: 'Post a role to the marketplace',
+                body: 'Publish your brief and qualified recruiters submit proposals — their fee, sourcing strategy, and track record. You choose who to work with.',
+              },
+              {
+                step: '02',
+                title: 'Review proposals and choose',
+                body: 'Compare proposals side by side. Every recruiter is manually vetted before they can bid. No agencies, no junior consultants — specialist independents only.',
+              },
+              {
+                step: '03',
+                title: 'Pay on milestones, not on faith',
+                body: '20% when CVs are approved. 30% when interviews are confirmed. 50% when the offer is accepted. Every payment held in escrow by Stripe until the work is delivered.',
+              },
+            ].map(item => (
+              <div key={item.step} style={{ padding: '32px 28px', background: 'rgba(255,255,255,0.06)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ ...S.serif, fontSize: 42, fontWeight: 700, color: 'rgba(255,255,255,0.12)', lineHeight: 1, display: 'block', marginBottom: 16 }}>
+                  {item.step}
+                </span>
+                <h3 style={{ ...S.sans, fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 10 }}>
+                  {item.title}
+                </h3>
+                <p style={{ ...S.sans, fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, margin: 0 }}>
+                  {item.body}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 56 }}>
+            <Link to="/hiring-manager/signup" style={{ ...S.btnPrimary, backgroundColor: GOLD, color: '#fff', fontSize: 15, padding: '14px 36px' }}>
+              Post a role — it's free
+            </Link>
           </div>
         </div>
       </section>
