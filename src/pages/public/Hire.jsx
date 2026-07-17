@@ -201,19 +201,125 @@ export default function Hire() {
               </div>
             </div>
 
-            {/* Right — image collage */}
+            {/* Right — proposal comparison mockup */}
             <div
               className="hi-hero-imgs"
-              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '220px 220px', gap: 12 }}
+              style={{ background: '#f1f3f8', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', maxHeight: 480, overflowY: 'auto' }}
             >
-              <div style={{ gridColumn: '1 / 2', gridRow: '1 / 2', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', background: 'rgba(59,130,246,0.2)' }}>
-                <img src="/images/hero-1.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
+              {/* Browser bar */}
+              <div style={{ background: '#1a2b6d', padding: '11px 18px', display: 'flex', alignItems: 'center', gap: 10, position: 'sticky', top: 0, zIndex: 1 }}>
+                <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#ff5f57', display: 'block' }} />
+                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#febc2e', display: 'block' }} />
+                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#28c840', display: 'block' }} />
+                </div>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.5)', marginLeft: 8 }}>
+                  vettedta.com/jobs/42
+                </span>
               </div>
-              <div style={{ gridColumn: '2 / 3', gridRow: '1 / 3', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', marginTop: 32, background: 'rgba(59,130,246,0.15)' }}>
-                <img src="/images/hero-2.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
-              </div>
-              <div style={{ gridColumn: '1 / 2', gridRow: '2 / 3', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', background: 'rgba(59,130,246,0.2)' }}>
-                <img src="/images/hero-3.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} onError={e => { e.target.style.display = 'none' }} />
+
+              {/* Body */}
+              <div style={{ padding: 18 }}>
+                {/* Meta row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                  <span style={{ fontSize: 12, color: '#6b7280', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+                    9 proposals received · Compare and choose your specialist
+                  </span>
+                  <span style={{ fontSize: 12, color: '#1a2b6d', fontWeight: 500, fontFamily: "'DM Sans', system-ui, sans-serif", flexShrink: 0, marginLeft: 8 }}>
+                    3 shortlisted
+                  </span>
+                </div>
+
+                {/* Two cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+
+                  {/* Card 1 — Jack N. */}
+                  <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #1a2b6d', padding: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#1a2b6d', flexShrink: 0 }}>JN</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', fontFamily: "'DM Sans', system-ui, sans-serif" }}>Jack N.</span>
+                          <span style={{ fontSize: 20, fontWeight: 700, color: '#1a2b6d', fontFamily: "'DM Sans', system-ui, sans-serif", flexShrink: 0 }}>10%</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: '#9ca3af', fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: 1.3 }}>Senior Technology Recruiter · Dublin · London</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
+                      {['Software Engineering', 'DevOps & Cloud', 'AI & ML'].map(p => (
+                        <span key={p} style={{ fontSize: 9, background: 'rgba(59,130,246,0.08)', color: '#1a2b6d', padding: '2px 6px', borderRadius: 3, fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 500 }}>{p}</span>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: "'DM Sans', system-ui, sans-serif" }}>of agreed salary</span>
+                      <span style={{ fontSize: 9, background: '#eff6ff', color: '#3b82f6', fontWeight: 700, padding: '2px 8px', borderRadius: 10, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Shortlisted</span>
+                    </div>
+                    <div style={{ borderTop: '1px solid #f3f4f6', marginBottom: 10 }} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                      {[
+                        { label: 'Sourcing',  val: 'Direct LinkedIn Recruiter outreach targeting passive Node.js and TypeScript candidates. Tapping 3 niche tech communities. Headhunting only — no job board blasting.' },
+                        { label: 'Screening', val: '30-min structured screen covering AWS depth and system design before any CV is submitted. Max 6 candidates. Written summary with each CV.' },
+                        { label: 'Tools',     val: 'LinkedIn Recruiter, GitHub sourcing, Workable ATS, HireEZ' },
+                        { label: 'Timeline',  val: 'First shortlist of 4–6 within 10 business days' },
+                      ].map(f => (
+                        <div key={f.label}>
+                          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af', marginBottom: 2, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{f.label}</div>
+                          <div style={{ fontSize: 11, color: '#374151', lineHeight: 1.5, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{f.val}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: '#f8f9ff', borderLeft: '2px solid #1a2b6d', padding: '8px 10px', marginBottom: 10, borderRadius: '0 4px 4px 0' }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af', marginBottom: 3, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Track record</div>
+                      <div style={{ fontSize: 11, color: '#374151', lineHeight: 1.5, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Placed 3 senior full-stack engineers in 6 months — two at Series B startups in Dublin, one at a US-listed fintech. Average time-to-shortlist: 9 days. All still in role after 12+ months.</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button style={{ flex: 1, background: '#1a2b6d', color: '#fff', border: 'none', borderRadius: 5, padding: '7px 0', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif" }}>Accept proposal</button>
+                      <button style={{ flex: 1, background: 'transparent', color: '#1a2b6d', border: '1px solid #1a2b6d', borderRadius: 5, padding: '7px 0', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif" }}>Remove shortlist</button>
+                    </div>
+                  </div>
+
+                  {/* Card 2 — Tracey B. */}
+                  <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#7c3aed', flexShrink: 0 }}>TB</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', fontFamily: "'DM Sans', system-ui, sans-serif" }}>Tracey B.</span>
+                          <span style={{ fontSize: 20, fontWeight: 700, color: '#1a2b6d', fontFamily: "'DM Sans', system-ui, sans-serif", flexShrink: 0 }}>8%</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: '#9ca3af', fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: 1.3 }}>Technology Specialist · Dublin · Remote-first</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
+                      {['Full Stack', 'Product Engineering'].map(p => (
+                        <span key={p} style={{ fontSize: 9, background: 'rgba(59,130,246,0.08)', color: '#1a2b6d', padding: '2px 6px', borderRadius: 3, fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 500 }}>{p}</span>
+                      ))}
+                    </div>
+                    <div style={{ borderTop: '1px solid #f3f4f6', marginBottom: 10 }} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                      {[
+                        { label: 'Sourcing',  val: 'Warm network first — placed engineers at 4 Dublin tech companies in past 14 months. Boolean search supplement across LinkedIn and Stack Overflow Talent.' },
+                        { label: 'Screening', val: 'CV review then 20-min intro call. One-page candidate summary sheet with each CV.' },
+                        { label: 'Tools',     val: 'LinkedIn Recruiter, Stack Overflow Talent, Ashby ATS' },
+                        { label: 'Timeline',  val: 'First CVs within 7 business days' },
+                      ].map(f => (
+                        <div key={f.label}>
+                          <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af', marginBottom: 2, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{f.label}</div>
+                          <div style={{ fontSize: 11, color: '#374151', lineHeight: 1.5, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{f.val}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: '#f8f9ff', borderLeft: '2px solid #1a2b6d', padding: '8px 10px', marginBottom: 10, borderRadius: '0 4px 4px 0' }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af', marginBottom: 3, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Track record</div>
+                      <div style={{ fontSize: 11, color: '#374151', lineHeight: 1.5, fontFamily: "'DM Sans', system-ui, sans-serif" }}>8 placements in Technology past 12 months, 5 full-stack or backend. 100% offer acceptance rate.</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button style={{ flex: 1, background: 'transparent', color: '#1a2b6d', border: '1px solid #1a2b6d', borderRadius: 5, padding: '7px 0', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif" }}>Shortlist</button>
+                      <button style={{ flex: 1, background: 'transparent', color: '#9ca3af', border: '1px solid #e5e7eb', borderRadius: 5, padding: '7px 0', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif" }}>Decline</button>
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </div>
           </div>
