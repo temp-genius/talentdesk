@@ -4,7 +4,7 @@ import Footer from '../../components/layout/Footer'
 
 const NAVY   = '#1a2b6d'
 const BLUE   = '#3b82f6'
-const TEAL   = '#0d9488'
+const TEAL   = '#38bdf8'
 const GOLD   = '#c9a84c'
 const OFF_WH = '#f8f7f4'
 const GRAY   = '#6b7280'
@@ -140,7 +140,7 @@ export default function Hire() {
             <div>
               <span style={{
                 ...S.sans, fontSize: 11, fontWeight: 600, letterSpacing: '0.18em',
-                textTransform: 'uppercase', color: TEAL, background: 'rgba(13,148,136,0.18)',
+                textTransform: 'uppercase', color: TEAL, background: 'rgba(56,189,248,0.18)',
                 padding: '5px 12px', borderRadius: 4, display: 'inline-block', marginBottom: 24,
               }}>
                 Hire smarter · 8–12% fees · Fees held in escrow by Stripe
@@ -214,15 +214,15 @@ export default function Hire() {
                 { num: '0%',    label: 'Paid upfront — escrow only, no retainer required' },
               ].map(s => (
                 <div key={s.num} style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.15)',
                   borderRadius: 12,
-                  padding: '24px 20px',
+                  padding: '28px 24px',
                 }}>
                   <p style={{
                     fontFamily: "'Playfair Display', Georgia, serif",
-                    fontSize: 36,
-                    color: '#5eead4',
+                    fontSize: 40,
+                    color: '#ffffff',
                     fontWeight: 400,
                     lineHeight: 1,
                     margin: '0 0 8px',
@@ -231,8 +231,8 @@ export default function Hire() {
                   </p>
                   <p style={{
                     fontFamily: "'DM Sans', system-ui, sans-serif",
-                    fontSize: 12,
-                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: 13,
+                    color: 'rgba(255,255,255,0.55)',
                     lineHeight: 1.5,
                     margin: 0,
                   }}>
