@@ -106,8 +106,14 @@ export default function Hire() {
             <Link to="/how-it-works" className="hi-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
               How it works
             </Link>
+            <Link to="/browse-recruiters" className="hi-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
+              Browse recruiters
+            </Link>
             <Link to="/for-recruiters" className="hi-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
               For recruiters
+            </Link>
+            <Link to="/hire" className="hi-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
+              For companies
             </Link>
           </nav>
 

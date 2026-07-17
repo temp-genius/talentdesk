@@ -409,6 +409,12 @@ export default function HomePage() {
             <Link to="/browse-recruiters" className="hp-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
               Browse recruiters
             </Link>
+            <Link to="/for-recruiters" className="hp-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
+              For recruiters
+            </Link>
+            <Link to="/hire" className="hp-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
+              For companies
+            </Link>
           </nav>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

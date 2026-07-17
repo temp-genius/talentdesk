@@ -249,6 +249,12 @@ export default function HowItWorks() {
           <Link to="/">
             <Logo dark />
           </Link>
+          <nav className="hidden md:flex items-center gap-8">
+            <Link to="/how-it-works" className="text-sm text-slate-300 hover:text-white transition-colors">How it works</Link>
+            <Link to="/browse-recruiters" className="text-sm text-slate-300 hover:text-white transition-colors">Browse recruiters</Link>
+            <Link to="/for-recruiters" className="text-sm text-slate-300 hover:text-white transition-colors">For recruiters</Link>
+            <Link to="/hire" className="text-sm text-slate-300 hover:text-white transition-colors">For companies</Link>
+          </nav>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-sm text-slate-300 hover:text-white transition-colors">Sign in</Link>
             <Link to="/recruiter/signup" className="btn-primary text-sm">Join as Recruiter</Link>

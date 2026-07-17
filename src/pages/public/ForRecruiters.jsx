@@ -114,6 +114,12 @@ export default function ForRecruiters() {
             <Link to="/how-it-works" className="fr-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
               How it works
             </Link>
+            <Link to="/browse-recruiters" className="fr-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
+              Browse recruiters
+            </Link>
+            <Link to="/for-recruiters" className="fr-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
+              For recruiters
+            </Link>
             <Link to="/hire" className="fr-nav-link" style={{ ...S.sans, fontSize: 14, fontWeight: 500, color: '#374151', textDecoration: 'none', transition: 'color 0.15s' }}>
               For companies
             </Link>
