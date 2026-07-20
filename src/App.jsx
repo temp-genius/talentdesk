@@ -35,6 +35,8 @@ import ForRecruiters         from './pages/public/ForRecruiters'
 import Hire                  from './pages/public/Hire'
 import Careers               from './pages/public/Careers'
 import Contact                from './pages/public/Contact'
+import ForgotPassword         from './pages/public/ForgotPassword'
+import ResetPassword          from './pages/public/ResetPassword'
 import TermsOfService         from './pages/legal/TermsOfService'
 import PrivacyPolicy          from './pages/legal/PrivacyPolicy'
 import RecruiterAgreement     from './pages/legal/RecruiterAgreement'
@@ -92,6 +94,8 @@ export default function App() {
           <Route path="/recruiter-agreement"     element={<RecruiterAgreement />} />
           <Route path="/contact"                 element={<Contact />} />
           <Route path="/careers"                 element={<Careers />} />
+          <Route path="/forgot-password"         element={<ForgotPassword />} />
+          <Route path="/reset-password"          element={<ResetPassword />} />
 
           {/* Public offer acceptance — no auth required */}
           <Route path="/offer/:token"            element={<OfferAcceptance />} />

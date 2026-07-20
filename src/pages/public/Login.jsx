@@ -98,6 +98,11 @@ export default function Login() {
                 placeholder="Your password"
                 autoComplete="current-password"
               />
+              <div className="text-right mt-1.5">
+                <Link to="/forgot-password" className="text-sm text-primary-600 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             <button
