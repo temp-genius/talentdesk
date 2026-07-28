@@ -4,6 +4,7 @@ import Footer from '../../components/layout/Footer'
 
 const NAVY   = '#1a2b6d'
 const BLUE   = '#3b82f6'
+const TEAL   = '#38bdf8'
 const GOLD   = '#c9a84c'
 const OFF_WH = '#f8f7f4'
 const GRAY   = '#6b7280'
@@ -31,35 +32,6 @@ const S = {
   },
 }
 
-const RECRUITER_CARDS = [
-  {
-    img: '/images/sarah-c.png',
-    name: 'Sarah C.',
-    title: 'Senior Technology Recruiter',
-    markets: 'Dublin · London',
-    specialism: 'Engineering & Product',
-    fee: '10%',
-    quote: 'I was tired of giving 80% of my fee to an agency. Here I keep the majority, the work is exclusive, and I actually enjoy what I do again.',
-  },
-  {
-    img: '/images/mark-r.png',
-    name: 'Mark R.',
-    title: 'Commercial Recruitment Lead',
-    markets: 'London · Manchester',
-    specialism: 'Sales & Revenue',
-    fee: '8–10%',
-    quote: 'The milestone payments changed everything for me. I get paid as I deliver, not six months after the offer letter.',
-  },
-  {
-    img: '/images/claire-o.png',
-    name: 'Elena M.',
-    title: 'Executive Search Specialist',
-    markets: 'Dublin · New York',
-    specialism: 'C-Suite & Leadership',
-    fee: '12%',
-    quote: 'The platform looked serious from the start. The vetting process was thorough but quick, and I knew straightaway this was something different. I signed up the same day I was approved.',
-  },
-]
 
 export default function Hire() {
   return (
@@ -291,65 +263,124 @@ export default function Hire() {
       {/* ── RECRUITER CARDS ── */}
       <section style={{ backgroundColor: OFF_WH, padding: '96px 24px' }}>
         <div style={{ ...S.containerWide }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 48, flexWrap: 'wrap', gap: 16 }}>
-            <div>
-              <p style={{ ...S.sans, fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: BLUE, marginBottom: 10 }}>
-                The talent
-              </p>
-              <h2 style={{ ...S.serif, fontSize: 36, fontWeight: 700, color: NAVY, lineHeight: 1.2, letterSpacing: '-0.3px', margin: '0 0 10px 0' }}>
-                The recruiters you'll work with.
-              </h2>
-              <p style={{ ...S.sans, fontWeight: 300, fontSize: 14, color: GRAY, margin: 0 }}>
-                Independently vetted specialists — in their own words.
-              </p>
-            </div>
-            <Link to="/browse-recruiters" style={{
-              ...S.btnPrimary, backgroundColor: 'transparent', color: NAVY,
-              border: `2px solid ${NAVY}`, fontSize: 13,
-            }}>
-              Browse all recruiters →
-            </Link>
+          <div style={{ marginBottom: 48 }}>
+            <p style={{ ...S.sans, fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: BLUE, marginBottom: 10 }}>
+              The talent
+            </p>
+            <h2 style={{ ...S.serif, fontSize: 36, fontWeight: 700, color: NAVY, lineHeight: 1.2, letterSpacing: '-0.3px', margin: '0 0 10px 0' }}>
+              The recruiters you'll work with.
+            </h2>
+            <p style={{ ...S.sans, fontWeight: 300, fontSize: 14, color: GRAY, margin: 0 }}>
+              Manually vetted. Agency-trained. Sector specialists.
+            </p>
           </div>
 
-          <div className="hi-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-            {RECRUITER_CARDS.map(r => (
+          <div className="hi-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
+            {[
+              {
+                initials: 'SK',
+                name: 'Sophie K.',
+                title: 'Technology Recruitment Lead',
+                markets: 'Dublin · London',
+                specialism: 'Engineering & Product',
+                fee: '10%',
+                credentials: [
+                  { label: 'Background', value: 'Former in-house TA Lead, Amazon' },
+                  { label: 'Sectors', value: 'SaaS · Fintech · Deep Tech' },
+                  { label: 'Placed at', value: 'Stripe, Intercom, Clio, Personio' },
+                ],
+              },
+              {
+                initials: 'MR',
+                name: 'Mark R.',
+                title: 'Commercial Recruitment Lead',
+                markets: 'London · Manchester',
+                specialism: 'Sales & Revenue',
+                fee: '8–10%',
+                credentials: [
+                  { label: 'Background', value: '12 years agency recruitment, Michael Page' },
+                  { label: 'Sectors', value: 'SaaS · E-Commerce · Professional Services' },
+                  { label: 'Placed at', value: 'HubSpot, Salesforce, Shopify' },
+                ],
+              },
+              {
+                initials: 'JO',
+                name: 'James O.',
+                title: 'Finance & Operations Specialist',
+                markets: 'Dublin · Amsterdam',
+                specialism: 'Finance & Legal',
+                fee: '9–11%',
+                credentials: [
+                  { label: 'Background', value: 'Former senior consultant, Deloitte' },
+                  { label: 'Sectors', value: 'Financial Services · Consulting · Regulatory' },
+                  { label: 'Placed at', value: 'KPMG, Accenture, AIB, Bank of Ireland' },
+                ],
+              },
+              {
+                initials: 'DC',
+                name: 'Diana C.',
+                title: 'Executive Search Specialist',
+                markets: 'London · New York',
+                specialism: 'C-Suite & Leadership',
+                fee: '12%',
+                credentials: [
+                  { label: 'Background', value: 'Former People Partner, Meta' },
+                  { label: 'Sectors', value: 'Consumer Tech · Media · Growth-stage' },
+                  { label: 'Placed at', value: 'Figma, Notion, Reddit, Canva' },
+                ],
+              },
+            ].map(r => (
               <div
-                key={r.name}
+                key={r.initials}
                 className="hi-r-card"
-                style={{ backgroundColor: '#fff', borderRadius: 12, border: `1px solid ${LGRAY}`, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+                style={{
+                  backgroundColor: '#fff', borderRadius: 12, border: `1px solid ${LGRAY}`,
+                  borderTop: `3px solid ${TEAL}`, padding: '28px 28px 24px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                }}
               >
-                <div style={{ height: 200, backgroundColor: '#dbeafe', position: 'relative', overflow: 'hidden' }}>
-                  <img
-                    src={r.img}
-                    alt={r.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
-                    onError={e => { e.target.style.display = 'none' }}
-                  />
-                  <div style={{
-                    position: 'absolute', top: 12, right: 12,
-                    backgroundColor: NAVY, color: '#fff',
-                    ...S.sans, fontSize: 13, fontWeight: 700,
-                    padding: '4px 10px', borderRadius: 20,
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{
+                      width: 46, height: 46, borderRadius: '50%',
+                      background: 'rgba(56,189,248,0.12)', border: '2px solid rgba(56,189,248,0.28)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <span style={{ ...S.sans, fontWeight: 700, fontSize: 14, color: NAVY }}>{r.initials}</span>
+                    </div>
+                    <div>
+                      <p style={{ ...S.serif, fontWeight: 700, fontSize: 18, color: NAVY, margin: 0 }}>{r.name}</p>
+                      <p style={{ ...S.sans, fontSize: 12, color: BLUE, fontWeight: 500, margin: '2px 0 0' }}>{r.title}</p>
+                    </div>
+                  </div>
+                  <span style={{
+                    ...S.sans, fontSize: 12, fontWeight: 700, color: '#fff',
+                    backgroundColor: NAVY, padding: '4px 10px', borderRadius: 20, flexShrink: 0, marginLeft: 12,
                   }}>
                     {r.fee}
-                  </div>
+                  </span>
                 </div>
-                <div style={{ padding: '22px 24px 24px' }}>
-                  <h3 style={{ ...S.serif, fontSize: 20, fontWeight: 700, color: NAVY, margin: '0 0 3px 0' }}>
-                    {r.name}
-                  </h3>
-                  <p style={{ ...S.sans, fontSize: 13, color: BLUE, fontWeight: 600, marginBottom: 2 }}>
-                    {r.title}
-                  </p>
-                  <p style={{ ...S.sans, fontSize: 12, color: GRAY, marginBottom: 16 }}>
-                    {r.markets} · {r.specialism}
-                  </p>
-                  <blockquote style={{ ...S.sans, fontSize: 13, color: '#4b5563', lineHeight: 1.6, fontStyle: 'italic', margin: '0 0 16px 0', paddingLeft: 14, borderLeft: `3px solid ${BLUE}` }}>
-                    "{r.quote}"
-                  </blockquote>
+                <p style={{ ...S.sans, fontSize: 12, color: GRAY, marginBottom: 16 }}>
+                  {r.markets} · {r.specialism}
+                </p>
+                <div style={{ borderTop: `1px solid ${LGRAY}`, paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {r.credentials.map(c => (
+                    <div key={c.label}>
+                      <span style={{ ...S.sans, fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: TEAL, display: 'block' }}>
+                        {c.label}
+                      </span>
+                      <span style={{ ...S.sans, fontSize: 13, color: '#374151' }}>{c.value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
+          </div>
+
+          <div style={{ textAlign: 'right', marginTop: 28 }}>
+            <Link to="/browse-recruiters" style={{ ...S.sans, fontSize: 13, fontWeight: 600, color: NAVY, textDecoration: 'none' }}>
+              Browse all recruiters →
+            </Link>
           </div>
         </div>
       </section>
@@ -371,7 +402,7 @@ export default function Hire() {
               {
                 step: '01',
                 title: 'Post a role to the marketplace',
-                body: 'Publish your brief and qualified recruiters submit proposals — their fee, sourcing strategy, and track record. You choose who to work with.',
+                body: 'Publish your brief to the marketplace anonymously — your company name is never shown to recruiters until you choose who to work with. Qualified recruiters submit proposals with their fee, sourcing strategy, and track record. You stay in full control throughout.',
               },
               {
                 step: '02',

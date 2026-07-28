@@ -177,10 +177,10 @@ export default function HomePage() {
                 For companies
               </p>
               <h2 style={{ ...S.serif, fontSize: 24, fontWeight: 700, color: NAVY, marginBottom: 16, lineHeight: 1.3 }}>
-                Stop getting burned by agencies.
+                Access elite recruiters at a fraction of the cost.
               </h2>
               <p style={{ ...S.sans, fontSize: 14, color: GRAY, lineHeight: 1.7, margin: 0 }}>
-                Post your role, receive proposals from vetted specialists who actually know your sector, and pay only as work is delivered. No CVs that don't fit the brief. No inflated fees. No competing agencies racing the same brief.
+                Work directly with senior independent recruiters — agency veterans and in-house TA professionals from companies like Google, Meta and Amazon. Pay in milestones held in escrow by Stripe, so both sides are protected at every stage.
               </p>
               <p style={{ ...S.sans, fontSize: 12, color: GRAY, marginTop: 16, marginBottom: 0 }}>
                 8–12% fees · Milestone payments · Exclusive engagements
