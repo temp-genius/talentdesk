@@ -5,6 +5,7 @@ import FilterBar, { EMPTY_FILTERS } from './FilterBar'
 import CompanyCard from './CompanyCard'
 import EmptyState from './EmptyState'
 import AddCompanyModal from './AddCompanyModal'
+import CompanyDetailModal from './CompanyDetailModal'
 
 function hasActiveFilters(filters) {
   return Object.entries(filters).some(([key, value]) => {
@@ -20,6 +21,7 @@ export default function CompanyBrowser() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [viewingCompanyId, setViewingCompanyId] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -72,13 +74,22 @@ export default function CompanyBrowser() {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {companies.map((company) => (
-            <CompanyCard key={company.id} company={company} onChanged={load} />
+            <CompanyCard
+              key={company.id}
+              company={company}
+              onChanged={load}
+              onOpenDetail={setViewingCompanyId}
+            />
           ))}
         </div>
       )}
 
       {showAddModal && (
         <AddCompanyModal onClose={() => setShowAddModal(false)} onCreated={load} />
+      )}
+
+      {viewingCompanyId && (
+        <CompanyDetailModal companyId={viewingCompanyId} onClose={() => setViewingCompanyId(null)} />
       )}
     </div>
   )

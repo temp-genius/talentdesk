@@ -29,12 +29,13 @@ function initialsFor(name) {
     .toUpperCase()
 }
 
-export default function CompanyCard({ company, onChanged }) {
+export default function CompanyCard({ company, onChanged, onOpenDetail }) {
   const [enriching, setEnriching] = useState(false)
   const [enrichError, setEnrichError] = useState(null)
 
   const signal = company.signal
   const canEnrich = Boolean(company.domain) && !company.enriched_at
+  const clickable = Boolean(onOpenDetail)
 
   const handleEnrich = async () => {
     setEnriching(true)
@@ -50,7 +51,10 @@ export default function CompanyCard({ company, onChanged }) {
   }
 
   return (
-    <div className="card flex flex-col gap-4 p-5 transition hover:shadow-md">
+    <div
+      className={`card flex flex-col gap-4 p-5 transition hover:shadow-md ${clickable ? 'cursor-pointer' : ''}`}
+      onClick={clickable ? () => onOpenDetail(company.id) : undefined}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {company.logo_url ? (
@@ -64,7 +68,22 @@ export default function CompanyCard({ company, onChanged }) {
             />
           ) : null}
           <div className="min-w-0">
-            <h3 className="truncate text-base font-semibold text-navy-900">{company.name}</h3>
+            {clickable ? (
+              <h3 className="truncate text-base font-semibold text-navy-900">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onOpenDetail(company.id)
+                  }}
+                  className="truncate hover:text-accent-600 hover:underline"
+                >
+                  {company.name}
+                </button>
+              </h3>
+            ) : (
+              <h3 className="truncate text-base font-semibold text-navy-900">{company.name}</h3>
+            )}
             <p className="truncate text-sm text-navy-500">
               {company.location || company.country || 'Location unknown'}
               {company.headcount_bracket ? ` · ${company.headcount_bracket} employees` : ''}
@@ -125,6 +144,7 @@ export default function CompanyCard({ company, onChanged }) {
                     href={c.linkedin_url}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     className="shrink-0 text-xs font-semibold text-accent-600 hover:text-accent-700"
                   >
                     LinkedIn
@@ -138,7 +158,14 @@ export default function CompanyCard({ company, onChanged }) {
         )}
 
         {canEnrich && (
-          <button onClick={handleEnrich} disabled={enriching} className="btn-secondary mt-3 w-full text-xs">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              handleEnrich()
+            }}
+            disabled={enriching}
+            className="btn-secondary mt-3 w-full text-xs"
+          >
             {enriching ? (
               <span className="flex items-center gap-2">
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-navy-300 border-t-navy-700" />
@@ -152,7 +179,7 @@ export default function CompanyCard({ company, onChanged }) {
         {enrichError && <p className="mt-2 text-xs text-red-600">{enrichError}</p>}
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-3 pt-1">
+      <div className="mt-auto flex items-center justify-between gap-3 pt-1" onClick={(e) => e.stopPropagation()}>
         <OutreachStatusSelect companyId={company.id} initialStatus={company.outreach?.status} />
         {company.linkedin_company_url && (
           <a
