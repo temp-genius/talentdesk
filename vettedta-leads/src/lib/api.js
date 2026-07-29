@@ -217,9 +217,34 @@ export async function setOutreachStatus({ companyId, userId, status }) {
 // Edge Functions
 // ---------------------------------------------------------------------------
 
+// The SDK's own error.message is always the generic "Edge Function returned
+// a non-2xx status code" — it never surfaces the status or URL that would
+// actually tell you what went wrong. FunctionsHttpError/FunctionsRelayError
+// carry the raw Response as `error.context`; pull the real status + body out
+// of it so a 404/401/500 is visible in the UI instead of only in devtools.
+async function describeFunctionsError(error, functionName) {
+  const url = `${supabase.functionsUrl?.href ?? '(unknown functions URL)'}/${functionName}`
+  const response = error?.context
+  const status = response?.status
+
+  let bodyText = ''
+  if (response && typeof response.clone === 'function') {
+    try {
+      bodyText = (await response.clone().text()).slice(0, 300)
+    } catch {
+      // Body already consumed or unreadable — fall back to the SDK message.
+    }
+  }
+
+  const parts = [error?.message || 'Edge Function request failed', `— ${url}`]
+  if (status) parts.push(`(HTTP ${status})`)
+  if (bodyText) parts.push(`: ${bodyText}`)
+  return parts.join(' ')
+}
+
 export async function triggerIngestRss() {
   const { data, error } = await supabase.functions.invoke('ingest-rss', { method: 'POST' })
-  if (error) throw error
+  if (error) throw new Error(await describeFunctionsError(error, 'ingest-rss'))
   return data
 }
 
@@ -228,6 +253,6 @@ export async function triggerEnrichCompany(companyId) {
     method: 'POST',
     body: { company_id: companyId },
   })
-  if (error) throw error
+  if (error) throw new Error(await describeFunctionsError(error, 'enrich-company'))
   return data
 }
