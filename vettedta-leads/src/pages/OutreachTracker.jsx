@@ -1,7 +1,32 @@
+import { useCallback, useEffect, useState } from 'react'
 import DashboardLayout from '../components/layout/DashboardLayout'
-import { DUMMY_COMPANIES, OUTREACH_STATUSES } from '../lib/dummyData'
+import OutreachStatusSelect from '../components/dashboard/OutreachStatusSelect'
+import { useAuth } from '../context/AuthContext'
+import { fetchCompanyFeed } from '../lib/api'
 
 export default function OutreachTracker() {
+  const { user } = useAuth()
+  const [companies, setCompanies] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchCompanyFeed({ dateRange: 'all' }, user?.id)
+      setCompanies(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
   return (
     <DashboardLayout>
       <div className="mb-6">
@@ -11,41 +36,51 @@ export default function OutreachTracker() {
         </p>
       </div>
 
-      <div className="card overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-navy-100 bg-navy-50/50 text-xs uppercase tracking-wide text-navy-500">
-            <tr>
-              <th className="px-4 py-3 font-semibold">Company</th>
-              <th className="px-4 py-3 font-semibold">Primary contact</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Notes</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-navy-100">
-            {DUMMY_COMPANIES.map((company) => (
-              <tr key={company.id}>
-                <td className="px-4 py-3 font-medium text-navy-900">{company.name}</td>
-                <td className="px-4 py-3 text-navy-600">
-                  {company.contacts[0]?.name ?? '—'}
-                </td>
-                <td className="px-4 py-3">
-                  <select
-                    className="input-field w-44 py-1.5"
-                    defaultValue={company.outreach_status}
-                  >
-                    {OUTREACH_STATUSES.map((s) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-4 py-3 text-navy-400 italic">Add a note…</td>
+      {error && (
+        <div className="card border-red-100 bg-red-50 p-4 text-sm text-red-700">
+          Couldn't load outreach: {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="card h-64 animate-pulse bg-navy-50" />
+      ) : companies.length === 0 && !error ? (
+        <div className="card p-12 text-center text-sm text-navy-500">
+          No companies to track yet — add one from the Companies page or run an RSS scan.
+        </div>
+      ) : (
+        <div className="card overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-navy-100 bg-navy-50/50 text-xs uppercase tracking-wide text-navy-500">
+              <tr>
+                <th className="px-4 py-3 font-semibold">Company</th>
+                <th className="px-4 py-3 font-semibold">Primary contact</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Notes</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-navy-100">
+              {companies.map((company) => {
+                const primaryContact =
+                  company.contacts.find((c) => c.is_primary_contact) ?? company.contacts[0]
+                return (
+                  <tr key={company.id}>
+                    <td className="px-4 py-3 font-medium text-navy-900">{company.name}</td>
+                    <td className="px-4 py-3 text-navy-600">{primaryContact?.name ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      <OutreachStatusSelect
+                        companyId={company.id}
+                        initialStatus={company.outreach?.status}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-navy-500">{company.outreach?.notes || '—'}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </DashboardLayout>
   )
 }

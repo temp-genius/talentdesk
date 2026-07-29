@@ -1,7 +1,5 @@
 import DashboardLayout from '../components/layout/DashboardLayout'
-import FilterBar from '../components/dashboard/FilterBar'
-import CompanyCard from '../components/dashboard/CompanyCard'
-import { DUMMY_COMPANIES } from '../lib/dummyData'
+import CompanyBrowser from '../components/dashboard/CompanyBrowser'
 
 export default function Companies() {
   return (
@@ -13,14 +11,7 @@ export default function Companies() {
         </p>
       </div>
 
-      <div className="space-y-6">
-        <FilterBar />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {DUMMY_COMPANIES.map((company) => (
-            <CompanyCard key={company.id} company={company} />
-          ))}
-        </div>
-      </div>
+      <CompanyBrowser />
     </DashboardLayout>
   )
 }
