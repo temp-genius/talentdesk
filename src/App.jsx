@@ -34,6 +34,7 @@ import HowItWorks             from './pages/public/HowItWorks'
 import ForRecruiters         from './pages/public/ForRecruiters'
 import Hire                  from './pages/public/Hire'
 import Careers               from './pages/public/Careers'
+import Resources             from './pages/public/Resources'
 import Contact                from './pages/public/Contact'
 import TermsOfService         from './pages/legal/TermsOfService'
 import PrivacyPolicy          from './pages/legal/PrivacyPolicy'
@@ -92,6 +93,7 @@ export default function App() {
           <Route path="/recruiter-agreement"     element={<RecruiterAgreement />} />
           <Route path="/contact"                 element={<Contact />} />
           <Route path="/careers"                 element={<Careers />} />
+          <Route path="/resources"               element={<Resources />} />
 
           {/* Public offer acceptance — no auth required */}
           <Route path="/offer/:token"            element={<OfferAcceptance />} />
