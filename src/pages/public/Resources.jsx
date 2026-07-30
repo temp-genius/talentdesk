@@ -573,7 +573,7 @@ export default function Resources() {
 
         <div className="rp-free-grid">
           {[
-            { name: 'Notion', desc: 'Simple candidate tracker if you're running multiple searches. Build a lightweight pipeline with status columns — no ATS licence needed for 1–2 concurrent roles.' },
+            { name: 'Notion', desc: "Simple candidate tracker if you're running multiple searches. Build a lightweight pipeline with status columns — no ATS licence needed for 1–2 concurrent roles." },
             { name: 'Google Sheets', desc: 'A well-structured spreadsheet covers everything you need to track candidates, interview stages, and feedback for a single brief. Fast to set up, nothing to learn.' },
             { name: 'Calendly', desc: 'Send candidates a self-serve booking link for screening calls. Cuts the back-and-forth and signals professionalism without any cost on the free tier.' },
             { name: 'Recruiting Brainfood', desc: "Hung Lee's weekly newsletter and community. The best free resource for staying sharp on market trends, sourcing techniques, and what's happening in the TA world." },
